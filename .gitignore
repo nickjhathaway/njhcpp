@@ -22,3 +22,10 @@
 
 bin/*
 compfile.mk
+external/*
+
+# Python 
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+

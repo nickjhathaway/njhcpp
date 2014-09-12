@@ -43,8 +43,8 @@ ifeq ($(USE_BIBSEQ),1)
 endif
 
 #bibcpp
-ifeq ($(USE_BIBBIB),1)
-	COMLIBS += -isystem$(LOCAL_PATH)/bibseq/include
+ifeq ($(USE_BIBCPP),1)
+	COMLIBS += -isystem$(LOCAL_PATH)/bibcpp/include
 	#currently no compiled components so no need for library flags
 	#uncomment bellow in the future if there parts of the package need to be compiled
 	#LD_FLAGS += -Wl,-rpath,$(LOCAL_PATH)/bibcpp/lib \
