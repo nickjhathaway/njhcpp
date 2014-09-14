@@ -1,4 +1,4 @@
 bibcpp
 ======
 
-C++ code contributed to by member of bioinformatics and integrative biology at Umass Med
+C++ code contributed to by members of bioinformatics and integrative biology at Umass Med
