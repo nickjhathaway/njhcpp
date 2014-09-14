@@ -9,6 +9,8 @@
 
 #include <string>
 #include <sstream>
+#include <iostream>
+#include <iterator> //std::ostream_iterator
 
 namespace bib {
 /**@b Take a container and change it into a delimited string

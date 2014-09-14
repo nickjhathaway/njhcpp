@@ -9,6 +9,7 @@
 
 #include <typeinfo> //std::bad_cast, typeid, std::type_info
 #include <string>
+#include <algorithm> //std::transform
 
 #include "bibcpp/stdAddition/misc.hpp" //to_string, isArithmetic, isString
 
