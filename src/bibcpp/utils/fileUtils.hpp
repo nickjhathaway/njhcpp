@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <boost/filesystem.hpp>
-
+namespace bib{
 namespace files {
 
 namespace bfs = boost::filesystem;
@@ -37,3 +37,4 @@ std::vector<bfs::path> filesInFolder(bfs::path d){
 }
 
 } // namespace files
+} // namespace bib
