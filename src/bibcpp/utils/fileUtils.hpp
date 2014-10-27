@@ -28,7 +28,7 @@ std::vector<bfs::path> filesInFolder(bfs::path d){
     std::vector<bfs::path> ret;
 
     if(bfs::is_directory(d)){
-        for(const auto& e : files::dir(d)){
+        for(const auto& e : dir(d)){
             ret.push_back(e);
         }
     }
