@@ -24,7 +24,7 @@ public:
     }
 };
 
-std::vector<bfs::path> filesInFolder(bfs::path d){
+inline std::vector<bfs::path> filesInFolder(bfs::path d){
     std::vector<bfs::path> ret;
 
     if(bfs::is_directory(d)){
