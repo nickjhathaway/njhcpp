@@ -33,4 +33,20 @@ std::string conToStr(const Container& con,
   return ret;
 }
 
+/**@b Check to see if a string contains substrings of interest
+ *
+ * @param str The string to search
+ * @param contains The substrings to search for
+ * @return True if string contains all substrings and false else wise
+ */
+inline bool checkForSubStrs(const std::string & str,
+		const std::vector<std::string> & contains){
+	for(const auto & s : contains){
+		if(str.find(s) == std::string::npos){
+			return false;
+		}
+	}
+	return true;
+}
+
 } // namesapce bib
