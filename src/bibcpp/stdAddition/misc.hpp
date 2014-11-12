@@ -9,7 +9,11 @@
 
 #include <string>
 #include <sstream>
-
+#include <stdexcept>
+#include <limits>
+#include <cstdint>
+#include <type_traits>
+#include <typeinfo>
 
 namespace estd {
 /**@b simply aesthetic, to make call to is_arithmetic look nicer
