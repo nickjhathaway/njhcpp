@@ -8,6 +8,7 @@
 //
 
 #include "bibcpp/utils.h"
+#include "bibcpp/bashUtils.h"
 #include "bibcpp/stdAddition.h"
 #include "bibcpp/progutils/commandLineArguments.hpp"
 #include "bibcpp/progutils/runLog.hpp"
