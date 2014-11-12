@@ -16,7 +16,7 @@
 
 
 namespace bib {
-/**@b Namespace to hold ansi escape character for changing the text on the terminal
+/**@b Namespace to hold ansi escape character for changing the text on the terminal common
  *
  */
 namespace bashCT {

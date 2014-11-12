@@ -8,6 +8,7 @@
 
 
 #include <string>
+#include <sstream>
 
 
 namespace estd {
@@ -50,11 +51,59 @@ constexpr bool isString(){
 	return is_string<T>::value;
 }
 
+
+/**@b Templated function to pass anything to string as long as it has an << operator
+ *
+ * @param e Element to change to a string
+ * @return The element chaged into a string
+ */
 template <typename T>
 std::string to_string(T e) {
   std::stringstream ss;
   ss << e;
   return ss.str();
+}
+
+/**@b change for bool objects to be translated to true or false, could cover up if true is a different number
+ *
+ * @param obj The bool to translate to a string
+ * @return True if obj is true and false if obj is false
+ */
+template <>
+inline std::string to_string<bool>(bool obj) {
+	if(obj){
+		return "true";
+	}else{
+		return "false";
+	}
+}
+
+//  added to std:: stou, stous, stos because they are not in the standard
+// library
+//  so that they have similar behavior to the other string conversions
+inline uint32_t stou(const std::string& str, size_t* idx = 0, int base = 10) {
+  auto firstConverion = std::stol(str, idx, base);
+  if (firstConverion < 0 ||
+      firstConverion > std::numeric_limits<uint32_t>::max()) {
+    throw std::out_of_range{"stou"};
+  }
+  return static_cast<uint32_t>(firstConverion);
+}
+inline uint16_t stous(const std::string& str, size_t* idx = 0, int base = 10) {
+  auto firstConverion = std::stol(str, idx, base);
+  if (firstConverion < 0 ||
+      firstConverion > std::numeric_limits<uint16_t>::max()) {
+    throw std::out_of_range{"stous"};
+  }
+  return static_cast<uint16_t>(firstConverion);
+}
+inline int16_t stos(const std::string& str, size_t* idx = 0, int base = 10) {
+  auto firstConverion = std::stoi(str, idx, base);
+  if (firstConverion < std::numeric_limits<int16_t>::min() ||
+      firstConverion > std::numeric_limits<int16_t>::max()) {
+    throw std::out_of_range{"stos"};
+  }
+  return static_cast<int16_t>(firstConverion);
 }
 
 }  // namespace estd

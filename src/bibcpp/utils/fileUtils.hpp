@@ -2,8 +2,10 @@
 
 #include <vector>
 #include <map>
+#include <fstream> //ofstream
+#include <sys/stat.h> //chmod
 #include <boost/filesystem.hpp>
-#include "bibcpp/utils/stringUtils.hpp"
+#include "bibcpp/utils/stringUtils.hpp" //checkForSubStrs()
 
 namespace bib {
 namespace files {
@@ -101,6 +103,50 @@ inline std::map<boost::filesystem::path, bool> listAllFiles(const std::string & 
 		return specificFiles;
 	}
 	return files;
+}
+
+
+/**@b Open a ofstream with filename and checking for file existence
+ *
+ * @param file the ofstream object to open
+ * @param filename The name of the file to open
+ * @param overWrite Whether the file should be overwritten if it already exists
+ * @param append Whether the file should be appended if it already exists
+ * @param exitOnFailure whether program should exit on failure to open the file
+ * @todo probably should just remove exitOnFailure and throw an exception instead
+ */
+inline void openTextFile(std::ofstream& file, std::string filename,
+                         bool overWrite, bool append, bool exitOnFailure) {
+
+  if (bfs::exists(filename) && !overWrite) {
+    if (append) {
+      file.open(filename.data(), std::ios::app);
+    } else {
+      std::cout << filename << " already exists" << std::endl;
+      if (exitOnFailure) {
+        exit(1);
+      }
+    }
+  } else {
+    file.open(filename.data());
+    if (!file) {
+      std::cout << "Error in opening " << filename << std::endl;
+      if (exitOnFailure) {
+        exit(1);
+      }
+    } else {
+      chmod(filename.c_str(),
+            S_IWUSR | S_IRUSR | S_IRGRP | S_IWGRP | S_IROTH);
+    }
+  }
+}
+
+/**@b convience function to just get the string of the current path from a bfs path object of the current path
+ *
+ * @return A string of the current path
+ */
+inline std::string get_cwd() {
+	return bfs::current_path().string();
 }
 
 } // namespace files
