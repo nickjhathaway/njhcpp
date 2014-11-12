@@ -8,6 +8,7 @@
 
 
 #include <time.h> //time_t
+#include <chrono>
 #include "bibcpp/stdAddition.h" //to_string
 #include "bibcpp/utils/utils.hpp" // printTableOrganized(), roundDecPlaces()
 #include "bibcpp/utils/stringUtils.hpp"  //leftPadNumStr()
