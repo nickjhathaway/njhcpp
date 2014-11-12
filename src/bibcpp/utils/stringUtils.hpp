@@ -49,4 +49,24 @@ inline bool checkForSubStrs(const std::string & str,
 	return true;
 }
 
+/**@b Pad a number so that it sorts well with the rest of the numbers
+ *
+ * @param num The number to pad
+ * @param highestNumber The highest number from the collectio that num belongs to, to determine how much to pad
+ * @return
+ */
+template <typename T>
+std::string leftPadNumStr(T num, T highestNumber = 10) {
+	static_assert(std::is_unsigned<T>::value,
+	                  "Num has to be unsigned");
+  std::stringstream ret;
+  if (num == 0) {
+    ret << std::string(log10(highestNumber), '0');
+  } else {
+    ret << std::string((static_cast<int32_t>(log10(highestNumber)) - static_cast<int32_t>(log10(num))), '0');
+  }
+  ret << num;
+  return ret.str();
+}
+
 } // namesapce bib
