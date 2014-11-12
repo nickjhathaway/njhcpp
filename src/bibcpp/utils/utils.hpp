@@ -11,6 +11,7 @@
 #include <map>
 #include <iostream>
 #include <iomanip> //set::setw
+#include <algorithm>
 
 namespace bib{
 
