@@ -8,6 +8,7 @@
 //
 
 #include "bibcpp/utils.h"
+#include "bibcpp/bashUtils.h"
 namespace bib {
 namespace progutils {
 
