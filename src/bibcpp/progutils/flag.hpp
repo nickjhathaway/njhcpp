@@ -97,7 +97,7 @@ public:
     		+ delim + defaultValue_;
 	}
 	std::string helpInfo()const {
-		return shortDescription_ + "; " + bashCT::bold + "default=" + defaultValue_ + bashCT::reset +"; (" + bashCT::red  + type_ + bashCT::reset +")";
+		return shortDescription_ + "; " + bashCT::bold + "default=" + bashCT::blue + defaultValue_ + bashCT::reset +"; (" + bashCT::red  + type_ + bashCT::reset +")";
 	}
 
 };
