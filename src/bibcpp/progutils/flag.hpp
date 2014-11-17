@@ -8,6 +8,7 @@
 
 #include "bibcpp/utils/stringUtils.hpp"
 #include "bibcpp/stdAddition/misc.hpp"
+#include "bibcpp/bashUtils.h"
 
 namespace bib {
 namespace progutils {
@@ -96,7 +97,7 @@ public:
     		+ delim + defaultValue_;
 	}
 	std::string helpInfo()const {
-		return shortDescription_ + "; default=" + defaultValue_ + "; (" + type_ + ")";
+		return shortDescription_ + "; " + bashCT::bold + "default=" + defaultValue_ + bashCT::reset +"; (" + bashCT::red  + type_ + bashCT::reset +")";
 	}
 
 };
