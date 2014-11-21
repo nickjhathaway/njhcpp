@@ -12,6 +12,9 @@
 
 namespace bib {
 namespace progutils {
+/**@b A struct to get a string of what the value of a object is
+ *
+ */
 template<class T>
 struct TypeName
 {
@@ -45,12 +48,28 @@ inline std::string TypeName<float>::get() {return "float";}
 template<>
 inline std::string TypeName<std::string>::get() {return "string";}
 
+/**@b A function to return the type of the obj input in string fomat
+ *
+ * @param obj The obj to get the type info from
+ * @return a string of the object type
+ */
 template<typename T>
 inline std::string getTypeName(const T & obj){
 	return TypeName<T>::get();
 }
+
+/**@b Class hold commandline flag information
+ *
+ */
 class flag {
 public:
+	/**@b contruct with templated option, so any value can be given that can be converted to a string
+	 *
+	 * @param opt The option value associated with the flag
+	 * @param flags The command line flags that can set the option value
+	 * @param shortDescription A short description of the flag/value
+	 * @param required Whether the flag is required or not
+	 */
 	template<typename T>
 	flag(const T & opt,
 			const std::string & flags,
@@ -66,14 +85,18 @@ public:
 		{
 	}
 
-	std::vector<std::string> flags_;
-	std::string shortDescription_;
-	bool required_;
-	bool set_;
-	std::string setValue_;
-	std::string defaultValue_;
-	std::string type_;
+	std::vector<std::string> flags_; /**The flags associated with this option */
+	std::string shortDescription_; /**A short description for this option */
+	bool required_; /**Whether option is required or not */
+	bool set_; /**Whether the option was set by commandline or default value*/
+	std::string setValue_; /**If set by commandline what it was set to */
+	std::string defaultValue_; /**The default value associated with this otpion */
+	std::string type_; /**The type that the option, ex. int32_t,bool,etc */
 
+	/**@b Function to set the option with a new value from commandline
+	 *
+	 * @param option The new value for this option
+	 */
 	template<typename T>
 	void setValue(const T & option){
 		if(getTypeName(option) != type_){
@@ -87,7 +110,12 @@ public:
 		}
 	}
 
-
+	/**@b Print a info on option for a file parameters used file
+	 *
+	 * @param delim The delimiter to use
+	 * @param header Whether to just print the header
+	 * @return A string with the info
+	 */
 	std::string fullInfo(const std::string delim = "\t", bool header = false) const {
     if (header) {
       return "ShortDescription\tvalue\tdefaultValue";
@@ -96,6 +124,10 @@ public:
     		+ delim + setValue_
     		+ delim + defaultValue_;
 	}
+	/**@b For printing info to the terminal with color output
+	 *
+	 * @return a string with the info
+	 */
 	std::string helpInfo()const {
 		return shortDescription_ + "; " + bashCT::bold + "default=" + bashCT::blue + defaultValue_ + bashCT::reset +"; (" + bashCT::red  + type_ + bashCT::reset +")";
 	}

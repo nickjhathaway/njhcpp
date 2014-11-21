@@ -91,11 +91,7 @@ template<>
 struct is_string<std::string> : std::true_type {};
 
 
-/**@b Nicer to_string than the std:: because it won't have trailing zeros for doubles
- *
- * @param e The element to change into string, needs to have operator << declared
- * @return Return what ever operator << puts into the stream
- */
+
 
 /**@b simply aesthetic, to make call to is_string look nicer
  *

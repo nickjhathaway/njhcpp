@@ -12,6 +12,7 @@
 #include <iostream>
 #include <iomanip> //set::setw
 #include <algorithm>
+#include <cppitertools/range.hpp> //range
 
 namespace bib{
 
@@ -50,6 +51,22 @@ bool in(const T& t, const std::vector<T>& c) {
   return contains(c, t);
 }
 
+/**@b Get a range of numbers of num long in [start,stop]
+ *
+ * @param start The start of the range
+ * @param stop The end of the range
+ * @param num The number of numbers in the range
+ * @return A vector of doubles of num long in [start,stop]
+ */
+inline std::vector<double> getRange(double start, double stop, uint32_t num) {
+  double difference = stop - start;
+  double step = difference / (num - 1);
+  std::vector<double> ans;
+  for (const auto &i : iter::range<uint32_t>(0, num)) {
+    ans.emplace_back((i * step) + start);
+  }
+  return ans;
+}
 
 /**@b Print table with columns adjusted
  *

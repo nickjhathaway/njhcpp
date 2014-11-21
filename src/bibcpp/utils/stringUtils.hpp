@@ -11,7 +11,8 @@
 #include <sstream> //std::stringstream
 #include <iostream>
 #include <iterator> //std::ostream_iterator
-#include <math.h> //round()
+#include <cmath> //round()
+#include <iomanip> //std::setFill(), std::setw()
 
 namespace bib {
 /**@b Take a container and change it into a delimited string
@@ -229,6 +230,30 @@ inline std::string replaceString(std::string theString,
     currPos = theString.find(toBeReplaced, currPos + replacement.size());
   }
   return theString;
+}
+
+/**@b convert int to a string hex string
+ *
+ * @param i the int to convert
+ * @return A hexstring
+ */
+inline std::string intToHex(int32_t i) {
+  std::stringstream stream;
+  // stream << "0x";
+  stream << std::setfill('0') << std::setw(2) << std::hex << i;
+  return stream.str();
+}
+
+/**@b convert a hexstring to a int
+ *
+ * @param hString The hextstring to convert
+ * @return the int version of the hexstring
+ */
+inline uint32_t hexToInt(const std::string& hString) {
+  std::stringstream stream(hString);
+  uint32_t ans;
+  stream >> std::hex >> ans;
+  return ans;
 }
 
 } // namesapce bib
