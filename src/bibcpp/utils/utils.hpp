@@ -13,6 +13,7 @@
 #include <iomanip> //set::setw
 #include <algorithm>
 #include <cppitertools/range.hpp> //range
+#include <cmath>
 
 namespace bib{
 
@@ -184,8 +185,8 @@ static std::vector<typename MAP::key_type> getVecOfMapKeys(const MAP& theMap) {
  * @return A double rounded to decPlaces decimal places
  */
 inline double roundDecPlaces(double num, int decPlaces) {
-  double rounder = pow(10, decPlaces);
-  return (floor(num * rounder + 0.5) / rounder);
+  double rounder = std::pow(10, decPlaces);
+  return (std::floor(num * rounder + 0.5) / rounder);
 }
 
 /**@b Add another vector to vector
