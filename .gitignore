@@ -51,3 +51,4 @@ external/*
 __pycache__/
 *.py[cod]
 *.pyc
+docs/man
