@@ -64,7 +64,7 @@ Json::Value toJson(const uint32_t & val){
 }
 template<>
 Json::Value toJson(const uint64_t & val){
-	Json::Value ret(val);
+	Json::Value ret = val;
 	return ret;
 }
 #ifndef __linux__
@@ -91,7 +91,7 @@ Json::Value toJson(const int32_t & val){
 }
 template<>
 Json::Value toJson(const int64_t & val){
-	Json::Value ret(val);
+	Json::Value ret = val;
 	return ret;
 }
 template<>
