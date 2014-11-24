@@ -20,7 +20,7 @@ namespace bib{
 namespace json{
 
 template<typename CON>
-Json::Value toJson(const CON & con);
+inline Json::Value toJson(const CON & con);
 
 
 template<typename FIRST, typename SECOND>
@@ -43,27 +43,27 @@ Json::Value toJson(const CON & con){
 }
 
 template<>
-Json::Value toJson(const std::string & val){
+inline Json::Value toJson(const std::string & val){
 	Json::Value ret(val);
 	return ret;
 }
 template<>
-Json::Value toJson(const uint8_t & val){
+inline Json::Value toJson(const uint8_t & val){
 	Json::Value ret(val);
 	return ret;
 }
 template<>
-Json::Value toJson(const uint16_t & val){
+inline Json::Value toJson(const uint16_t & val){
 	Json::Value ret(val);
 	return ret;
 }
 template<>
-Json::Value toJson(const uint32_t & val){
+inline Json::Value toJson(const uint32_t & val){
 	Json::Value ret(val);
 	return ret;
 }
 template<>
-Json::Value toJson(const uint64_t & val){
+inline Json::Value toJson(const uint64_t & val){
 	Json::UInt64 conversion = val;
 	Json::Value ret(conversion);
 	return ret;
@@ -72,38 +72,36 @@ Json::Value toJson(const uint64_t & val){
 
 #ifndef __linux__
 template<>
-Json::Value toJson(const size_t & val){
+inline Json::Value toJson(const size_t & val){
 	Json::Value ret(static_cast<uint64_t>(val));
 	return ret;
 }
 #endif
 template<>
-Json::Value toJson(const int8_t & val){
+inline Json::Value toJson(const int8_t & val){
 	Json::Value ret(val);
 	return ret;
 }
 template<>
-Json::Value toJson(const int16_t & val){
+inline Json::Value toJson(const int16_t & val){
 	Json::Value ret(val);
 	return ret;
 }
 template<>
-Json::Value toJson(const int32_t & val){
+inline Json::Value toJson(const int32_t & val){
 	Json::Value ret(val);
 	return ret;
 }
 
 template<>
-Json::Value toJson(const int64_t & val){
+inline Json::Value toJson(const int64_t & val){
 	Json::Int64 conversion = val;
 	Json::Value ret(conversion);
 	return ret;
 }
 
-
-
 template<>
-Json::Value toJson(const double & val){
+inline Json::Value toJson(const double & val){
 	Json::Value ret(val);
 	return ret;
 }
