@@ -62,11 +62,14 @@ Json::Value toJson(const uint32_t & val){
 	Json::Value ret(val);
 	return ret;
 }
+#ifndef __linux__
 template<>
 Json::Value toJson(const uint64_t & val){
 	Json::Value ret = val;
 	return ret;
 }
+#endif
+
 #ifndef __linux__
 template<>
 Json::Value toJson(const size_t & val){
@@ -89,11 +92,15 @@ Json::Value toJson(const int32_t & val){
 	Json::Value ret(val);
 	return ret;
 }
+#ifndef __linux__
 template<>
 Json::Value toJson(const int64_t & val){
 	Json::Value ret = val;
 	return ret;
 }
+#endif
+
+
 template<>
 Json::Value toJson(const double & val){
 	Json::Value ret(val);
