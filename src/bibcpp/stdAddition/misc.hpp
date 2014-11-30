@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <vector>
 #include <numeric>
+#include <memory>
 
 namespace bib{
 
