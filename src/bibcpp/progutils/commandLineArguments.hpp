@@ -8,7 +8,9 @@
 //
 
 #include "bibcpp/utils.h"
+#include "bibcpp/files/fileUtils.hpp"
 #include "bibcpp/bashUtils.h"
+
 namespace bib {
 namespace progutils {
 
