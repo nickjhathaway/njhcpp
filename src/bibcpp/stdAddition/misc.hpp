@@ -63,7 +63,11 @@ template <typename Container>
 void reverse(Container& con) {
   std::reverse(con.begin(), con.end());
 }
-}
+
+
+
+
+} // namespace bib
 
 
 namespace estd {
@@ -158,3 +162,15 @@ inline int16_t stos(const std::string& str, size_t* idx = 0, int base = 10) {
 }
 
 }  // namespace estd
+
+namespace std {
+#if __cplusplus < 201402L
+// forward declare until C++14
+// http://stackoverflow.com/q/7038357
+template<typename T, typename... Args>
+std::unique_ptr<T> make_unique(Args&&... args)
+{
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
+#endif
+} //namespace std

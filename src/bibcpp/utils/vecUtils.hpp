@@ -40,6 +40,22 @@ std::vector<T> getSubVector(const std::vector<T>& vec, uint32_t start) {
   return ret;
 }
 
+/**@b Combine two vectors
+ *
+ * @param vec1 First vector
+ * @param vec2 Second vector
+ * @return A vector with a combination of the vectors
+ */
+template <class T>
+const std::vector<T> catVecs(const std::vector<T>& vec1,
+                                     const std::vector<T>& vec2) {
+  std::vector<T> ans;
+  ans.reserve(vec1.size() + vec2.size());
+  ans.insert(ans.end(), vec1.begin(), vec1.end());
+  ans.insert(ans.end(), vec2.begin(), vec2.end());
+  return ans;
+}
+
 
 } //namespace bib
 
