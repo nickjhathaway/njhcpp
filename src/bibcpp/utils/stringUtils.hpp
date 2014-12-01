@@ -13,6 +13,7 @@
 #include <iterator> //std::ostream_iterator
 #include <cmath> //round()
 #include <iomanip> //std::setFill(), std::setw()
+#include <regex>
 
 namespace bib {
 /**@b Take a container and change it into a delimited string
@@ -50,6 +51,40 @@ inline bool checkForSubStrs(const std::string & str,
 	}
 	return true;
 }
+
+/**@b Check a string for several regex patterns
+ *
+ * @param str The string to check
+ * @param contains The regex patterns to search for
+ * @return true if str contains all the regex patterns in contains
+ */
+inline bool checkForPats(const std::string & str,
+		const std::vector<std::regex> & contains){
+	for(const auto & p : contains){
+		if(!std::regex_match(str,p)){
+			return false;
+		}
+	}
+	return true;
+}
+
+/**@b Check a string for several regex patterns and return false if the string contains any of them
+ *
+ * @param str The string to check
+ * @param contains The regex patterns to search for
+ * @return true if str contains any of the regex patterns are contained in the string
+ */
+inline bool checkForPatsExclude(const std::string & str,
+		const std::vector<std::regex> & exclude){
+	for(const auto & p : exclude){
+		if(std::regex_match(str,p)){
+			return false;
+		}
+	}
+	return true;
+}
+
+
 
 /**@b Pad a number so that it sorts well with the rest of the numbers
  *

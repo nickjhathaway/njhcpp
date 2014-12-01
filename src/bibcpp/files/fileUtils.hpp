@@ -8,8 +8,8 @@
 #include "bibcpp/utils/stringUtils.hpp" //checkForSubStrs()
 #include "bibcpp/utils/timeUtils.hpp" //getCurrentDate()
 #include "bibcpp/debug/exception.hpp" //err
-
 #include <chrono>
+#include <regex>
 
 namespace bib {
 namespace files {
@@ -44,17 +44,15 @@ public:
  */
 inline std::vector<bfs::path> filesInFolder(bfs::path d) {
 	std::vector<bfs::path> ret;
-
 	if (bfs::is_directory(d)) {
 		for (const auto& e : dir(d)) {
-			ret.push_back(e);
+			ret.emplace_back(e);
 		}
 	}
-
 	return ret;
 }
 
-/**@ Helper function for listing files recursively
+/**@b Helper function for listing files recursively
  *
  * @param dirName The name of directory to search
  * @param recursive Whether the search should be recursive
@@ -101,6 +99,59 @@ inline std::map<bfs::path, bool> listAllFiles(const std::string & dirName,
 		std::map<bfs::path, bool> specificFiles;
 		for(const auto & f : files){
 			if(checkForSubStrs(f.first.string(), contains)){
+				specificFiles.emplace(f);
+			}
+		}
+		return specificFiles;
+	}
+	return files;
+}
+
+/**@b List files in a directory with optional recursive search and checking for regex patterns
+ *
+ * @param dirName The directory to search
+ * @param recursive Whether the search should be recursive
+ * @param contains A series of regex patterns the file path name has to contain
+ * @param levels The maximum number of levels to search (1 being the first directory)
+ * @return A map of boost::filesystem paths with the value being a bool with true indicating it's a directory
+ */
+inline std::map<bfs::path, bool> listAllFiles(const std::string & dirName,
+		bool recursive, const std::vector<std::regex>& contains,
+		uint32_t levels = std::numeric_limits<uint32_t>::max()){
+	std::map<bfs::path, bool> files;
+	listAllFilesHelper(dirName, recursive, files, 1, levels);
+	if(!contains.empty()){
+		std::map<bfs::path, bool> specificFiles;
+		for(const auto & f : files){
+			if(checkForPats(f.first.string(), contains)){
+				specificFiles.emplace(f);
+			}
+		}
+		return specificFiles;
+	}
+	return files;
+}
+
+/**@b List files in a directory with optional recursive search and checking for regex patterns
+ *
+ * @param dirName The directory to search
+ * @param recursive Whether the search should be recursive
+ * @param contains A series of regex patterns the file path name has to contain
+ * @param excludes A series of regex patterns the file path name has to not contain
+ * @param levels The maximum number of levels to search (1 being the first directory)
+ * @return A map of boost::filesystem paths with the value being a bool with true indicating it's a directory
+ */
+inline std::map<bfs::path, bool> listAllFiles(const std::string & dirName,
+		bool recursive, const std::vector<std::regex>& contains,
+		const std::vector<std::regex>& excludes,
+		uint32_t levels = std::numeric_limits<uint32_t>::max()){
+	std::map<bfs::path, bool> files;
+	listAllFilesHelper(dirName, recursive, files, 1, levels);
+	if(!contains.empty() || !excludes.empty()){
+		std::map<bfs::path, bool> specificFiles;
+		for(const auto & f : files){
+			if(checkForPats(f.first.string(), contains) &&
+				 checkForPatsExclude(f.first.string(), excludes)){
 				specificFiles.emplace(f);
 			}
 		}
@@ -302,8 +353,8 @@ inline std::vector<std::string> makeDir(std::string parentDirectory,
  * @param verbose Whether to print a statement about reading the file
  * @return A string containing the contents of the file
  */
-// http://insanecoding.blogspot.com/2011/11/how-to-read-in-file-in-c.html
 inline static std::string get_file_contents(const bfs::path& fnp, bool verbose) {
+	// http://insanecoding.blogspot.com/2011/11/how-to-read-in-file-in-c.html
 	std::ifstream f(fnp.string(), std::ios::in | std::ios::binary);
 	if (!f.is_open()) {
 		throw err::str(err::F() << "could not open file" << fnp);
@@ -319,9 +370,13 @@ inline static std::string get_file_contents(const bfs::path& fnp, bool verbose) 
 	f.close();
 	return ret;
 }
-
-inline sch::time_point<sch::system_clock> last_write_time(const bfs::path & fnp_){
-	return sch::system_clock::from_time_t(bfs::last_write_time(fnp_));
+/**@b Wraps boost's last_write_time to get the time since last write in std::chrono::time_point object instead of simply time_t
+ *
+ * @param fnp The filename's path
+ * @return The last write time of a file stored in a std::chrono::time_point object
+ */
+inline sch::time_point<sch::system_clock> last_write_time(const bfs::path & fnp){
+	return sch::system_clock::from_time_t(bfs::last_write_time(fnp));
 }
 
 } // namespace files

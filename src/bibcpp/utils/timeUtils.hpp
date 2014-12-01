@@ -172,7 +172,6 @@ public:
 	currentLap_(startingPoint){
 		currentLapName_ = "1";
 	}
-	//members
 	/**@brief Start time, logging with the highest resolution available
 	 *
 	 */
@@ -297,7 +296,29 @@ public:
 			}
 		}
 	}
+};
 
+/**@b stopWatch class that prints time information on destruction
+ *
+ */
+class scopedStopWatch : public stopWatch {
+public:
+	/**@b Default Constructor
+	 *
+	 * @param message Message to print when the watch dies
+	 * @param formated Whether the printed messaged should be formated
+	 */
+	scopedStopWatch(const std::string message, bool formated = false): stopWatch(), message_(message), formated_(formated){
+		setLapName(message);
+	}
+	std::string message_;/**The message to print with the time*/
+	bool formated_;/**Whether to print the time formated */
+	/**@b destrcutor with printing the time
+	 *
+	 */
+	~scopedStopWatch(){
+		logLapTimes(std::cout, formated_, 6, true);
+	}
 };
 
 } // namespace bib
