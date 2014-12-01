@@ -52,7 +52,7 @@ class color {
   // rgb values for color, should range from 0 to 1 for level,
   // need to mutliple by 255 out to get the actual rgb values
   // recogized by must programs
-  double red_; /**the red value in [0,1] */
+  double red_;/**the red value in [0,1] */
   double green_;/**the green value in [0,1]  */
   double blue_;/**the blue value in [0,1]  */
 
