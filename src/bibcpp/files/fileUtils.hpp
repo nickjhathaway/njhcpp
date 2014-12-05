@@ -1,7 +1,10 @@
 #pragma once
 
 #include <vector>
+#include <set>
+#include <string>
 #include <map>
+#include <iterator>
 #include <fstream> //ofstream
 #include <sys/stat.h> //chmod
 #include <boost/filesystem.hpp>
@@ -378,6 +381,30 @@ inline static std::string get_file_contents(const bfs::path& fnp, bool verbose) 
 inline sch::time_point<sch::system_clock> last_write_time(const bfs::path & fnp){
 	return sch::system_clock::from_time_t(bfs::last_write_time(fnp));
 }
+
+/**@b Remove duplicate lines from file, does not preserve order, not optimized for speed
+ *
+ * @param inputFile The name of the input file
+ * @param outputFile The anme of an output file
+ * @return The error state of the both the operation of opening the file and closing the file
+ */
+inline int removeDuplicateLines(const std::string & inputFile,
+		const std::string & outputFile){
+
+	/*
+	 * adpated from "The C++ programming language", fourth edition
+	 * 					 by Bjarne Stroustrup
+	 */
+	std::ifstream is {inputFile};
+	std::set<std::string> content{std::istream_iterator<std::string>{is},
+	std::istream_iterator<std::string>{}}; //read in file,
+																				//while set ignores duplicates
+	std::ofstream out {outputFile};
+	std::copy(content.begin(), content.end(),
+			std::ostream_iterator<std::string>{out, "\n"}); //output
+	return !is || !out; // return the error state
+}
+
 
 } // namespace files
 } // namespace bib
