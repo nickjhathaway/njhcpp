@@ -106,6 +106,12 @@ inline Json::Value toJson(const double & val){
 	return ret;
 }
 
+template<>
+inline Json::Value toJson(const bool & val){
+	Json::Value ret(val);
+	return ret;
+}
+
 
 
 
