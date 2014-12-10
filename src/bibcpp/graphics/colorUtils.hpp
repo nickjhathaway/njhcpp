@@ -140,6 +140,7 @@ inline std::vector<color> getColsBetweenInc(double hueStart, double hueStop,
                                         double lumStart, double lumStop,
                                         double satStart, double satStop,
                                         uint32_t num){
+
 	std::vector<color> outColors;
 	std::vector<double> hues = getRange(hueStart, hueStop, num);
 	std::vector<double> sats = getRange(satStart, satStop, num);
@@ -150,6 +151,19 @@ inline std::vector<color> getColsBetweenInc(double hueStart, double hueStop,
     outColors.emplace_back(tempCol);
 	}
 	return outColors;
+}
+
+inline std::vector<color> getColsBetweenInc(color first,
+																						color last,
+																						uint32_t num){
+	return getColsBetweenInc(first.hue_, last.hue_, first.lum_, last.lum_, first.lSat_, last.lSat_, num);
+}
+
+inline std::vector<color> getColsBetweenExclude(color first,
+																						color last,
+																						uint32_t num){
+	auto ret = getColsBetweenInc(first.hue_, last.hue_, first.lum_, last.lum_, first.lSat_, last.lSat_, num + 2);
+	return std::vector<color>(ret.begin() + 1, ret.end() - 1);
 }
 
 /**@b Get a range of colors that could be used for a heatmap
@@ -272,7 +286,52 @@ inline std::vector<color> njhColors(uint32_t num, double hueStart = 120, double 
 	return getColsBetweenInc(hueStart, hueStop, lumStart, lumStop, satStart, satStop, num);
 }
 
+/**@b Get colors from around the color wheel for a vector of strings for a given sat and lum
+ *
+ * @param names A vector of strings to match with colors
+ * @param sat the saturation for the colors
+ * @param lum The lum for the colors
+ * @return an unordered_map to match the names to the colors
+ */
+inline std::unordered_map<std::string, bib::color> getColorsForNames(
+    const std::vector<std::string>& names, double sat, double lum) {
+  std::unordered_map<std::string, bib::color> ret;
+  uint32_t count = 0;
+  std::vector<bib::color> colors = bib::evenHuesAll(sat, lum, names.size());
+  for (const auto& n : names) {
+    ret[n] = colors[count];
+    ++count;
+  }
+  return ret;
+}
 
+/**@b Get colors from around the color wheel for a vector of strings for a given, hues,stats, and lums
+ *
+ * @param names  A vector of strings to match with colors
+ * @param hueStart
+ * @param hueStop
+ * @param lumStart
+ * @param lumStop
+ * @param satStart
+ * @param satStop
+ * @return an unordered_map to match the names to the colors
+ */
+inline std::unordered_map<std::string, bib::color> getColorsForNames(
+    const std::vector<std::string>& names, double hueStart, double hueStop,
+    double lumStart, double lumStop,
+    double satStart, double satStop) {
+  std::unordered_map<std::string, bib::color> ret;
+  uint32_t count = 0;
+  std::vector<bib::color> colors = bib::getColsBetweenInc(hueStart, hueStop,
+  		lumStart, lumStop,
+  		satStart, satStop,
+  		names.size());
+  for (const auto& n : names) {
+    ret[n] = colors[count];
+    ++count;
+  }
+  return ret;
+}
 
 } /* namespace bib */
 
