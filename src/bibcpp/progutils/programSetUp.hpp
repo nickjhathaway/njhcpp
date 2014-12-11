@@ -37,6 +37,7 @@ class programSetUp {
     // get rid of the ./ if program is being called from current dir, it can
     // mess things up latter
     programName_ = replaceString(argv[0], "./", "");
+    init();
   }
 
   /**@brief Construct the setUp with the commandLineArguments class converted
@@ -55,6 +56,7 @@ class programSetUp {
     } else {
       programName_ = progSearch->second;
     }
+    init();
   }
 
   /**@brief Construct the setUp with a map of string pairs converted from argc
@@ -73,6 +75,18 @@ class programSetUp {
       programName_ = "program";
     } else {
       programName_ = progSearch->second;
+    }
+    init();
+  }
+  /**@b Initialize any defaults
+   *
+   */
+  void init(){
+    if (commands_.containsFlagCaseInsensitive("-getFlags") ||
+        commands_.containsFlagCaseInsensitive("-flags") ||
+        commands_.containsFlagCaseInsensitive("-h") ||
+        commands_.containsFlagCaseInsensitive("-help")) {
+    	failed_= true;
     }
   }
 
@@ -206,7 +220,7 @@ class programSetUp {
     	infoOut[f.first] = f.second.helpInfo();
     }
     infoOut["-flags,-getFlags"] = "Print flags";
-    infoOut["-h,-help"] = "Print help Mesage";
+    infoOut["-h,-help"] = "Print help Message";
   	mapOutColAdjust(infoOut, out);
   }
 
