@@ -47,6 +47,16 @@ inline Json::Value toJson(const std::string & val){
 	Json::Value ret(val);
 	return ret;
 }
+
+inline Json::Value toJson(const char * val){
+	return toJson(std::string(val));
+}
+
+inline Json::Value toJson(char * val){
+	return toJson(std::string(val));
+}
+
+
 template<>
 inline Json::Value toJson(const uint8_t & val){
 	Json::Value ret(val);
