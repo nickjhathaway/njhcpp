@@ -252,7 +252,7 @@ inline std::string getExtension(const std::string& filename) {
  * @return The filename (without extention)
  */
 inline std::string getFileName(const std::string& filename) {
-	return bfs::path(filename).filename().string();
+	return bfs::basename(filename);
 }
 
 /**@b Wrapper boost filesystem to get the a string of the parent path for a given filename
