@@ -348,6 +348,31 @@ class commandLineArguments {
     }
     out << "\n";
   }
+
+  /** @brief Static function for logging commandline arguments in one string
+   * Takes the generic argc and argv and logs them as is and prints the
+   *directory from where they were executed
+   *
+   * @param out The std::ostream object to log the info to
+   * @param argc The number of arguments
+   * @param argv The array of char pointers of the arguments
+   */
+  static void logRunArgumnets(std::ostream& out, std::map<std::string, std::string> commands) {
+    std::string directory = files::get_cwd();
+    out << "Command ran from " << directory << std::endl;
+    out << commands["-program"];
+
+    for (auto com : commands) {
+    	if(com.first != "-program" && com.first != "" && com.first != "-commandline"){
+    		 out << com.first << " ";
+    		 if(com.second != ""){
+    			 out << com.first << " ";
+    		 }
+    	}
+    }
+    out << "\n";
+  }
+
   /** @brief Static function converting commandline arguments to a map of
    *string, string pairs
    * Converts command line arguments to a map of key flag and value of flag

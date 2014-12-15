@@ -16,7 +16,7 @@ namespace bib {
 class randomGenerator {
 
  public:
-	/**@b default constuctor seeds the std::mt19937_64 with a seed from std::random_device
+	/**@b default constructor seeds the std::mt19937_64 with a seed from std::random_device
 	 *
 	 */
   randomGenerator() {
