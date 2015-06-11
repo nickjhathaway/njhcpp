@@ -1,10 +1,10 @@
 #include <iostream>
 #include "bibcpp.h"
 
-namespace bib{
+
 
 int main(int argc, char* argv[]){
-  std::cout << bashCT::bold << "Hello bibcpp!" << bashCT::reset << std::endl;
+  std::cout << bib::bashCT::bold << "Hello bibcpp!" << bib::bashCT::reset << std::endl;
   return 0;
 }
-}
+
