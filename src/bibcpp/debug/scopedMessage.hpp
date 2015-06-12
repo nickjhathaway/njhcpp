@@ -8,7 +8,7 @@
 
 #include "bibcpp/bashUtils.h"
 
-namespace bibseq {
+namespace bib {
 
 /**@b A class that prints a message at construction and a message at destrction for debuging purposes
  *

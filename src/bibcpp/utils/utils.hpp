@@ -125,30 +125,7 @@ inline void printTableOrganized(const std::vector<std::vector<std::string>>& con
 }
 
 
-/**@b Print out the contents of a map with column adjusted, should only be called on maps of std::string,std::string but templated so
- * different it can be used on multiple map types
- *
- * @param theMap The map to print
- * @param out The stream to print o
- */
-template <typename MAP>
-void mapOutColAdjust(const MAP& theMap,
-                         std::ostream& out) {
-	uint64_t keyMaxLen = 0;
-	uint64_t valueMaxLen = 0;
-  for (const auto& mValue : theMap) {
-    if(mValue.first.size() > keyMaxLen){
-    	keyMaxLen = mValue.first.size();
-    }
-    if(mValue.second.size() > valueMaxLen){
-    	valueMaxLen = mValue.second.size();
-    }
-  }
-  for (const auto& mValue : theMap) {
-    out << std::right << std::setw(keyMaxLen) << mValue.first << "     "
-    		<< std::left << std::setw(valueMaxLen) << mValue.second << "\n";
-  }
-}
+
 
 /**@b Get a vector of all the values stored in theMap
  *

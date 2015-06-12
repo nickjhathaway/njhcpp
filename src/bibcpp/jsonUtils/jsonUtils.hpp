@@ -15,6 +15,7 @@
 #include <deque>
 #include <string>
 #include <cstdint>
+#include "bibcpp/stdAddition.h"
 
 namespace bib{
 namespace json{
@@ -56,6 +57,11 @@ inline Json::Value toJson(char * val){
 	return toJson(std::string(val));
 }
 
+template<>
+inline Json::Value toJson(const char & val){
+	Json::Value ret(val);
+	return ret;
+}
 
 template<>
 inline Json::Value toJson(const uint8_t & val){

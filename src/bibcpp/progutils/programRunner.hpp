@@ -72,7 +72,7 @@ class programRunner {
   virtual int run(int argc, char *argv[]) {
     if (argc < 2) {
       listPrograms(std::cout);
-      return 1;
+      return 0;
     }
     std::stringstream commandLine;
     commandLineArguments::logRunArgumnets(commandLine, argc, argv);
@@ -297,6 +297,9 @@ class programRunner {
     if (inputCommands.find("-numThreads") != inputCommands.end()) {
       inputCommands.erase("-numThreads");
     }
+    if (inputCommands.find("-numthreads") != inputCommands.end()) {
+      inputCommands.erase("-numthreads");
+    }
     if (inputCommands.find("-threads") != inputCommands.end()) {
       inputCommands.erase("-threads");
     }
@@ -416,7 +419,7 @@ class programRunner {
    *
    */
   template <typename T>
-  std::pair<std::string, funcInfo> addFunc(std::string title, T &func,
+  static std::pair<std::string, funcInfo> addFunc(std::string title, T &func,
                                            bool alias, bool lower = true) {
     auto name = title;
     if (lower) {
@@ -428,7 +431,7 @@ class programRunner {
    *
    * @param out The std::ostream object to print the info to
    */
-  void listCommands(std::ostream &out) const {
+  virtual void listCommands(std::ostream &out) const {
     size_t count = 0;
     for (const auto &e : cmdToFunc_) {
       if (!e.second.alias_) {

@@ -8,7 +8,7 @@
 //
 
 #include "bibcpp/utils.h"
-#include "bibcpp/files/fileUtils.hpp"
+#include "bibcpp/files/fileUtilities.hpp"
 #include "bibcpp/bashUtils.h"
 
 namespace bib {
@@ -56,9 +56,10 @@ class commandLineArguments {
  private:
   std::string& lowerCaseGetArguments(const std::string& str) {
     if (arguments_[strToLowerRet(str)] == "") {
-      std::cout << "Argument " << str
+      std::stringstream ss;
+    	ss << "Argument " << str
                 << " requires an option but none was given" << std::endl;
-      exit(1);
+      throw std::runtime_error{ss.str()};
     }
     return arguments_[strToLowerRet(str)];
   }
@@ -392,14 +393,15 @@ class commandLineArguments {
           std::count(nextParamRaw.begin(), nextParamRaw.end(), '=');
       if (equCount > 0) {
         if (equCount > 1) {
-          std::cout << bashCT::addColor(196) << std::endl;
-          std::cout << "Error can only have one equal sign when setting flag"
+        	std::stringstream ss;
+          ss << bashCT::addColor(196) << std::endl;
+          ss << "Error can only have one equal sign when setting flag"
                     << std::endl;
-          std::cout << "eg. -flag=this , can't have -flag=this=that"
+          ss << "eg. -flag=this , can't have -flag=this=that"
                     << std::endl;
-          std::cout << "not " << nextParamRaw << bashCT::reset
+          ss << "not " << nextParamRaw << bashCT::reset
                     << std::endl;
-          exit(1);
+          throw std::runtime_error{ss.str()};
         } else {
           std::vector<std::string> toks = tokenizeString(nextParamRaw, "=");
           storage.insert(std::make_pair(strToLowerRet(toks[0]), toks[1]));
@@ -407,9 +409,10 @@ class commandLineArguments {
       } else {
         std::string nextParam = strToLowerRet(argv[i]);
         if (storage.find(nextParam) != storage.end()) {
+        	std::stringstream ss;
           std::cout << "Error, already have " << nextParam << std::endl;
           std::cout << "Check if you entered it in twice" << std::endl;
-          exit(1);
+          throw std::runtime_error{ss.str()};
         }
 
         if (argv[i][0] == '-') {

@@ -39,6 +39,7 @@ inline std::string getCurrentDate() {
 inline std::string getTimeFormat(double timeInSecondsOriginal, bool verbose,
                                  int secondsDecimalPlaces) {
   std::stringstream duration;
+
   double timeInSeconds = timeInSecondsOriginal;
   if (timeInSeconds > 31536000) {
     int years = (int)timeInSeconds / 31536000;
@@ -95,6 +96,7 @@ inline std::string getTimeFormat(double timeInSecondsOriginal, bool verbose,
       duration << "00:";
     }
   }
+  duration << std::setprecision(secondsDecimalPlaces + 1);
   if (timeInSeconds > 0) {
     if (timeInSecondsOriginal < 1) {
       if (verbose) {
@@ -176,7 +178,7 @@ public:
 	 *
 	 */
 	sch::time_point<sch::high_resolution_clock> start_;
-private:
+protected:
 	/**@brief Current time for new lap, logging with the highest resolution available
 	 *
 	 */
@@ -308,7 +310,19 @@ public:
 	 * @param message Message to print when the watch dies
 	 * @param formated Whether the printed messaged should be formated
 	 */
-	scopedStopWatch(const std::string message, bool formated = false): stopWatch(), message_(message), formated_(formated){
+	scopedStopWatch(const std::string message, bool formated = false) :
+			stopWatch(), message_(message), formated_(formated), out_(std::cout) {
+		setLapName(message);
+	}
+	/**@b Construct with a different print location than std::cout
+	 *
+	 * @param message Message to print when the watch dies
+	 * @param out Where to print
+	 * @param formated Whether the printed messaged should be formated
+	 */
+	scopedStopWatch(const std::string message,
+			std::ostream & out, bool formated = false) :
+			stopWatch(), message_(message), formated_(formated), out_(out) {
 		setLapName(message);
 	}
 	std::string message_;/**The message to print with the time*/
@@ -316,8 +330,14 @@ public:
 	/**@b destrcutor with printing the time
 	 *
 	 */
+	std::ostream & out_;
 	~scopedStopWatch(){
-		logLapTimes(std::cout, formated_, 6, true);
+		if(lapTimes_.size() == 0){
+			startNewLap();
+			out_ << message_ << " " << getTimeFormat(lapTimes_.front().second,formated_, 6) << std::endl;;
+		}else{
+			logLapTimes(out_, formated_, 6, true);
+		}
 	}
 };
 

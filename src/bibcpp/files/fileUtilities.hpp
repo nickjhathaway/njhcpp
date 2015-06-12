@@ -19,6 +19,52 @@ namespace files {
 
 namespace bfs = boost::filesystem;
 namespace sch = sch;
+
+inline bfs::path normalize(const boost::filesystem::path &path) {
+	//from http://stackoverflow.com/questions/1746136/how-do-i-normalize-a-pathname-using-boostfilesystem
+	//useful for when the file doesn't actually exist as calling canonical on it will make it fail
+	bfs::path absPath = absolute(path);
+	bfs::path::iterator it = absPath.begin();
+	bfs::path result = *it++;
+
+	// Get canonical version of the existing part
+	for (; exists(result / *it) && it != absPath.end(); ++it) {
+		result /= *it;
+	}
+	result = bfs::canonical(result);
+
+	// For the rest remove ".." and "." in a path with no symlinks
+	for (; it != absPath.end(); ++it) {
+		// Just move back on ../
+		if (*it == "..") {
+			result = result.parent_path();
+		}
+		// Ignore "."
+		else if (*it != ".") {
+			// Just cat other path entries
+			result /= *it;
+		}
+	}
+
+	return result;
+}
+
+inline bool appendAsNeeded(std::string & str, const std::string & app){
+	if(!endsWith(str,app)){
+		str.append(app);
+		return true;
+	}else{
+		return false;
+	}
+}
+
+inline std::string appendAsNeededRet(std::string str, const std::string & app){
+	if(!endsWith(str,app)){
+		str.append(app);
+	}
+	return str;
+}
+
 // from http://boost.2283326.n4.nabble.com/filesystem-6521-Directory-listing-using-C-11-range-based-for-loops-td4570988.html
 /**@b Class to allow to iterator over a directory's content with c11 for loop semantics
  *
@@ -52,6 +98,7 @@ inline std::vector<bfs::path> filesInFolder(bfs::path d) {
 			ret.emplace_back(e);
 		}
 	}
+
 	return ret;
 }
 
@@ -73,13 +120,13 @@ inline void listAllFilesHelper(const bfs::path & dirName, bool recursive,
 	  for(const auto & dir_iter : dir(dirName)){
 	  	bfs::path current = dir_iter.path();
 	  	if(bfs::is_directory(dir_iter.path())){
-	  		files[current] = true;
+	  		files[bfs::canonical(current)] = true;
 	  		if(recursive && currentLevel <= levels){
 	  			listAllFilesHelper(current, recursive, files,
 	  					currentLevel + 1, levels);
 	  		}
 	  	}else{
-	  		files[current] = false;
+	  		files[bfs::canonical(current)] = false;
 	  	}
 	  }
 	}
@@ -173,30 +220,51 @@ inline std::map<bfs::path, bool> listAllFiles(const std::string & dirName,
  * @param exitOnFailure whether program should exit on failure to open the file
  * @todo probably should just remove exitOnFailure and throw an exception instead
  */
-inline void openTextFile(std::ofstream& file, std::string filename,
+inline void openTextFile(std::ofstream& file, const std::string & filename,
                          bool overWrite, bool append, bool exitOnFailure) {
 
   if (bfs::exists(filename) && !overWrite) {
     if (append) {
       file.open(filename.data(), std::ios::app);
     } else {
-      std::cout << filename << " already exists" << std::endl;
+    	std::stringstream ss;
+      ss << filename << " already exists";
       if (exitOnFailure) {
-        exit(1);
+        throw std::runtime_error{ss.str()};
+      }else{
+      	std::cout << ss.str() << std::endl;
       }
     }
   } else {
     file.open(filename.data());
     if (!file) {
-      std::cout << "Error in opening " << filename << std::endl;
+    	std::stringstream ss;
+    	ss << "Error in opening " << filename;
       if (exitOnFailure) {
-        exit(1);
+        throw std::runtime_error{ss.str()};
+      }else{
+      	std::cout << ss.str() << std::endl;
       }
     } else {
       chmod(filename.c_str(),
             S_IWUSR | S_IRUSR | S_IRGRP | S_IWGRP | S_IROTH);
     }
   }
+}
+
+/**@b Open a ofstream with filename and checking for file existence
+ *
+ * @param file the ofstream object to open
+ * @param filename The name of the file to open
+ * @param overWrite Whether the file should be overwritten if it already exists
+ * @param append Whether the file should be appended if it already exists
+ * @param exitOnFailure whether program should exit on failure to open the file
+ * @todo probably should just remove exitOnFailure and throw an exception instead
+ */
+inline void openTextFile(std::ofstream& file, std::string filename, const std::string & extention,
+                         bool overWrite, bool append, bool exitOnFailure) {
+	appendAsNeeded(filename, extention);
+	openTextFile(file, filename, overWrite, append, exitOnFailure);
 }
 
 /**@b convience function to just get the string of the current path from a bfs path object of the current path
@@ -274,10 +342,10 @@ inline std::string findNonexitantFile(const std::string & outFilename){
 		std::string fileStub = removeExtension(outFilename);
 		std::string extention = getExtension(outFilename);
 		uint32_t fileCount = 1;
-		std::string newOutFilename = fileStub + "_" + estd::to_string(fileCount) + extention;
+		std::string newOutFilename = fileStub + "_" + estd::to_string(fileCount) + "." + extention;
 		while (bfs::exists(newOutFilename)){
 			++fileCount;
-			newOutFilename = fileStub + "_" + estd::to_string(fileCount) + extention;
+			newOutFilename = fileStub + "_" + estd::to_string(fileCount) + "." + extention;
 		}
 		return newOutFilename;
 	}else{
@@ -327,8 +395,9 @@ inline std::string makeDir(std::string parentDirectory,
   std::string newDirectoryName = checkMakeDir(parentDirectory, newDirectory,
   		directoryStatus, perms);
   if (directoryStatus != 0) {
-    std::cout << "Error in making directory " << newDirectoryName << std::endl;
-    exit(1);
+  	std::stringstream ss;
+    ss << "Error in making directory " << newDirectoryName << std::endl;
+    throw std::runtime_error{ss.str()};
   }
   return newDirectoryName;
 }
@@ -360,7 +429,7 @@ inline static std::string get_file_contents(const bfs::path& fnp, bool verbose) 
 	// http://insanecoding.blogspot.com/2011/11/how-to-read-in-file-in-c.html
 	std::ifstream f(fnp.string(), std::ios::in | std::ios::binary);
 	if (!f.is_open()) {
-		throw err::str(err::F() << "could not open file" << fnp);
+		throw err::Exception(err::F() << "could not open file" << fnp);
 	}
 	if (verbose) {
 		std::cout << "reading file " << fnp << std::endl;
@@ -405,6 +474,67 @@ inline int removeDuplicateLines(const std::string & inputFile,
 	return !is || !out; // return the error state
 }
 
+/**@b Get the first line of a file, throws if there is an error in opening a file
+ *
+ * @param filename The name of the file
+ * @return The first line of the file
+ */
+inline std::string getFirstLine(const std::string &filename) {
+  std::string currentLine;
+  std::ifstream textFile(filename.c_str());
+  if (!textFile) {
+  	throw std::runtime_error{"Error in opening " + filename};
+  }
+  std::getline(textFile, currentLine);
+  return currentLine;
+}
+
+
+/**@b Get the last line of a file
+ *
+ * @param filename Name of the file to extract the last line from
+ * @return A std::string object containing the last line of the file
+ */
+inline std::string getLastLine(const std::string & filename) {
+	/*
+	 Last line from the file, from http://www.programmersbook.com/page/7/Get-last-line-from-a-file-in-C/
+	 */
+	std::ifstream read(filename, std::ios_base::ate); //open file
+	if(!read){
+		throw std::runtime_error{bib::bashCT::boldRed("Error in opening " + filename)};
+	}
+	std::string ret;
+	int length = 0;
+	char c = '\0';
+	if (read) {
+		length = read.tellg(); //Get file size
+		// loop backward over the file
+		for (int i = length - 2; i > 0; i--) {
+			read.seekg(i);
+			c = read.get();
+			if (c == '\r' || c == '\n') //new line?
+				break;
+		}
+		std::getline(read, ret); //read last line
+	}
+	return ret;
+}
+/**@b remove a non empty directory forcibly
+ *
+ * @param dirName name of directory to remove
+ * @return whether or not the removal of the directry was successful
+ */
+inline bool rmDirForce(const std::string & dirName){
+	if(bfs::is_directory(dirName)){
+		auto files = filesInFolder(dirName);
+		for(const auto & f : files){
+			rmDirForce(f.string());
+		}
+	}
+	return bfs::remove(dirName);
+}
 
 } // namespace files
 } // namespace bib
+
+

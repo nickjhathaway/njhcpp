@@ -5,7 +5,7 @@
 #include <cerrno>
 #include <boost/filesystem.hpp>
 #include "bibcpp/utils/stringUtils.hpp"
-#include "bibcpp/files/fileUtils.hpp"
+#include "bibcpp/files/fileUtilities.hpp"
 #include "bibcpp/debug/exception.hpp"
 
 namespace bib {
@@ -30,12 +30,27 @@ private:
 	}
 
 public:
+	/**@b empty constructor
+	 * @todo should add some safetly to make sure a file path gets set before load is called
+	 */
+	FileCache() :
+			fnp_("") {
+		//load();
+	}
 	/**@b constructor with the content of the file
 	 *
 	 * @param fnp The file path of the file to be stored
 	 */
 	FileCache(const bfs::path& fnp) :
 			fnp_(fnp) {
+		load();
+	}
+	/**@b Copy constructor
+	 *
+	 * @param other
+	 */
+	FileCache(const FileCache& other) :
+			fnp_(other.fnp_) {
 		load();
 	}
 	/**@b Get the content of the file and update as needed

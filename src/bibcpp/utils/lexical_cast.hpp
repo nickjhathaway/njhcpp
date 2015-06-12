@@ -12,8 +12,15 @@
 #include <algorithm> //std::transform
 
 #include "bibcpp/stdAddition/misc.hpp" //to_string, isArithmetic, isString
+#include <boost/type_index.hpp>
 
 namespace bib {
+inline std::string prettierName(const std::string & prettyName){
+	return bib::replaceString(bib::replaceString(bib::replaceString(prettyName,
+			"std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >", "std::string"),
+			"std::__1", "std"),
+			" >", ">");
+}
 
 /*Lexical cast adapted from zi_lib lexical cast implementation but adapted for
  * conversion of strings in scientific to arithmetic type -nick
@@ -23,45 +30,25 @@ namespace bib {
 /**@brief Exception for bad lexical cast
  *
  */
-class bad_lexical_cast: public std::bad_cast
-{
+
+
+class bad_lexical_cast: public std::bad_cast {
 private:
-    const std::type_info *source_type_;
-    const std::type_info *target_type_;
-
+	std::string targetType_;
+	std::string sourceType_;
 public:
-    bad_lexical_cast():
-        source_type_( &typeid( void )),
-        target_type_( &typeid( void ))
-    {
-    }
+	bad_lexical_cast(const std::string & targetType, const std::string & sourceType) :
+			targetType_(targetType), sourceType_(sourceType) {
 
-    bad_lexical_cast( const std::type_info &source_type,
-                      const std::type_info &target_type ):
-        source_type_( &source_type),
-        target_type_( &target_type)
-    {
-    }
+	}
 
-    const std::type_info &source_type() const
-    {
-      return *source_type_;
-    }
+	virtual const char *what() const throw () {
+		return std::string("bad lexical cast: "
+				"source type value, " + sourceType_ +  ", could not be interpreted as target, " + targetType_).c_str();
+	}
 
-    const std::type_info &target_type() const
-    {
-      return *target_type_;
-    }
-
-    virtual const char *what() const throw()
-    {
-      return "bad lexical cast: "
-          "source type value could not be interpreted as target";
-    }
-
-    virtual ~bad_lexical_cast() throw()
-    {
-    }
+	virtual ~bad_lexical_cast() throw () {
+	}
 
 };
 
@@ -71,14 +58,16 @@ public:
  */
 template< class Source>
 inline std::string toSreamHelper(const Source & source){
-	return to_string(source);
+	return estd::to_string(source);
 }
 
 /**@brief For lexical cast to convert scientific notation properly
  *
  */
 inline std::string toSreamHelper(const std::string & source){
-	return estd::to_string(std::stod(source));
+  std::stringstream ss;
+  ss << std::setprecision(20) << std::stod(source);
+	return ss.str();
 }
 
 /**@brief Caster for to anything not a string, with a check for if it is a cast from
@@ -86,40 +75,45 @@ inline std::string toSreamHelper(const std::string & source){
  *
  *
  */
-template< class Target, class Source >
-struct lexical_caster
-{
-  static inline Target cast_it( const Source& source ) {
-    Target ret;
-    std::stringstream ss;
-    if(estd::isArithmetic<Target>() && estd::isString<Source>()) {
-    	ss << toSreamHelper(source);
-    } else {
-    	ss << source;
-    }
-    if ( ss && ss >> ret ){
-      if ( ss.eof() ){
-      	return ret;
-      }
-    }
-    throw bad_lexical_cast( typeid( Source ), typeid( Target ) );
-  }
+template<class Target, class Source>
+struct lexical_caster {
+	static inline Target cast_it(const Source& source) {
+		Target ret;
+		std::stringstream ss;
+		if (estd::isArithmetic<Target>() && estd::isString<Source>()) {
+			ss << toSreamHelper(source);
+		} else {
+			ss << source;
+		}
+		if (ss && ss >> ret) {
+			if (ss.eof()) {
+				return ret;
+			}
+		}
+		throw bad_lexical_cast(
+				prettierName(
+						boost::typeindex::type_id_with_cvr<Target>().pretty_name()),
+				prettierName(
+						boost::typeindex::type_id_with_cvr<Source>().pretty_name()));
+	}
 };
 
 /**@brief Caster for anything to string, just take the value of the stream
  *
  */
-template< class Source >
-struct lexical_caster< std::string, Source >
-{
-  static inline std::string cast_it( const Source& source )
-  {
-    std::ostringstream oss;
-    if ( oss << source ){
-    	return oss.str();
-    }
-    throw bad_lexical_cast( typeid( Source ), typeid( std::string ) );
-  }
+template<class Source>
+struct lexical_caster<std::string, Source> {
+	static inline std::string cast_it(const Source& source) {
+		std::ostringstream oss;
+		if (oss << source) {
+			return oss.str();
+		}
+		throw bad_lexical_cast(
+				prettierName(
+						boost::typeindex::type_id_with_cvr<std::string>().pretty_name()),
+				prettierName(
+						boost::typeindex::type_id_with_cvr<Source>().pretty_name()));
+	}
 };
 
 

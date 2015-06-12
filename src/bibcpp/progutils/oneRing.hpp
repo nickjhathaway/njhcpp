@@ -37,7 +37,7 @@ class oneRing : public programRunner {
    *
    *
    */
-  std::pair<std::string, programRunner> addRing(programRunner runner,
+  static std::pair<std::string, programRunner> addRing(programRunner runner,
                                                 bool lower = true) {
     auto name = runner.nameOfProgram_;
     if (lower) {
@@ -46,7 +46,7 @@ class oneRing : public programRunner {
     return {name, runner};
   }
 
-  void listCommands(std::ostream &out) {}
+  //void listCommands(std::ostream &out) {}
 
  public:
   /**@brief Constructor with a map of sub-runners and any sub-programs of
@@ -125,8 +125,10 @@ class oneRing : public programRunner {
     out << "Commands are not case sensitive" << std::endl;
 
     for (auto &ring : rings_) {
-      ring.second.listPrograms(std::cout, "", nameOfProgram);
+      ring.second.listPrograms(out, "", nameOfProgram);
     }
+    out << nameOfProgram_ << std::endl;
+          listCommands(out);
     if (command != "") {
       out << "Unrecognized command " << command << std::endl;
       std::pair<std::string, int> closestProgram = {"", 0};
@@ -137,8 +139,8 @@ class oneRing : public programRunner {
           closestProgram = currentClosestProgram;
         }
       }
-      std::cout << "Input command " << command << std::endl;
-      std::cout << "Did you mean  " << closestProgram.first << "?" << std::endl;
+      out << "Input command " << command << std::endl;
+      out << "Did you mean  " << closestProgram.first << "?" << std::endl;
     }
   }
 };
