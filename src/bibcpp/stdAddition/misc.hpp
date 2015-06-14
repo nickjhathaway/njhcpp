@@ -111,7 +111,7 @@ constexpr bool isString(){
 /**@b Templated function to pass anything to string as long as it has an << operator
  *
  * @param e Element to change to a string
- * @return The element chaged into a string
+ * @return The element changed into a string
  */
 template <typename T>
 std::string to_string(T e) {
@@ -141,7 +141,7 @@ inline uint32_t stou(const std::string& str, size_t* idx = 0, int base = 10) {
   auto firstConverion = std::stol(str, idx, base);
   if (firstConverion < 0 ||
       firstConverion > std::numeric_limits<uint32_t>::max()) {
-    throw std::out_of_range{"stou"};
+    throw std::out_of_range{"stou out of range for : " + str};
   }
   return static_cast<uint32_t>(firstConverion);
 }
@@ -149,7 +149,7 @@ inline uint16_t stous(const std::string& str, size_t* idx = 0, int base = 10) {
   auto firstConverion = std::stol(str, idx, base);
   if (firstConverion < 0 ||
       firstConverion > std::numeric_limits<uint16_t>::max()) {
-    throw std::out_of_range{"stous"};
+    throw std::out_of_range{"stous out of range for : " + str};
   }
   return static_cast<uint16_t>(firstConverion);
 }
@@ -157,7 +157,7 @@ inline int16_t stos(const std::string& str, size_t* idx = 0, int base = 10) {
   auto firstConverion = std::stoi(str, idx, base);
   if (firstConverion < std::numeric_limits<int16_t>::min() ||
       firstConverion > std::numeric_limits<int16_t>::max()) {
-    throw std::out_of_range{"stos"};
+    throw std::out_of_range{"stos out of range for : " + str};
   }
   return static_cast<int16_t>(firstConverion);
 }
@@ -165,7 +165,7 @@ inline int16_t stos(const std::string& str, size_t* idx = 0, int base = 10) {
 }  // namespace estd
 
 namespace std {
-#if __cplusplus < 201402L
+#if (defined(__clang__) && __cplusplus < 201305L) || ((defined(__GNUC__) || defined(__GNUG__)) && __cplusplus < 201300L)
 // forward declare until C++14
 // http://stackoverflow.com/q/7038357
 template<typename T, typename... Args>

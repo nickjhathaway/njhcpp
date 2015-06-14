@@ -74,11 +74,12 @@ class runLog {
    */
   void setFilenameAndOpen(const std::string& fileName) {
     if (runLogFile_.is_open()) {
-      std::cerr << "\033[1;31m";
-      std::cerr << "in runLog.setFilenameAndOpen()\n";
-      std::cerr << "Run log already started\n";
-      std::cerr << "\033[0m";
-      exit(1);
+    	std::stringstream ss;
+      ss << "\033[1;31m";
+      ss << "in runLog.setFilenameAndOpen()\n";
+      ss << "Run log already started\n";
+      ss << "\033[0m";
+      throw std::runtime_error{ss.str()};
     } else {
       fileName_ = fileName;
       files::openTextFile(runLogFile_, fileName_, ".txt", true, false);
@@ -95,11 +96,12 @@ class runLog {
       const std::string& fileName,
       std::chrono::time_point<std::chrono::high_resolution_clock> start) {
     if (runLogFile_.is_open()) {
-      std::cerr << "\033[1;31m";
-      std::cerr << "in runLog.setFilenameAndOpen()\n";
-      std::cerr << "Run log already started\n";
-      std::cerr << "\033[0m";
-      exit(1);
+    	std::stringstream ss;
+      ss << "\033[1;31m";
+      ss << "in runLog.setFilenameAndOpen()\n";
+      ss << "Run log already started\n";
+      ss << "\033[0m";
+      throw std::runtime_error{ss.str()};
     } else {
       fileName_ = fileName;
       files::openTextFile(runLogFile_, fileName_, ".txt", true, false);

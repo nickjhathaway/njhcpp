@@ -68,6 +68,15 @@ inline std::vector<color> evenHuesAll(double sat, double lum, uint32_t number) {
   return cols;
 }
 
+/**@b Get colors around the color wheel between two hues for a given hue and lum
+ *
+ * @param sat the saturatin
+ * @param lum the lum
+ * @param number the humber of the colors to give back
+ * @param hueStart From where on the color wheel to start
+ * @param hueStop Where to stop on the color wheel
+ * @return A vector of colors
+ */
 inline std::vector<color> evenHuesBetweenTwoInc(double sat, double lum, uint32_t number, double hueStart, double hueStop){
   std::vector<color> cols;
   for (const auto& h : getRange(hueStart, hueStop, number)) {
