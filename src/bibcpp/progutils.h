@@ -7,3 +7,5 @@
 #include "bibcpp/progutils/programRunner.hpp"
 #include "bibcpp/progutils/programSetUp.hpp"
 #include "bibcpp/progutils/oneRing.hpp"
+
+#include "bibcpp/progutils/ProgressBar.hpp"

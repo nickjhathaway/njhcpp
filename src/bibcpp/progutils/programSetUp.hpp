@@ -86,7 +86,15 @@ class programSetUp {
         commands_.containsFlagCaseInsensitive("-flags") ||
         commands_.containsFlagCaseInsensitive("-h") ||
         commands_.containsFlagCaseInsensitive("-help")) {
-    	failed_= true;
+    	failed_ = true;
+    }
+    if (commands_.containsFlagCaseInsensitive("-h") ||
+        commands_.containsFlagCaseInsensitive("-help")) {
+    	printingHelp_ = true;
+    }
+    if (commands_.containsFlagCaseInsensitive("-getFlags") ||
+        commands_.containsFlagCaseInsensitive("-flags")) {
+    	gettingFlags_ = true;
     }
   }
 
@@ -116,6 +124,16 @@ class programSetUp {
    *
    */
   bool failed_ = false;
+
+  /**@brief A bool to indicated whether a help statement was requested
+   *
+   */
+  bool printingHelp_ = false;
+
+  /**@brief A bool to indicated whether simply flags were requested
+   *
+   */
+  bool gettingFlags_ = false;
 
   /**@brief The maximum width to allow for messages
    *
@@ -215,13 +233,47 @@ class programSetUp {
    * @param out The std::ostream out object to print to
    */
   void printFlags(std::ostream &out) {
-    std::map<std::string, std::string> infoOut;
+    std::map<std::string, std::string> infoOutRequried;
+    std::map<std::string, std::string> infoOutNotRequried;
     for(const auto & f : flags_.flags_){
-    	infoOut[f.first] = f.second.helpInfo();
+    	if(f.second.required_){
+    		infoOutRequried[f.first] = f.second.helpInfo();
+    	}else{
+    		infoOutNotRequried[f.first] = f.second.helpInfo();
+    	}
     }
-    infoOut["-flags,-getFlags"] = "Print flags";
-    infoOut["-h,-help"] = "Print help Message";
-  	mapOutColAdjust(infoOut, out);
+    std::map<std::string, std::string> infoOutHelp;
+    infoOutHelp["-flags,-getFlags"] = "Print flags";
+    infoOutHelp["-h,-help"] = "Print a more detail help message if available";
+    std::pair<uint32_t, uint32_t> paddings{0,0};
+    auto keyFunc = [](const auto & kv){return kv.first;};
+    auto valFunc = [](const auto & kv){return bashCT::trimForNonTerminalOut(kv.second);};
+    if(!infoOutRequried.empty()){
+      compareColPaddings(infoOutRequried, paddings, keyFunc, valFunc);
+    }
+    if(!infoOutNotRequried.empty()){
+      compareColPaddings(infoOutNotRequried, paddings, keyFunc, valFunc);
+    }
+    if(!infoOutHelp.empty()){
+      compareColPaddings(infoOutHelp, paddings, keyFunc, valFunc);
+    }
+    const std::string middleSep = "\t";
+    //assuming tab is len of 4
+    std::string requiredOptsTitle = bashCT::bold + "Required Options" + bashCT::reset;
+    std::string optionalOptsTitle = bashCT::bold + "Optional Options" + bashCT::reset;
+    std::string helpOptsTitle = bashCT::bold + "Help Options" + bashCT::reset;
+    if(!infoOutRequried.empty()){
+      out << std::string(paddings.first + 2 - round(bashCT::getPrintLen(requiredOptsTitle)/2.0), ' ') << requiredOptsTitle << std::endl;
+    	mapOutColAdjust(infoOutRequried, out,middleSep,paddings.first, paddings.second);
+    }
+    if(!infoOutNotRequried.empty()){
+    	out << std::string(paddings.first + 2 - round(bashCT::getPrintLen(optionalOptsTitle)/2.0), ' ') << optionalOptsTitle << std::endl;
+    	mapOutColAdjust(infoOutNotRequried, out,middleSep,paddings.first, paddings.second);
+    }
+    if(!infoOutHelp.empty()){
+    	out << std::string(paddings.first + 2 - round(bashCT::getPrintLen(helpOptsTitle)/2.0), ' ') << helpOptsTitle << std::endl;
+    	mapOutColAdjust(infoOutHelp, out,middleSep, paddings.first, paddings.second);
+    }
   }
 
   /**@brief Once all options have been looked for call finishSetUp() so that any

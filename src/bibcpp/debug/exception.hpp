@@ -41,16 +41,17 @@ private:
 	F & operator =(F &);
 };
 
-struct str: public std::exception {
-	// from http://stackoverflow.com/a/134612
-	std::string s;
-	str(std::string ss) :
-			s(ss) {
+class Exception: public std::exception {
+private:
+	std::string what_;
+public:
+	Exception(std::string ss) :
+			what_(ss) {
 	}
-	~str() throw () {
+	~Exception() throw () {
 	}
-	const char* what() const throw () {
-		return s.c_str();
+	virtual const char* what() const throw () {
+		return what_.c_str();
 	}
 };
 } // namespace err

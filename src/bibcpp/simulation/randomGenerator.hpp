@@ -7,6 +7,8 @@
  */
 
 #include <random>
+#include <sstream>
+#include "bibcpp/stdAddition/misc.hpp"
 #include "bibcpp/utils/vecUtils.hpp"
 
 namespace bib {
@@ -120,14 +122,15 @@ class randomGenerator {
   		rSel = unifRandVector<uint32_t>(0,vec.size(), amt);
   	}else{
   		if(amt > vec.size()){
-  			std::cout << "Error in unifRandSelectionVec, requesting"
+  			std::stringstream ss;
+  			ss << "Error in unifRandSelectionVec, requesting"
   					" more than is in vec but said without replacement"
   					<< std::endl;
-  			exit(1);
+  			throw std::runtime_error{ss.str()};
   		}else{
   			std::vector<uint32_t> rSelPos(vec.size());
-  			iota<uint32_t>(rSel, 0);
-  			shuffle(rSel, mtGen_);
+  			iota<uint32_t>(rSelPos, 0);
+  			shuffle(rSelPos, mtGen_);
   			rSel = getSubVector(rSelPos, 0, amt);
   		}
   	}

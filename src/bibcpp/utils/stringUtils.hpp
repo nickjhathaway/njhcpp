@@ -14,6 +14,7 @@
 #include <cmath> //round()
 #include <iomanip> //std::setFill(), std::setw()
 #include <regex>
+#include "bibcpp/stdAddition.h" //estd::to_string
 
 namespace bib {
 /**@b Take a container and change it into a delimited string
@@ -152,6 +153,7 @@ inline std::vector<std::string> tokenizeString(const std::string& str,
  *
  * @param str The string to test
  * @return Return true if all chars in str is a digit
+ * @todo also check for negative sign and for e (for scientific notattion)
  */
 inline bool strAllDigits(const std::string& str) {
   for (const auto& c : str) {
@@ -173,17 +175,7 @@ inline bool containsSubString(const std::string& str,
   return (str.find(subString) != std::string::npos);
 }
 
-/**@b Return a string with the text centered for the max width of the line
- * @todo Check that text size is shorter than maxWidth
- * @param text The text to center
- * @param maxWidth The max width of the line
- * @return A new string with the text centered for the maxWidth
- */
-inline std::string centerText(const std::string& text, uint32_t maxWidth) {
-  uint32_t halfWay = round(maxWidth / 2.0);
-  uint32_t halfText = round(text.size() / 2.0);
-  return std::string(halfWay - halfText, ' ') + text;
-}
+
 
 /**@b Convertor for bool to true or false str
  *
@@ -292,6 +284,105 @@ inline uint32_t hexToInt(const std::string& hString) {
 }
 
 
+/**@b trim beginning whitespace
+ *
+ * @param s the string from which to trim the whitespace
+ * @return A reference to the trimmed white space string so it can be chained with other trimming options
+ */
+inline std::string &ltrim(std::string &s) {
+    // from http://stackoverflow.com/a/217605
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(),
+                                    std::not1(std::ptr_fun<int, int>(std::isspace))));
+    return s;
+}
 
+/**@b trim end whitespace
+ *
+ * @param s the string from which to trim the whitespace
+ * @return A reference to the trimmed white space string so it can be chained with other trimming options
+ */
+inline std::string &rtrim(std::string &s) {
+    // from http://stackoverflow.com/a/217605
+    s.erase(std::find_if(s.rbegin(), s.rend(),
+                         std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+    return s;
+}
+
+/**@b trim both beginning and end whitepsace
+ *
+ * @param s the string from which to trim the whitespace
+ * @return A reference to the trimmed white space string so it can be chained with other trimming options
+ */
+inline std::string &trim(std::string& s) {
+    // from http://stackoverflow.com/a/217605
+    return ltrim(rtrim(s));
+}
+
+template <typename CON, typename FUN>
+std::string longestToString(const CON& con, FUN f){
+    auto t = [&f](auto& e){ return estd::to_string(f(e)); };
+    auto longest = std::max_element(con.begin(), con.end(), [&t](const auto& a, const auto& b){
+            return t(a).size() < t(b).size();
+        });
+    return t(*longest);
+}
+
+template <typename CON, typename FUN>
+uint32_t paddingWidth(const CON& con, FUN f){
+    return longestToString(con, f).size();
+}
+
+/**@b Print out the contents of a map with column adjusted, should be a simple key,value map where both the key and value can be converted to strings and
+ * have the output operator << defined
+ *
+ * @param theMap The map to print
+ * @param out The stream to print o
+ */
+template <typename MAP>
+void mapOutColAdjust(const MAP& theMap,
+                         std::ostream& out,
+												 const std::string & middleSep = "\t",
+												 uint32_t keyMaxLen = 0,
+												 uint32_t valueMaxLen = 0) {
+	if(0 == keyMaxLen){
+		keyMaxLen = paddingWidth(theMap, [](const auto & kv){return kv.first;});
+	}
+	if(0 == valueMaxLen){
+		valueMaxLen = paddingWidth(theMap, [](const auto & kv){return kv.second;});
+	}
+
+  for (const auto& mValue : theMap) {
+    out << std::right << std::setw(keyMaxLen) << mValue.first << middleSep
+    		<< std::left << std::setw(valueMaxLen) << mValue.second << "\n";
+  }
+}
+
+template<typename MAP, typename KEYFUNC, typename VALUEFUNC>
+void compareColPaddings(const MAP& theMap,
+		std::pair<uint32_t, uint32_t> & paddings, KEYFUNC kFunc, VALUEFUNC vFunc) {
+	uint32_t keyMaxLen = paddingWidth(theMap, kFunc);
+	uint32_t valueMaxLen = paddingWidth(theMap, vFunc);
+	if (keyMaxLen > paddings.first) {
+		paddings.first = keyMaxLen;
+	}
+	if (valueMaxLen > paddings.first) {
+		paddings.second = keyMaxLen;
+	}
+}
+
+inline bool endsWith(const std::string& a, const std::string& b) {
+  // http://stackoverflow.com/a/874160
+  if (a.size() >= b.size()) {
+    return (0 == a.compare(a.size() - b.size(), b.size(), b));
+  }
+  return false;
+}
+
+inline bool beginsWith(const std::string& str, const std::string& target) {
+  if (target.size() <= str.size()){
+  	return (0 == str.compare(0, target.size(), target));
+  }
+  return false;
+}
 
 } // namesapce bib

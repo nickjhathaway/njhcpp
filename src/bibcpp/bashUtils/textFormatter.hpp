@@ -88,46 +88,97 @@ const std::string on_IPurple = "\033[105m"; // Purple
 const std::string on_ICyan = "\033[106m";   // Cyan
 const std::string on_IWhite = "\033[107m";  // White
 
-	inline std::string addColor(uint32_t colorCode){
-		if(colorCode >= 16 && colorCode <= 232){
-			return "\033[38;5;" + std::to_string(colorCode) + "m";
-		}else{
-			std::cerr << black << bold << "bashColorText::addColor()"
-					<< red << " Color code needs to be between 16 and 232" << reset << "\n";
-			return "";
-		}
-	}
+const std::regex formatPattern {"\\\033\\[\\d+m"}; //the regex pattern representing the bash terminal formating
 
-	inline std::string addBGColor(uint32_t colorCode){
-		if(colorCode >= 16 && colorCode <= 232){
-			return "\033[48;5;" + std::to_string(colorCode) + "m";
-		}else{
-			std::cerr << black << bold << "bashColorText::addBGColor()"
-					<< red << " Color code needs to be between 16 and 232" << reset << "\n";
-			return "";
-		}
+inline std::string addColor(uint32_t colorCode) {
+	if (colorCode >= 16 && colorCode <= 232) {
+		return "\033[38;5;" + std::to_string(colorCode) + "m";
+	} else {
+		std::cerr << black << bold << "bashColorText::addColor()" << red
+				<< " Color code needs to be between 16 and 232" << reset << "\n";
+		return "";
 	}
+}
 
-	inline void outputPossibleColors(std::ostream & out){
-		std::vector<uint32_t> possColors(216);
-		std::iota(possColors.begin(), possColors.end(), 16U);
-		for(auto i : possColors){
-			out << addBGColor(i) << i << reset << "\n";
-		}
+inline std::string addBGColor(uint32_t colorCode) {
+	if (colorCode >= 16 && colorCode <= 232) {
+		return "\033[48;5;" + std::to_string(colorCode) + "m";
+	} else {
+		std::cerr << black << bold << "bashColorText::addBGColor()" << red
+				<< " Color code needs to be between 16 and 232" << reset << "\n";
+		return "";
 	}
+}
 
-	inline std::string boldRed(const std::string & str){
-		return red + bold + str + reset;
+inline void outputPossibleColors(std::ostream & out) {
+	std::vector<uint32_t> possColors(216);
+	std::iota(possColors.begin(), possColors.end(), 16U);
+	for (auto i : possColors) {
+		out << addBGColor(i) << i << reset << "\n";
 	}
+}
 
-	inline std::string boldGreen(const std::string & str){
-		return green + bold + str + reset;
-	}
+inline std::string boldRed(const std::string & str) {
+	return red + bold + str + reset;
+}
 
-	inline std::string boldBlack(const std::string & str){
-		return black + bold + str + reset;
+inline std::string boldGreen(const std::string & str) {
+	return green + bold + str + reset;
+}
+
+inline std::string boldBlack(const std::string & str) {
+	return black + bold + str + reset;
+}
+
+/**@b Get an actual length the string will appear on the terminal
+ *
+ * @param str The string to get the length from
+ * @return The printing length
+ */
+inline uint32_t getPrintLen(const std::string & str){
+
+	std::smatch match;
+	std::regex_search( str,match, formatPattern);
+	uint32_t matchLen = match.length();
+	std::string strMatch = match.suffix().str();
+	while(std::regex_search( strMatch,match, formatPattern)){
+		strMatch = match.suffix().str();
+		matchLen += match.length();
 	}
+	return str.length() - matchLen;
+}
+
+/**@b remove the terminal formatting for printing to files and such
+ *
+ * @param str the string to trim
+ * @return A string with no formating
+ */
+inline std::string trimForNonTerminalOut(std::string str){
+	return std::regex_replace(str, formatPattern, "");
+}
 
 } // namespace bashCT
 
-} // namespace bibcpp
+/**@b Return a string with the text centered for the max width of the line
+ * @todo Check that text size is shorter than maxWidth
+ * @param text The text to center
+ * @param maxWidth The max width of the line
+ * @return A new string with the text centered for the maxWidth
+ */
+inline std::string centerText(const std::string& text, uint32_t maxWidth) {
+  uint32_t halfWay = round(maxWidth / 2.0);
+  uint32_t halfText = round(bashCT::getPrintLen(text) / 2.0);
+  return std::string(halfWay - halfText, ' ') + text;
+}
+
+inline std::string colorBool(bool b){
+	std::string ret = "";
+	if(b){
+		ret = bashCT::boldGreen(bib::boolToStr(b));
+	}else{
+		ret = bashCT::boldRed(bib::boolToStr(b));
+	}
+	return ret;
+};
+
+} // namespace bib

@@ -8,6 +8,10 @@
 
 #include <cppitertools/range.hpp>
 #include "bibcpp/simulation/randomGenerator.hpp"
+#include "bibcpp/stdAddition/misc.hpp"
+#include <map>
+#include <iostream>
+#include <exception>
 
 namespace bib {
 
@@ -91,12 +95,12 @@ public:
 	static std::multimap<uint64_t, T, std::less<uint64_t>> createLikelihood(
 	    const std::vector<T> &objs, const std::vector<N> &counts){
 	  if (counts.size() != objs.size()) {
-	    std::cout << "Error in createLikelihood(const std::vector<T> &objs,"
+	    std::cerr << "Error in createLikelihood(const std::vector<T> &objs,"
 	                 " const std::vector<uint32_t> & counts)" << std::endl;
-	    std::cout << "Size of counts differs from size of letters" << std::endl;
-	    std::cout << "Size of counts: " << counts.size() << std::endl;
-	    std::cout << "Size of objs: " << objs.size() << std::endl;
-	    exit(1);
+	    std::cerr << "Size of counts differs from size of letters" << std::endl;
+	    std::cerr << "Size of counts: " << counts.size() << std::endl;
+	    std::cerr << "Size of objs: " << objs.size() << std::endl;
+	    throw std::runtime_error{""};
 	  }
 	  long double countsSum = std::accumulate(counts.begin(), counts.end(), 0);
 	  std::multimap<uint64_t, char, std::less<uint64_t>> likelihoods;

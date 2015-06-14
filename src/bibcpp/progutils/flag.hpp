@@ -9,6 +9,7 @@
 #include "bibcpp/utils/stringUtils.hpp"
 #include "bibcpp/stdAddition/misc.hpp"
 #include "bibcpp/bashUtils.h"
+#include <map>
 
 namespace bib {
 namespace progutils {
@@ -100,10 +101,11 @@ public:
 	template<typename T>
 	void setValue(const T & option){
 		if(getTypeName(option) != type_){
-			std::cerr << "Bad type set for flag " << conToStr(flags_,",") << "\n"
+			std::stringstream ss;
+			ss << "Bad type set for flag " << conToStr(flags_,",") << "\n"
 					<< "is of type " << type_ << " and trying to set with type: " << getTypeName(option)
 			<< "\n";
-			exit(1);
+			throw std::runtime_error{ss.str()};
 		} else {
 			setValue_ = estd::to_string(option);
 			set_ = true;
@@ -129,7 +131,17 @@ public:
 	 * @return a string with the info
 	 */
 	std::string helpInfo()const {
-		return shortDescription_ + "; " + bashCT::bold + "default=" + bashCT::blue + defaultValue_ + bashCT::reset +"; (" + bashCT::red  + type_ + bashCT::reset +")";
+		std::string out =  shortDescription_ + "; ";
+		if(required_){
+			out +=  bashCT::bold + bashCT::red + "required"
+					+ bashCT::reset +"; ";
+		}
+		out+=bashCT::bold + "default=" + bashCT::blue + defaultValue_
+				+ bashCT::reset +"; "
+						"(" + bashCT::addColor(202) + bashCT::bold + type_
+						+ bashCT::reset +")";
+
+		return out;
 	}
 
 };
