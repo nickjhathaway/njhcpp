@@ -225,7 +225,7 @@ class programRunner {
       }
       std::map<std::string, std::string> currentCommands = inputCommands;
       for (auto &com : currentCommands) {
-        com.second = replaceString(com.second, "THIS", file.string());
+        com.second = replaceString(com.second, "THIS", file.filename().string() );
       }
       // rebuild the commandline for each new run
       std::vector<std::string> toks = tokenizeString(currentCommands["-commandline"], "\n");
@@ -322,7 +322,7 @@ class programRunner {
       }
       std::map<std::string, std::string> currentCommands = inputCommands;
       for (auto &com : currentCommands) {
-        com.second = replaceString(com.second, "THIS", file.string());
+        com.second = replaceString(com.second, "THIS", file.filename().string());
       }
 
       // rebuild the commandline for each new run
@@ -355,6 +355,7 @@ class programRunner {
       allCommands.emplace_back(currentCommands);
       std::cout << std::endl;
     }
+
     std::vector<std::vector<std::map<std::string, std::string>>> splitCommands(numThreads);
     uint32_t comPos = 0;
     while (comPos < allCommands.size()) {
@@ -368,7 +369,10 @@ class programRunner {
     std::vector<std::thread> threads;
     for (uint32_t t = 0; t < numThreads; ++t) {
       threads.emplace_back(
-          std::thread([&](std::vector<std::map<std::string, std::string>> coms) { runProgram(coms); },
+          std::thread(
+          		[&](std::vector<std::map<std::string, std::string>> coms) {
+      						runProgram(coms);
+      						},
                       splitCommands[t]));
     }
     for (auto &t : threads) {
