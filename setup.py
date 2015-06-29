@@ -425,16 +425,6 @@ make COMPFILE=compfile.mk -j {num_cores}
                                                            external=self.extDirLoc)
         cmd = " ".join(cmd.split())
         self.__buildFromGitTag(libPaths, cmd,tagName)
-    
-    def __buildNjhProjectBranch(self,libPaths,branchName):
-        cmd = """
-        python ./configure.py -CC {CC} -CXX {CXX} -externalLibDir {external} -prefix {localTop} 
-        && python ./setup.py -compfile compfile.mk 
-        && make -j {num_cores} && make install""".format(localTop=shellquote(self.paths.install_dir),
-                                                          num_cores=self.num_cores(), CC=self.CC, CXX=self.CXX,
-                                                           external=self.extDirLoc)
-        cmd = " ".join(cmd.split())
-        self.__buildFromGitBranch(libPaths, cmd,branchName)
         
     
     def __buildNjhProjectBranch(self,libPaths,branchName):
@@ -643,11 +633,7 @@ make COMPFILE=compfile.mk -j {num_cores}
 
     def bibcpp(self):
         i = self.__path('bibcpp')
-        branch = "release/2"
-        version = "2"
-        #self.__buildNjhProject(i)
-        self.__buildNjhProjectTag(i, version)
-        #self.__buildNjhProjectBranch(i, branch)
+        self.__buildNjhProject(i)
     
     def bibcppDev(self):
         i = self.__path('bibcppdev')
@@ -655,11 +641,7 @@ make COMPFILE=compfile.mk -j {num_cores}
 
     def bibseq(self):
         i = self.__path('bibseq')
-        branch = "release/2"
-        version = "2"
-        #self.__buildNjhProject(i)
-        self.__buildNjhProjectTag(i, version)
-        #self.__buildNjhProjectBranch(i, branch)
+        self.__buildNjhProject(i)
         
     def bibseqDev(self):
         i = self.__path('bibseqdev')
@@ -667,11 +649,7 @@ make COMPFILE=compfile.mk -j {num_cores}
         
     def SeekDeep(self):
         i = self.__path('seekdeep')
-        branch = "release/2"
-        version = "2"
-        #self.__buildNjhProject(i)
-        self.__buildNjhProjectTag(i, version)
-        #self.__buildNjhProjectBranch(i, branch)
+        self.__buildNjhProject(i)
     
     def SeekDeepDev(self):
         i = self.__path('seekdeepdev')
