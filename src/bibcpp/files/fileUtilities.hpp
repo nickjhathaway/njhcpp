@@ -15,11 +15,19 @@
 #include <regex>
 
 namespace bib {
+/**@brief Namespace to hold operations dealing with files and dealing with the filesystem
+ *
+ */
 namespace files {
 
 namespace bfs = boost::filesystem;
 namespace sch = sch;
 
+/**@brief Return full path name even if the path doesn't actually exists
+ *
+ * @param path The path to gt the full path name for
+ * @return The full path with . or .. remove and by following symlinks
+ */
 inline bfs::path normalize(const boost::filesystem::path &path) {
 	//from http://stackoverflow.com/questions/1746136/how-do-i-normalize-a-pathname-using-boostfilesystem
 	//useful for when the file doesn't actually exist as calling canonical on it will make it fail
@@ -49,15 +57,26 @@ inline bfs::path normalize(const boost::filesystem::path &path) {
 	return result;
 }
 
-inline bool appendAsNeeded(std::string & str, const std::string & app){
+/**@brief  append to a str only if need
+ *
+ * @param str The string to append to
+ * @param app What to append to str
+ * @return A reference to the str
+ */
+inline std::string & appendAsNeeded(std::string & str, const std::string & app){
 	if(!endsWith(str,app)){
 		str.append(app);
-		return true;
-	}else{
-		return false;
+
 	}
+	return str;
 }
 
+/**@brief Return str appended if required
+ *
+ * @param str The str to append to
+ * @param app What to append to the str
+ * @return str appended with app only if it is not already appended
+ */
 inline std::string appendAsNeededRet(std::string str, const std::string & app){
 	if(!endsWith(str,app)){
 		str.append(app);
@@ -65,8 +84,40 @@ inline std::string appendAsNeededRet(std::string str, const std::string & app){
 	return str;
 }
 
+/**@brief Joiningng parent path with child path with a unix dir separator if needed
+ *
+ * Modeled after python's os.path.join
+ *
+ * @param par A parent path
+ * @param child A file under parent path
+ * @return Return par plus a unix directory separator if neccesary plus child
+ */
+inline std::string join(const std::string & par, const std::string & child){
+	return appendAsNeededRet(par, "/") + child;
+}
+
+/**@brief Join all strings in vector paths with a unix dir separator if needed
+ *
+ * @param paths Paths to join
+ * @return The contents of paths concatenated with a unix dir separator if needed
+ */
+inline std::string join(const std::vector<std::string> & paths){
+	if(paths.size() == 1){
+		return paths.front();
+	}
+	std::string ret = "";
+	if(paths.size() == 0){
+		return ret;
+	}
+
+	for(const auto & p : iter::range(paths.size() - 1)){
+		ret += appendAsNeededRet(paths[p], "/");
+	}
+	return ret + paths.back();
+}
+
 // from http://boost.2283326.n4.nabble.com/filesystem-6521-Directory-listing-using-C-11-range-based-for-loops-td4570988.html
-/**@b Class to allow to iterator over a directory's content with c11 for loop semantics
+/**@brief Class to allow to iterator over a directory's content with c11 for loop semantics
  *
  */
 class dir {
@@ -86,7 +137,7 @@ public:
 	}
 };
 
-/**@b List the files in directory d
+/**@brief List the files in directory d
  *
  * @param d The directory to list the files contents of
  * @return Return the a vector of the paths of the directory d
@@ -102,7 +153,7 @@ inline std::vector<bfs::path> filesInFolder(bfs::path d) {
 	return ret;
 }
 
-/**@b Helper function for listing files recursively
+/**@brief Helper function for listing files recursively
  *
  * @param dirName The name of directory to search
  * @param recursive Whether the search should be recursive
@@ -132,7 +183,7 @@ inline void listAllFilesHelper(const bfs::path & dirName, bool recursive,
 	}
 }
 
-/**@b Function to list all the files of a directory with the option to search recursively and name filtering
+/**@brief Function to list all the files of a directory with the option to search recursively and name filtering
  *
  * @param dirName the name of the directory to search
  * @param recursive Whether the search should be recursive
@@ -157,7 +208,7 @@ inline std::map<bfs::path, bool> listAllFiles(const std::string & dirName,
 	return files;
 }
 
-/**@b List files in a directory with optional recursive search and checking for regex patterns
+/**@brief List files in a directory with optional recursive search and checking for regex patterns
  *
  * @param dirName The directory to search
  * @param recursive Whether the search should be recursive
@@ -182,7 +233,7 @@ inline std::map<bfs::path, bool> listAllFiles(const std::string & dirName,
 	return files;
 }
 
-/**@b List files in a directory with optional recursive search and checking for regex patterns
+/**@brief List files in a directory with optional recursive search and checking for regex patterns
  *
  * @param dirName The directory to search
  * @param recursive Whether the search should be recursive
@@ -211,7 +262,7 @@ inline std::map<bfs::path, bool> listAllFiles(const std::string & dirName,
 }
 
 
-/**@b Open a ofstream with filename and checking for file existence
+/**@brief Open a ofstream with filename and checking for file existence
  *
  * @param file the ofstream object to open
  * @param filename The name of the file to open
@@ -252,7 +303,7 @@ inline void openTextFile(std::ofstream& file, const std::string & filename,
   }
 }
 
-/**@b Open a ofstream with filename and checking for file existence
+/**@brief Open a ofstream with filename and checking for file existence
  *
  * @param file the ofstream object to open
  * @param filename The name of the file to open
@@ -267,7 +318,7 @@ inline void openTextFile(std::ofstream& file, std::string filename, const std::s
 	openTextFile(file, filename, overWrite, append, exitOnFailure);
 }
 
-/**@b convience function to just get the string of the current path from a bfs path object of the current path
+/**@brief convience function to just get the string of the current path from a bfs path object of the current path
  *
  * @return A string of the current path
  */
@@ -276,7 +327,7 @@ inline std::string get_cwd() {
 }
 
 
-/**@b Get home directory, only works if $HOME set in environment
+/**@brief Get home directory, only works if $HOME set in environment
  *
  * @return The home directory if $HOME exists, blank otherwise
  */
@@ -290,7 +341,7 @@ inline std::string getHomeStr(){
 }
 
 
-/**@b Get a string of a filename with the extension removed, will preserve path name
+/**@brief Get a string of a filename with the extension removed, will preserve path name
  *
  * @param filename The filename to remove the extension
  * @return The filename with the extension removed
@@ -299,7 +350,7 @@ inline std::string removeExtension(const std::string& filename) {
 	return bfs::path(filename).replace_extension("").string();
 }
 
-/**@b Wrapper boost filesystem to get the a string of the extension for a given filename
+/**@brief Wrapper boost filesystem to get the a string of the extension for a given filename
  *
  * @param filename Filename to get the extension for
  * @return The filename's extension
@@ -314,7 +365,7 @@ inline std::string getExtension(const std::string& filename) {
 	return ret;
 }
 
-/**@b Wrapper boost filesystem to get the a string of the filename without extension for a given filename
+/**@brief Wrapper boost filesystem to get the a string of the filename without extension for a given filename
  *
  * @param filename The filename to get the filename for
  * @return The filename (without extention)
@@ -323,7 +374,7 @@ inline std::string getFileName(const std::string& filename) {
 	return bfs::basename(filename);
 }
 
-/**@b Wrapper boost filesystem to get the a string of the parent path for a given filename
+/**@brief Wrapper boost filesystem to get the a string of the parent path for a given filename
  *
  * @param filename A the filename to look for a parent path
  * @return The parent path
@@ -332,7 +383,7 @@ inline std::string getPathName(const std::string& filename) {
 	return bfs::path(filename).parent_path().string();
 }
 
-/**@b Find a filename that doesn't exist by appending _NUM if outFilename exists until outFilename_NUM doesn't exist
+/**@brief Find a filename that doesn't exist by appending _NUM if outFilename exists until outFilename_NUM doesn't exist
  *
  * @param outFilename Filename to check for existance
  * @return A filename for a file that doesn't exist
@@ -353,7 +404,7 @@ inline std::string findNonexitantFile(const std::string & outFilename){
 	}
 }
 
-/**@b make directory with given permissions and check for existence
+/**@brief make directory with given permissions and check for existence
  *
  * @param parentDirectory The directory wihin which to create the new directory
  * @param newDirectory The name of the new directory to create
@@ -381,7 +432,7 @@ inline std::string checkMakeDir(std::string parentDirectory,
   check = directoryStatus;
   return newDirectoryName;
 }
-/**@b Make a directory in the given parent directory with the given permissions
+/**@brief Make a directory in the given parent directory with the given permissions
  *
  * @param parentDirectory The directory wihin which to create the new directory
  * @param newDirectory The name of the new directory to create
@@ -402,7 +453,7 @@ inline std::string makeDir(std::string parentDirectory,
   return newDirectoryName;
 }
 
-/**@b Make several directories in the given parent directory with the given permissions
+/**@brief Make several directories in the given parent directory with the given permissions
  *
  * @param parentDirectory The directory wihin which to create the new directory
  * @param newDirectories The names of the new directories to create
@@ -419,7 +470,7 @@ inline std::vector<std::string> makeDir(std::string parentDirectory,
 	return ret;
 }
 
-/**@b Copy the contents of a file into a string
+/**@brief Copy the contents of a file into a string
  *
  * @param fnp The name of the file
  * @param verbose Whether to print a statement about reading the file
@@ -442,7 +493,7 @@ inline static std::string get_file_contents(const bfs::path& fnp, bool verbose) 
 	f.close();
 	return ret;
 }
-/**@b Wraps boost's last_write_time to get the time since last write in std::chrono::time_point object instead of simply time_t
+/**@brief Wraps boost's last_write_time to get the time since last write in std::chrono::time_point object instead of simply time_t
  *
  * @param fnp The filename's path
  * @return The last write time of a file stored in a std::chrono::time_point object
@@ -451,14 +502,14 @@ inline sch::time_point<sch::system_clock> last_write_time(const bfs::path & fnp)
 	return sch::system_clock::from_time_t(bfs::last_write_time(fnp));
 }
 
-/**@b Remove duplicate lines from file, does not preserve order, not optimized for speed
+/**@brief Remove duplicate lines from file, does not preserve order, not optimized for speed
  *
  * @param inputFile The name of the input file
- * @param outputFile The anme of an output file
+ * @param outputFile The name of an output file
  * @return The error state of the both the operation of opening the file and closing the file
  */
 inline int removeDuplicateLines(const std::string & inputFile,
-		const std::string & outputFile){
+		const std::string & outputFile, bool overWrite){
 
 	/*
 	 * adpated from "The C++ programming language", fourth edition
@@ -468,13 +519,14 @@ inline int removeDuplicateLines(const std::string & inputFile,
 	std::set<std::string> content{std::istream_iterator<std::string>{is},
 	std::istream_iterator<std::string>{}}; //read in file,
 																				//while set ignores duplicates
-	std::ofstream out {outputFile};
+	std::ofstream out;
+	openTextFile(out, outputFile, overWrite, false, true);
 	std::copy(content.begin(), content.end(),
 			std::ostream_iterator<std::string>{out, "\n"}); //output
 	return !is || !out; // return the error state
 }
 
-/**@b Get the first line of a file, throws if there is an error in opening a file
+/**@brief Get the first line of a file, throws if there is an error in opening a file
  *
  * @param filename The name of the file
  * @return The first line of the file
@@ -490,7 +542,7 @@ inline std::string getFirstLine(const std::string &filename) {
 }
 
 
-/**@b Get the last line of a file
+/**@brief Get the last line of a file
  *
  * @param filename Name of the file to extract the last line from
  * @return A std::string object containing the last line of the file
@@ -519,7 +571,7 @@ inline std::string getLastLine(const std::string & filename) {
 	}
 	return ret;
 }
-/**@b remove a non empty directory forcibly
+/**@brief remove a non empty directory forcibly
  *
  * @param dirName name of directory to remove
  * @return whether or not the removal of the directry was successful
@@ -532,6 +584,29 @@ inline bool rmDirForce(const std::string & dirName){
 		}
 	}
 	return bfs::remove(dirName);
+}
+
+
+/**@brief Get the streambuf of either an opened file or of std::cout if outFile is empty
+ *
+ * @param outFile The ofstream to open if needed
+ * @param outFilename The name of the file, leave blank to get std::cout buffer
+ * @param outFileExt The extention for the file
+ * @param overWrite Whether to overwrite the file
+ * @param append Whether to append to the file
+ * @param exitOnFailure Whether if writing fails if the program should throw or just warn
+ * @return A std::streambuf* or either an opened file or of std::cout
+ */
+inline std::streambuf* determineOutBuf(std::ofstream & outFile,
+		const std::string & outFilename, const std::string outFileExt,
+		bool overWrite, bool append, bool exitOnFailure) {
+	if (outFilename != "") {
+		openTextFile(outFile, outFilename, outFileExt, overWrite,
+				append, exitOnFailure);
+		return outFile.rdbuf();
+	} else {
+		return std::cout.rdbuf();
+	}
 }
 
 } // namespace files

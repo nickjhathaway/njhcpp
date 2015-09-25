@@ -15,13 +15,13 @@
 
 namespace bib {
 
-/**@b class for generating a random object from a given vector of objects weighting for their given counts
+/**@brief class for generating a random object from a given vector of objects weighting for their given counts
  *
  */
 template<typename T, typename N>
 class randObjectGen {
 public:
-	/**@b Set up for generating objects evenly
+	/**@brief Set up for generating objects evenly
 	 *
 	 * @param objs The vector of objects to be generating
 	 */
@@ -31,7 +31,7 @@ public:
 		std::random_device rd;
 		mtGen_.seed(rd());
 	}
-	/**@b Set up for generating objects weighting for their counts
+	/**@brief Set up for generating objects weighting for their counts
 	 *
 	 * @param objs The vector of objects to be generating
 	 * @param counts The counts of the objects given, should be the same length as objects
@@ -44,24 +44,24 @@ public:
 		mtGen_.seed(rd());
 	}
 private:
-	/**@b random generator for numbers
+	/**@brief random generator for numbers
 	 *
 	 */
 	std::mt19937_64 mtGen_;
-	/**@b the objects to be generated
+	/**@brief the objects to be generated
 	 *
 	 */
 	std::vector<T> objs_;
-	/**@b the objects counts
+	/**@brief the objects counts
 	 *
 	 */
 	std::vector<N> objCounts_;
-	/**@b the likelihood of the objects given their counts, this will be used to return the randomly generated objects
+	/**@brief the likelihood of the objects given their counts, this will be used to return the randomly generated objects
 	 *
 	 */
 	std::multimap<uint64_t, T, std::less<uint64_t>> likelihoods_;
 public:
-	/**@b return a random objects weighting for counts
+	/**@brief return a random objects weighting for counts
 	 *
 	 * @return A random object
 	 */
@@ -76,7 +76,7 @@ public:
 	  }
 	  return likelihoods_.rbegin()->second;
 	}
-	/**@b generated a given number of objects with replacement
+	/**@brief generated a given number of objects with replacement
 	 *
 	 * @param num The number of objects to generate
 	 * @return The randomly generated objects
@@ -86,7 +86,7 @@ public:
 		std::generate_n(ans.begin(), num, [&]() { return genObj();});
 		return ans;
 	}
-	/**@b function for generated the likihood map that is used to generate the random objects
+	/**@brief function for generated the likihood map that is used to generate the random objects
 	 *
 	 * @param objs The objects to generate
 	 * @param counts The counts of the objects to generate, should be same length as objects vector

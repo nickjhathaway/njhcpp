@@ -14,7 +14,7 @@
 #include "bibcpp/utils/vecUtils.hpp" //catVecs
 namespace bib {
 
-/**@b Get a vector of colors from a vector of hex strings colors
+/**@brief   Get a vector of colors from a vector of hex strings colors
  *
  * @param inColors A vector of hex strings
  * @return A vector of colors for the hex strings
@@ -27,7 +27,7 @@ inline std::vector<color> multipleHexToColor(const std::vector<std::string> & in
 	return outColors;
 }
 
-/**@b Print to out hex strings in a format that can be copied into R
+/**@brief   Print to out hex strings in a format that can be copied into R
  *
  * @param cols The vector of colors
  * @param out the ostream to print the hex color strings to
@@ -39,7 +39,7 @@ inline void printColorsForR(const std::vector<color>& cols, std::ostream & out) 
   }
   out << "\"#" << cols.back().hexStr_ << "\")" << std::endl;
 }
-/**@b Get a string of hex colors in a format to pass to R
+/**@brief   Get a string of hex colors in a format to pass to R
  *
  * @param cols The vector of colors to get the formatted string for R
  * @return The string formated for R
@@ -50,7 +50,7 @@ inline std::string getRStringForColors(const std::vector<color>& cols){
 	return tempStream.str();
 }
 
-/**@b Get colors around the color wheel for the given saturation and luminance
+/**@brief   Get colors around the color wheel for the given saturation and luminance
  *
  * @param sat The saturation value
  * @param lum The luminance value
@@ -68,7 +68,7 @@ inline std::vector<color> evenHuesAll(double sat, double lum, uint32_t number) {
   return cols;
 }
 
-/**@b Get colors around the color wheel between two hues for a given hue and lum
+/**@brief   Get colors around the color wheel between two hues for a given hue and lum
  *
  * @param sat the saturatin
  * @param lum the lum
@@ -87,6 +87,13 @@ inline std::vector<color> evenHuesBetweenTwoInc(double sat, double lum, uint32_t
   return cols;
 }
 
+/**@brief
+ *
+ * @param col1
+ * @param col2
+ * @param colorNum
+ * @return
+ */
 inline std::vector<color> evenHuesInbetweenTwo(const color& col1, const color& col2,
                                         uint32_t colorNum) {
   double firstHue = col1.hue_;
@@ -132,7 +139,7 @@ inline std::vector<color> evenHuesInbetweenTwo(const color& col1, const color& c
   return colsStep;
 }
 
-/**@b Convert a vector of colors to a vector of hex color strings
+/**@brief   Convert a vector of colors to a vector of hex color strings
  *
  * @param cols The colors to convert
  * @return The vector of hex color strings
@@ -175,7 +182,7 @@ inline std::vector<color> getColsBetweenExclude(color first,
 	return std::vector<color>(ret.begin() + 1, ret.end() - 1);
 }
 
-/**@b Get a range of colors that could be used for a heatmap
+/**@brief   Get a range of colors that could be used for a heatmap
  *
  * @param num The number of colors to get
  * @param hueStart
@@ -278,7 +285,7 @@ inline std::vector<std::string> getColorInfo(const color & col, const color & ot
 	}
 }
 
-/**@b Hand selected color range, works well only to about 12 colors or so
+/**@brief   Hand selected color range, works well only to about 12 colors or so
  *
  * @param num The number of colors to get (only gives really distinct colors up to about 12 colors)
  * @param hueStart The start of the hue selection (default 120)
@@ -295,7 +302,7 @@ inline std::vector<color> njhColors(uint32_t num, double hueStart = 120, double 
 	return getColsBetweenInc(hueStart, hueStop, lumStart, lumStop, satStart, satStop, num);
 }
 
-/**@b Get colors from around the color wheel for a vector of strings for a given sat and lum
+/**@brief   Get colors from around the color wheel for a vector of strings for a given sat and lum
  *
  * @param names A vector of strings to match with colors
  * @param sat the saturation for the colors
@@ -314,7 +321,7 @@ inline std::unordered_map<std::string, bib::color> getColorsForNames(
   return ret;
 }
 
-/**@b Get colors from around the color wheel for a vector of strings for a given, hues,stats, and lums
+/**@brief   Get colors from around the color wheel for a vector of strings for a given, hues,stats, and lums
  *
  * @param names  A vector of strings to match with colors
  * @param hueStart

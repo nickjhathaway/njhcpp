@@ -9,9 +9,10 @@
 #include "bibcpp/utils/stringUtils.hpp" //hexToInt() intToHex()
 #include "bibcpp/utils/utils.hpp" //roundDecPlaces()
 #include "bibcpp/stdAddition.h" // to_string()
+#include "bibcpp/jsonUtils/jsonUtils.hpp" // toJson()
 namespace bib {
 
-/**@b A class for handling color manipulation and to output color info
+/**@brief  A class for handling color manipulation and to output color info
  *
  */
 class color {
@@ -52,28 +53,31 @@ class color {
   // rgb values for color, should range from 0 to 1 for level,
   // need to mutliple by 255 out to get the actual rgb values
   // recogized by must programs
-  double red_;/**the red value in [0,1] */
-  double green_;/**the green value in [0,1]  */
-  double blue_;/**the blue value in [0,1]  */
+  double red_;/**< the red value in [0,1] */
+  double green_;/**< the green value in [0,1]  */
+  double blue_;/**< the blue value in [0,1]  */
 
-  double alpha_;/**the alpha value in [0,1]  */
+  double alpha_;/**< the alpha value in [0,1]  */
 
-  double hue_;/**the hue value in [0,360]  */
+  double hue_;/**< the hue value in [0,360]  */
 
-  double vSat_;/**the saturation value in [0,1] for HSV  */
-  double val_;/**the value in [0,1] for HSV */
+  double vSat_;/**< the saturation value in [0,1] for HSV  */
+  double val_;/**< the value in [0,1] for HSV */
 
-  double lSat_;/**the saturation value in [0,1] for HSL */
-  double lum_;/**the lum value in [0,1] for HSL */
+  double lSat_;/**< the saturation value in [0,1] for HSL */
+  double lum_;/**< the lum value in [0,1] for HSL */
 
+  // hex string for colors
+  std::string hexStr_; /**< the hexstring representation of the color */
+
+ private:
   char cMaxChar_;
   // get max, min and change
   double cMax_;
   double cMin_;
   double change_;
 
-  // hex string for colors
-  std::string hexStr_; /**the hexstring representation of the color */
+
   // color maximum and min finders
   double colMax(double r, double g, double b, char& p) {
     if (r >= g && r >= b) {
@@ -127,8 +131,9 @@ class color {
 		devG = gtrans(g, gamma);
 		devB = gtrans(b, gamma);
   }*/
+ public:
   // functions
-  /**@b set the color with red,green,blue values, should range from [0,maxNumber]
+  /**@brief  set the color with red,green,blue values, should range from [0,maxNumber]
    *
    * @param red the red value in [0,maxNumber]
    * @param green the green value in [0,maxNumber]
@@ -155,7 +160,7 @@ class color {
 
     setHueSatLumVal();
   }
-  /**@b set the alpha value with the alpha in [0,maxValue]
+  /**@brief  set the alpha value with the alpha in [0,maxValue]
    *
    * @param alpha
    * @param maxValue
@@ -169,7 +174,7 @@ class color {
   		hexStr_ += intToHex(std::round(alpha_*255));
   	}
   }
-  /**@b set the color using the HSV values
+  /**@brief  set the color using the HSV values
    *
    * @param hue the hue value between [0,360] (hue can overflow but will be converted to [0,360]
    * @param sat the sat value between [0,1]
@@ -221,7 +226,7 @@ class color {
     setMaxMin();
     setLum();
   }
-  /**@b set the color using the HSL values
+  /**@brief  set the color using the HSL values
    *
    * @param hue the hue value between [0,360] (hue can overflow but will be converted to [0,360]
    * @param sat the sat value between [0,1]
@@ -272,7 +277,7 @@ class color {
     setMaxMin();
     setVal();
   }
-  /**@b set the color by giving the values of red, green, and blue with their hex string
+  /**@brief  set the color by giving the values of red, green, and blue with their hex string
    *
    * @param red The hexstring for red
    * @param green The hexstring for green
@@ -286,7 +291,7 @@ class color {
     hexStr_ = red + green + blue;
     setHueSatLumVal();
   }
-  /**@b Set the color by the full hexstring, can 6 or 8 (alpha value included) chars long and can start with # sign
+  /**@brief  Set the color by the full hexstring, can 6 or 8 (alpha value included) chars long and can start with # sign
    *
    * @param hexStr The hexstring
    */
@@ -310,7 +315,7 @@ class color {
       setHueSatLumVal();
     }
   }
-  /**@b set the hue sat and lum vlues for the current red, green, and blue values
+  /**@brief  set the hue sat and lum vlues for the current red, green, and blue values
    *
    */
   void setHueSatLumVal() {
@@ -323,7 +328,7 @@ class color {
     // lum and val calc
     setVal();
   }
-  /**@b set the lum and sat values
+  /**@brief  set the lum and sat values
    *
    */
   void setLum() {
@@ -336,7 +341,7 @@ class color {
       lSat_ = change_ / (1 - std::abs(2 * lum_ - 1));
     }
   }
-  /**@b set the value and sat values
+  /**@brief  set the value and sat values
    *
    */
   void setVal() {
@@ -354,7 +359,7 @@ class color {
     cMin_ = colMin(red_, green_, blue_);
     change_ = cMax_ - cMin_;
   }
-  /**@b calculate hue
+  /**@brief  calculate hue
    *
    */
   void setHue() {
@@ -375,7 +380,7 @@ class color {
       }
     }
   }
-  /**@b get the color in grayscale
+  /**@brief  get the color in grayscale
    *
    * @return the grayscale equivalent for the color
    */
@@ -383,7 +388,7 @@ class color {
     double averageRGB = (red_ + green_ + blue_) / 3;
     return color(averageRGB, averageRGB, averageRGB, 1);
   }
-  /**@b get a made up distance of hsl
+  /**@brief  get a made up distance of hsl
    *
    * @param otherColor the color to calc the distance from
    * @return the distance
@@ -396,30 +401,52 @@ class color {
   	hueDiff = hueDiff/180;
   	return std::sqrt(std::pow(hueDiff ,2) + std::pow(otherColor.lSat_ - lSat_ ,2) + std::pow(otherColor.lum_ - lum_ ,2));
   }
-  /**@b the string value for red,green,blue in [0,255]
+  /**@brief  the string value for red,green,blue in [0,255]
    *
    * @return a string with red,green,blue
    */
   std::string getRGBStr()const{
   	return estd::to_string(std::round(red_ * 255)) + ","
-  			+ estd::to_string(std::round(green_*255)) + ","
-  			+ estd::to_string(std::round(blue_*255));
+  			+ estd::to_string(std::round(green_ * 255)) + ","
+  			+ estd::to_string(std::round(blue_ * 255));
   }
-  /**@b print a description of the
+
+  /**@brief Get a the hex color string
    *
-   * @param out
-   * @param deep
+   * @return String of hex color, starts with #
    */
-  void printDescription(std::ostream& out, bool deep) const {
-    out << "color{" << std::endl << "red_:" << red_ << std::endl
-        << "green_:" << green_ << std::endl << "blue_:" << blue_ << std::endl
-        << "hue_:" << hue_ << std::endl << "vSat_:" << vSat_ << std::endl
-        << "val_:" << val_ << std::endl << "lSat_:" << lSat_ << std::endl
-        << "lum_:" << lum_ << std::endl << "cMaxChar_:" << cMaxChar_
-        << std::endl << "cMax_:" << cMax_ << std::endl << "cMin_:" << cMin_
-        << std::endl << "change_:" << change_ << std::endl
-        << "hexStr_:" << hexStr_ << std::endl << "}" << std::endl;
+  std::string getHexStr()const{
+  	return "#" + hexStr_;
   }
+
+  /**@brief Invert the color
+   *
+   */
+  void invert(){
+  	setColorByRGB(1 - red_, 1 - green_, 1 - blue_, 1, alpha_);
+  }
+
+  /**@brief Get a json representation of this color
+   *
+   * @return A json value with the representation
+   */
+  Json::Value toJson() const {
+  	Json::Value ret;
+  	ret["class"] = "bib::color";
+  	ret["red_"] = json::toJson(red_);
+  	ret["green_"] = json::toJson(green_);
+  	ret["blue_"] = json::toJson(blue_);
+  	ret["alpha_"] = json::toJson(alpha_);
+  	ret["hue_"] = json::toJson(hue_);
+  	ret["vSat_"] = json::toJson(vSat_);
+  	ret["val_"] = json::toJson(val_);
+  	ret["lSat_"] = json::toJson(lSat_);
+  	ret["lum_"] = json::toJson(lum_);
+  	ret["hexStr_"] = json::toJson(hexStr_);
+  	return ret;
+  }
+
+
 };
 
 

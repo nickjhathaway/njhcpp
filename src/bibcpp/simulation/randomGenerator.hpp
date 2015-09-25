@@ -12,43 +12,43 @@
 #include "bibcpp/utils/vecUtils.hpp"
 
 namespace bib {
-/**@b A random generator class that basically just wraps std::mt19937_64 to make generation or random selections a bit easier
+/**@brief A random generator class that basically just wraps std::mt19937_64 to make generation or random selections a bit easier
  *
  */
 class randomGenerator {
 
  public:
-	/**@b default constructor seeds the std::mt19937_64 with a seed from std::random_device
+	/**@brief default constructor seeds the std::mt19937_64 with a seed from std::random_device
 	 *
 	 */
   randomGenerator() {
     seed();
   }
-  /**@b constructor with a specific seed so you can repeat random generations
+  /**@brief constructor with a specific seed so you can repeat random generations
    *
    * @param givenSeed
    */
   randomGenerator(uint64_t givenSeed) {
   	seedNum(givenSeed);
   }
-  /**@b the main work horse of the class that generators the base random numbers needed
+  /**@brief the main work horse of the class that generators the base random numbers needed
    *
    */
   std::mt19937_64 mtGen_;
-  /**@b Generator a random nuber between 0 and 1 in the range [0,1)
+  /**@brief Generator a random nuber between 0 and 1 in the range [0,1)
    *
    * @return a double in [0,1)
    */
   double unifRand() {
   	return mtGen_() /( static_cast<double>(mtGen_.max()) + 1);
   }
-  /**@b Calls unifRand() so you don't have to type the whole thing
+  /**@brief Calls unifRand() so you don't have to type the whole thing
    *
    * @return a double in [0,1)
    */
   double operator()() { return unifRand(); }
 
-  /**@b Get a vector of doubles in [0,1)
+  /**@brief Get a vector of doubles in [0,1)
    *
    * @param num The number of random numbers to generate
    * @return A vector of double in [0,1)
@@ -59,7 +59,7 @@ class randomGenerator {
     	return unifRand();} );
     return ret;
   }
-  /**@b Generator numbers in [start,stop), templated so integers or double can be used
+  /**@brief Generator numbers in [start,stop), templated so integers or double can be used
    *
    * @param start The start of the range inclusive
    * @param stop The end of the range, exclusive
@@ -69,7 +69,7 @@ class randomGenerator {
   T unifRand(T start, T stop) {
     return static_cast<T>((stop - start) * unifRand()) + start;
   }
-  /**@b Get a vector of random numbers in [start,stop)
+  /**@brief Get a vector of random numbers in [start,stop)
    *
    * @param start The start of the range inclusive
    * @param stop The end of the range exclusive
@@ -82,7 +82,7 @@ class randomGenerator {
     std::generate_n(ret.begin(), num, [&]() { return unifRand(start, stop); });
     return ret;
   }
-  /**@b A vector of vectors of random numbers in [start,stop)
+  /**@brief A vector of vectors of random numbers in [start,stop)
    *
    * @param start The start of the range inclusive
    * @param stop The end of the range exclusive
@@ -97,7 +97,7 @@ class randomGenerator {
   	std::generate(ret.begin(), ret.end(),[&](){ return unifRandVector<T>(start,stop,subNum);} );
     return ret;
   }
-  /**@b Get a random selection from a vector of objects
+  /**@brief Get a random selection from a vector of objects
    *
    * @param vec The vector to sample from
    * @return A random selection from vec
@@ -106,7 +106,7 @@ class randomGenerator {
   T unifRandSelection(const std::vector<T> & vec) {
     return vec[unifRand<uint64_t>(0,vec.size())];
   }
-  /**@b Randomly sample form from a vector
+  /**@brief Randomly sample form from a vector
    *
    * @param vec the vector from which to sample
    * @param amt The number of samples to take
@@ -140,14 +140,14 @@ class randomGenerator {
     return ret;
   }
 
-  /**@b seed mtGen_ with a new seed from random_device
+  /**@brief seed mtGen_ with a new seed from random_device
    *
    */
   void seed() {
     std::random_device rd;
     mtGen_.seed(rd());
   }
-  /**@b seed mtGen_ with the given seed
+  /**@brief seed mtGen_ with the given seed
    *
    * @param givenSeed
    */

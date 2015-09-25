@@ -10,14 +10,18 @@
 #include <unordered_map>
 #include <bibcpp/graphics/color.hpp>
 namespace bib{
+
+/**@brief Namespace to hold color constants
+ */
 namespace colorspace{
 
 
-//static std::unordered_map <char, uint32_t> lettersToAnsiCoode ;
-//static std::unordered_map <std::string, color> colorNameToColor;
-//static std::unordered_map <uint32_t, color> ansiColorCodeToColor;
 
 
+/**@brief Func to return a hand crafted conversion of letters to color codes
+ *
+ * @return An unordered_map of char to color code
+ */
 inline std::unordered_map <char, uint32_t> createLettersToAnsiCoode() {
 		return  { {'A',160},
 			{	'B',178},
@@ -75,6 +79,10 @@ inline std::unordered_map <char, uint32_t> createLettersToAnsiCoode() {
 		//return ret;
 }
 
+/**@brief Func to create bib::color objects for all ansi color codes
+ *
+ * @return An unordered_map with color code to bib::color class for that color code
+ */
 inline std::unordered_map <uint32_t, color> createAnsiColorCodeToColor() {
 	std::vector<uint32_t> nums {0,95,135,175, 215, 255};
 	uint32_t ansi = 16;
@@ -90,20 +98,6 @@ inline std::unordered_map <uint32_t, color> createAnsiColorCodeToColor() {
 	return ret;
 }
 
-
-/*
-inline std::unordered_map <char, uint32_t> & getLettersToAnsiCode(){
-	populateLettersToAnsiCoode();
-	return lettersToAnsiCoode;
-}
-inline std::unordered_map <std::string, color> & getColorNameToColor(){
-	populateColorNameToColor();
-	return colorNameToColor;
-}
-inline std::unordered_map <uint32_t, color> & getAnsiColorCodeToColor(){
-	populateAnsiColorCodeToColor();
-	return ansiColorCodeToColor;
-}*/
 
 } //namespace colorspace
 } //namespace bib

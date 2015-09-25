@@ -124,17 +124,17 @@ class commandLineArguments {
       return false;
     }
   }
-  // int16_t
-  /** @brief Set option for setting int16_t options
+  // short (int16_t)
+  /** @brief Set option for setting short options
    * Set given option to the output of std::stoi of value associated with the
    *given flag
    *
-   * @param option Reference to int16_t option to be set
+   * @param option Reference to short option to be set
    * @param flag The flag to be searched for for current option
    * @return Bool, true if flag is present or false if flag is absent, search is
    *case insensitive
    */
-  bool lookForOption(int16_t& option, const std::string& flag) {
+  bool lookForOption(short& option, const std::string& flag) {
     if (containsFlagCaseInsensitive(flag)) {
       option = estd::stos(lowerCaseGetArguments(flag));
       return true;
@@ -142,17 +142,17 @@ class commandLineArguments {
       return false;
     }
   }
-  // int32_t
-  /** @brief Set option for setting int32_t options
+  // int (int32_t)
+  /** @brief Set option for setting int options
    * Set given option to the output of std::stoi of value associated with the
    *given flag
    *
-   * @param option Reference to int32_t option to be set
+   * @param option Reference to int option to be set
    * @param flag The flag to be searched for for current option
    * @return Bool, true if flag is present or false if flag is absent, search is
    *case insensitive
    */
-  bool lookForOption(int32_t& option, const std::string& flag) {
+  bool lookForOption(int& option, const std::string& flag) {
     if (containsFlagCaseInsensitive(flag)) {
       option = std::stoi(lowerCaseGetArguments(flag));
       return true;
@@ -160,17 +160,36 @@ class commandLineArguments {
       return false;
     }
   }
-  // int64_t
-  /** @brief Set option for setting int64_t options
+  // long (int64_t depending on system/lib)
+  /** @brief Set option for setting long options
    * Set given option to the output of std::stol of value associated with the
    *given flag
    *
-   * @param option Reference to int64_t option to be set
+   * @param option Reference to long option to be set
    * @param flag The flag to be searched for for current option
    * @return Bool, true if flag is present or false if flag is absent, search is
    *case insensitive
    */
-  bool lookForOption(int64_t& option, const std::string& flag) {
+  bool lookForOption(long & option, const std::string& flag) {
+    if (containsFlagCaseInsensitive(flag)) {
+      option = std::stol(lowerCaseGetArguments(flag));
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  // long long (int64_t depending on system/lib)
+  /** @brief Set option for setting long long options
+   * Set given option to the output of std::stol of value associated with the
+   *given flag
+   *
+   * @param option Reference to long long option to be set
+   * @param flag The flag to be searched for for current option
+   * @return Bool, true if flag is present or false if flag is absent, search is
+   *case insensitive
+   */
+  bool lookForOption(long long& option, const std::string& flag) {
     if (containsFlagCaseInsensitive(flag)) {
       option = std::stoll(lowerCaseGetArguments(flag));
       return true;
@@ -178,17 +197,17 @@ class commandLineArguments {
       return false;
     }
   }
-  // uint16_t
-  /** @brief Set option for setting uint16_t options
+  // unsigned short (uint16_t)
+  /** @brief Set option for setting unsigned short options
    * Set given option to the output of std::stoull of value associated with the
    *given flag
    *
-   * @param option Reference to uint16_t option to be set
+   * @param option Reference to unsigned short option to be set
    * @param flag The flag to be searched for for current option
    * @return Bool, true if flag is present or false if flag is absent, search is
    *case insensitive
    */
-  bool lookForOption(uint16_t& option, const std::string& flag) {
+  bool lookForOption(unsigned short& option, const std::string& flag) {
     if (containsFlagCaseInsensitive(flag)) {
       option = estd::stous(lowerCaseGetArguments(flag));
       return true;
@@ -196,17 +215,17 @@ class commandLineArguments {
       return false;
     }
   }
-  // uint32_t
-  /** @brief Set option for setting uint32_t options
+  // unsigned int (uint32_t)
+  /** @brief Set option for setting unsigned int options
    * Set given option to the output of own version of std::stou of value
    *associated with the given flag
    *
-   * @param option Reference to uint32_t option to be set
+   * @param option Reference to unsigned int option to be set
    * @param flag The flag to be searched for for current option
    * @return Bool, true if flag is present or false if flag is absent, search is
    *case insensitive
    */
-  bool lookForOption(uint32_t& option, const std::string& flag) {
+  bool lookForOption(unsigned int& option, const std::string& flag) {
     if (containsFlagCaseInsensitive(flag)) {
       option = estd::stou(lowerCaseGetArguments(flag));
       return true;
@@ -214,27 +233,8 @@ class commandLineArguments {
       return false;
     }
   }
-  // uint64_t
-  /** @brief Set option for setting uint64_t options
-   * Set given option to the output of own version of std::stoull of value
-   *associated with the given flag
-   *
-   * @param option Reference to uint64_t option to be set
-   * @param flag The flag to be searched for for current option
-   * @return Bool, true if flag is present or false if flag is absent, search is
-   *case insensitive
-   */
-  bool lookForOption(uint64_t& option, const std::string& flag) {
-    if (containsFlagCaseInsensitive(flag)) {
-      option = std::stoull(lowerCaseGetArguments(flag));
-      return true;
-    } else {
-      return false;
-    }
-  }
-#ifndef __linux__
-  // size_t
-  /** @brief Set option for setting size_t options
+  // unsigned long (size_t and on some systems/libs uint64_t)
+  /** @brief Set option for setting unsigned long options
    * Set given option to the output of std::stoul of value associated with the
    *given flag
    *
@@ -243,7 +243,26 @@ class commandLineArguments {
    * @return Bool, true if flag is present or false if flag is absent, search is
    *case insensitive
    */
-  bool lookForOption(size_t& option, const std::string& flag) {
+  bool lookForOption(unsigned long& option, const std::string& flag) {
+    if (containsFlagCaseInsensitive(flag)) {
+      option = std::stoul(lowerCaseGetArguments(flag));
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  // unsigned long long (uint64_t depending on the system/lib)
+  /** @brief Set option for setting unsigned long long options
+   * Set given option to the output of own version of std::stoull of value
+   *associated with the given flag
+   *
+   * @param option Reference to unsigned long long option to be set
+   * @param flag The flag to be searched for for current option
+   * @return Bool, true if flag is present or false if flag is absent, search is
+   *case insensitive
+   */
+  bool lookForOption(unsigned long long& option, const std::string& flag) {
     if (containsFlagCaseInsensitive(flag)) {
       option = std::stoull(lowerCaseGetArguments(flag));
       return true;
@@ -251,7 +270,6 @@ class commandLineArguments {
       return false;
     }
   }
-#endif
   // double
   /** @brief Set option for setting double options
    * Set given option to the output of std::stod of value associated with the

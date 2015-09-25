@@ -12,7 +12,7 @@
 #include <algorithm>
 
 namespace bib {
-/**@b Get a sub-selection of a vector similar to std::string's substr
+/**@brief Get a sub-selection of a vector similar to std::string's substr
  *
  * @param vec the vector to get a subsection from
  * @param start the start of the subsection
@@ -27,7 +27,7 @@ std::vector<T> getSubVector(const std::vector<T>& vec, uint32_t start,
   return ret;
 }
 
-/**@b Get a sub-selection of a vector similar to std::string's substr
+/**@brief Get a sub-selection of a vector similar to std::string's substr
  *
  * @param vec the vector to get a subsection from
  * @param start the start of the subsection
@@ -40,7 +40,7 @@ std::vector<T> getSubVector(const std::vector<T>& vec, uint32_t start) {
   return ret;
 }
 
-/**@b Combine two vectors
+/**@brief Combine two vectors
  *
  * @param vec1 First vector
  * @param vec2 Second vector

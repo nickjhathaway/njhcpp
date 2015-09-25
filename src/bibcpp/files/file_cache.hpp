@@ -13,15 +13,15 @@ namespace bib {
 namespace bfs = boost::filesystem;
 namespace sch = std::chrono;
 
-/**@b A file object that holds the contents of a file and updates the contents if the file changed since the last time it was read
+/**@brief A file object that holds the contents of a file and updates the contents if the file changed since the last time it was read
  *
  */
 class FileCache {
 private:
-	const bfs::path fnp_; /**the file path */
-	std::string content_; /**the file content */
-	sch::time_point<sch::system_clock> time_; /**time last read */
-	/**@b Load the content of the file and log the time the file was last edited
+	const bfs::path fnp_; /**< the file path */
+	std::string content_; /**< the file content */
+	sch::time_point<sch::system_clock> time_; /**< time last read */
+	/**@brief Load the content of the file and log the time the file was last edited
 	 *
 	 */
 	void load() {
@@ -30,14 +30,14 @@ private:
 	}
 
 public:
-	/**@b empty constructor
+	/**@brief empty constructor
 	 * @todo should add some safetly to make sure a file path gets set before load is called
 	 */
 	FileCache() :
 			fnp_("") {
 		//load();
 	}
-	/**@b constructor with the content of the file
+	/**@brief constructor with the content of the file
 	 *
 	 * @param fnp The file path of the file to be stored
 	 */
@@ -45,7 +45,7 @@ public:
 			fnp_(fnp) {
 		load();
 	}
-	/**@b Copy constructor
+	/**@brief Copy constructor
 	 *
 	 * @param other
 	 */
@@ -53,7 +53,7 @@ public:
 			fnp_(other.fnp_) {
 		load();
 	}
-	/**@b Get the content of the file and update as needed
+	/**@brief Get the content of the file and update as needed
 	 *
 	 * @return the current content of the file
 	 */
@@ -61,7 +61,7 @@ public:
 		update();
 		return content_;
 	}
-	/**@b Get the content of the file and update as needed and make a replacement of parts of the file
+	/**@brief Get the content of the file and update as needed and make a replacement of parts of the file
 	 *
 	 * @param replace The string to replace in the file
 	 * @param replacement The replacement for the file
@@ -72,14 +72,14 @@ public:
 		update(replace, replacement);
 		return content_;
 	}
-	/**@b Check to see if the file has changed since
+	/**@brief Check to see if the file has changed since
 	 *
 	 * @return
 	 */
 	bool needsUpdate() const {
 		return time_ != files::last_write_time(fnp_);
 	}
-	/**@b For replacing the parts of the file content with a replacement str
+	/**@brief For replacing the parts of the file content with a replacement str
 	 *
 	 * @param replace The string to replace in the file
 	 * @param replacement The replacement for the file
@@ -87,7 +87,7 @@ public:
 	void replaceStr(const std::string & replace, const std::string & replacement){
 		content_ = replaceString(content_, replace, replacement);
 	}
-	/**@b Update file and return whether the file had to be
+	/**@brief Update file and return whether the file had to be
 	 *
 	 * @return Whether the file needed to be updated
 	 */
@@ -98,7 +98,7 @@ public:
 		}
 		return false;
 	}
-	/**@b Update file and return whether the file had to be, also do a string replacement on the file
+	/**@brief Update file and return whether the file had to be, also do a string replacement on the file
 	 *
 	 * @param replace The string to replace in the file
 	 * @param replacement The replacement for the file
@@ -116,14 +116,14 @@ public:
 
 };
 
-/**@b A class for holding multiple file caches
+/**@brief A class for holding multiple file caches
  *
  */
 class FilesCache {
 private:
-	std::vector<FileCache> files_; /**The multiple caches */
-	std::string content_; /**The content */
-	/**@b Load any of the files that need to be reloaded
+	std::vector<FileCache> files_; /**< The multiple caches */
+	std::string content_; /**< The content */
+	/**@brief Load any of the files that need to be reloaded
 	 *
 	 */
 	void load() {
@@ -134,7 +134,7 @@ private:
 		content_ = ss.str();
 	}
 public:
-	/**@b Constructor with all the files given
+	/**@brief Constructor with all the files given
 	 *
 	 * @param fnps The files to cache
 	 */
@@ -144,7 +144,7 @@ public:
 		}
 		load();
 	}
-	/**@b Get the cache and check to see if any of the files needed to be updated
+	/**@brief Get the cache and check to see if any of the files needed to be updated
 	 *
 	 * @return The cache of all the files
 	 */
@@ -160,7 +160,7 @@ public:
 		}
 		return content_;
 	}
-	/**@b Get the cache and check to see if any of the files needed to be updated, doing a replacement on files
+	/**@brief Get the cache and check to see if any of the files needed to be updated, doing a replacement on files
 	 *
 	 * @param replace The string to replace in the file
 	 * @param replacement The replacement for the file
