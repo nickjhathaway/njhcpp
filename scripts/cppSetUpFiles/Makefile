@@ -1,5 +1,8 @@
 
 ROOT = $(realpath ./)
+ifdef CXXFLAGS 
+	ENV_CXXFLAGS := $(CXXFLAGS)
+endif
 ifneq (,$(wildcard compfile.mk))
 COMPFILE=compfile.mk
 endif
@@ -34,9 +37,13 @@ SOLIB = $(addprefix $(addsuffix $(LIBNAME), $(LIB_DIR)/), .so)
 .PHONY: moveHeaders
 .PHONY: unitTest
 
+## unit tert dir 
+TESTDIR=test
+
 ###compiler options
-COMMON = $(CXXFLAGS) $(CXXOPT) $(COMLIBS)
+CXXFLAGS += $(ENV_CXXFLAGS)
 #CXXFLAGS += -Wno-missing-braces
+COMMON = $(CXXFLAGS) $(CXXOPT) $(COMLIBS)
 
 ############ default for calling make with no arguments
 all: do_preReqs $(OBJ_DIR) $(BIN) 
@@ -134,9 +141,6 @@ moveHeaders: $(INSTALL_DIR)
 
 ### Run unit tests if available
 unitTest: 
-	scripts/setUpScripts/runUnitTest.sh $(COMPFILE) $(NCORETEST)
+	scripts/setUpScripts/runUnitTest.sh
 	
 
-
-
-	

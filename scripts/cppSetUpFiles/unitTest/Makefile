@@ -1,5 +1,7 @@
 ROOT = $(realpath ../)
-
+ifdef CXXFLAGS 
+	ENV_CXXFLAGS := $(CXXFLAGS)
+endif
 ### compfile should be be in the make command e.g. make COMPFILE=../compfile.mk
 ### or it is assumed to be 
 ifneq (,$(wildcard ../compfile.mk))
@@ -31,6 +33,7 @@ HEADERS = $(call rwildcard, $(SRCSRC), *.h) \
 
 
 #compiler options
+CXXFLAGS += $(ENV_CXXFLAGS)
 COMMON = -I$(SRCSRC) $(CXXFLAGS) $(CXXOPT) $(COMLIBS)
 
 
