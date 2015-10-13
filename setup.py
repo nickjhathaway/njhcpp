@@ -493,7 +493,7 @@ make COMPFILE=compfile.mk -j {num_cores}
     def __buildFromGit(self, i, cmd):
         if os.path.exists(i.build_dir):
             print "pulling from {url}".format(url=i.url)
-            pCmd = "git pull"
+            pCmd = "git checkout master && git pull"
             try:
                 Utils.run_in_dir(pCmd, i.build_dir)
             except:
@@ -517,7 +517,7 @@ make COMPFILE=compfile.mk -j {num_cores}
     def __buildFromGitBranch(self, i, cmd, branchName):
         if os.path.exists(i.build_dir):
             print "pulling from {url}".format(url=i.url)
-            pCmd = "git pull"
+            pCmd = "git checkout master && git pull && git checkout " + branchName
             try:
                 Utils.run_in_dir(pCmd, i.build_dir)
             except:
@@ -541,7 +541,7 @@ make COMPFILE=compfile.mk -j {num_cores}
     def __buildFromGitTag(self, i, cmd, tagName):
         if os.path.exists(i.build_dir):
             print "pulling from {url}".format(url=i.url)
-            pCmd = "git pull"
+            pCmd = "git checkout master && git pull && git checkout " + tagName
             try:
                 Utils.run_in_dir(pCmd, i.build_dir)
             except:
