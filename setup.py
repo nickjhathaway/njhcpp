@@ -493,11 +493,11 @@ make COMPFILE=compfile.mk -j {num_cores}
     def __buildFromGit(self, i, cmd):
         if os.path.exists(i.build_dir):
             print "pulling from {url}".format(url=i.url)
-            print "failed to pull from {url} with {cmd}".format(url=i.url, cmd = pCmd)
+            pCmd = "git checkout master && git pull"
             try:
                 Utils.run_in_dir(pCmd, i.build_dir)
             except:
-                print "failed to pull from {url}".format(url=i.url)
+                print "failed to pull from {url} with {cmd}".format(url=i.url, cmd = pCmd)
                 sys.exit(1)
         else:
             print "cloning from {url}".format(url=i.url)
