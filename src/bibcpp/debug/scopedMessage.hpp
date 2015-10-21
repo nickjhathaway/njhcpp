@@ -10,12 +10,12 @@
 
 namespace bib {
 
-/**@b A class that prints a message at construction and a message at destrction for debuging purposes
+/**@brief A class that prints a message at construction and a message at deconstruction for debuging purposes
  *
  */
 class scopedMessage {
 public:
-	/**@b Constructor with start and end message
+	/**@brief Constructor with start and end message
 	 *
 	 * @param start The message at the start
 	 * @param end The message at the destruction
@@ -28,7 +28,7 @@ public:
 					endMessage_(end), out_(out), debug_(debug) {
 		if(debug_) out_ << bib::bashCT::green << startMessage_ << bib::bashCT::reset << std::endl;
 	}
-	/**@b Constructor with start message and end message is start_end message
+	/**@brief Constructor with start message and end message is start_end message
 	 *
 	 * @param start The start message
 	 * @param out Where to print messages
@@ -41,12 +41,12 @@ public:
 	}
 
 	//members
-	std::string startMessage_; /**Start Message */
-	std::string endMessage_; /**End Message */
-	std::ostream & out_; /**Where to print messages */
-	bool debug_; /**Debug flag to turn off printing  */
+	std::string startMessage_; /**< Start Message */
+	std::string endMessage_; /**< End Message */
+	std::ostream & out_; /**< Where to print messages */
+	bool debug_; /**< Debug flag to turn off printing  */
 	//destructor, print the end message for when the obj goes out of scope
-	/**@b destructor with print message
+	/**@brief destructor with print message
 	 *
 	 */
 	~scopedMessage(){

@@ -9,6 +9,7 @@
 
 #include "bibcpp/utils.h"
 #include "bibcpp/progutils/programSetUp.hpp"
+#include "bibcpp/system/sysUtils.hpp"
 #include <thread>
 namespace bib{
 namespace progutils {
@@ -46,11 +47,11 @@ class programRunner {
   const std::map<std::string, funcInfo> cmdToFunc_;
 
  public:
-  /** Name of master program that holds the sub-programs
+  /**@brief Name of master program that holds the sub-programs
    *
    */
   const std::string nameOfProgram_;
-  /**Constructor with map of funcInfo structs holding the sub programs and the
+  /**@brief Constructor with map of funcInfo structs holding the sub programs and the
    *name of the master program
    *
    */
@@ -81,13 +82,11 @@ class programRunner {
     commands["-program"] = strToLowerRet(argv[1]);
     commands["-commandline"] = commandLine.str();
 
-    if (commands["-program"] == "massrunwithending" ||
-        commands["-program"] == "batch") {
-      return massRunWithEnding(commands);
+    if (commands["-program"] == "batch") {
+      return batchRun(commands);
     }
-    if (commands["-program"] == "massrunwithendingthreaded" ||
-        commands["-program"] == "batchthreaded") {
-      return massRunWithEndingThreaded(commands);
+    if (commands["-program"] == "batchthreaded") {
+      return batchRunThreaded(commands);
     }
     if (strAllDigits(commands["-program"])) {
       return runByNumber(commands["-program"], commands);
@@ -95,11 +94,11 @@ class programRunner {
     return runProgram(commands);
   }
   /** @brief Give a map of string string pairs of arguments for the program
-   *runing
+   *running where first member is flag and second member is argument
    *
    * @param inputCommands A map of string pairs, key is flag and value is flag
    *associated value
-   * @return An int indicating succes of running the program
+   * @return An int indicating success of running the program
    */
   virtual int runProgram(std::map<std::string, std::string> inputCommands) const {
     if (containsProgram(inputCommands["-program"])) {
@@ -184,11 +183,28 @@ class programRunner {
    * @return int indicating run success
    *
    */
-  virtual int massRunWithEnding(std::map<std::string, std::string> inputCommands) {
-    std::string ending = "", program = "";
+  virtual int batchRun(std::map<std::string, std::string> inputCommands) {
+    std::vector<std::string> batchFlags{"-ending","-pattern", "-program", "batch"};
+    std::string ending = "", program = "", pattern = "";
     programSetUp setUp(inputCommands);
-    setUp.setOption(ending, "-ending", "FileEnding", true);
+    bool endFlag = setUp.setOption(ending , "-ending", "A file extention to run batch commands on", false);
+    setUp.setOption(pattern, "-pattern", "File Pattern to run batch command", !endFlag);
+
     setUp.setOption(program, "-run", "ProgramToRun", true);
+    if(setUp.gettingFlags_){
+    	std::cout << bashCT::boldGreen("Batch") << bashCT::boldBlack(" Commands") << std::endl;
+    	setUp.printFlags(std::cout);
+    	if(program != ""){
+        for(const auto & flag : batchFlags){
+        	inputCommands.erase(flag);
+        }
+        auto currentCommands = inputCommands;
+      	currentCommands["-program"] = strToLowerRet(program);
+      	std::cout << bashCT::boldGreen(program) << bashCT::boldBlack(" Commands") << std::endl;
+        runProgram(currentCommands);
+    	}
+    	exit(1);
+    }
     setUp.printWarnings(std::cout);
     if (setUp.failed_) {
       exit(1);
@@ -198,29 +214,29 @@ class programRunner {
     // create run log
     std::ofstream runLog;
     std::string nameOfRunLog =
-        "massRunLog_" + inputCommands["-run"] + "_" + getCurrentDate() + ".txt";
+        "batchRunLog_" + inputCommands["-run"] + "_" + getCurrentDate() + ".txt";
     files::openTextFile(runLog, nameOfRunLog, ".txt", overWrite, exitOnFailureToWrite);
     runLog << "Ran " << getCurrentDate() << std::endl;
     runLog << inputCommands.find("-commandline")->second << std::endl;
-    // erase the massRunWithEnding flags to remove
-    inputCommands.erase("-ending");
-    inputCommands.erase("-program");
-    inputCommands.erase("massrunwithending");
-    inputCommands.erase("batch");
-    // gather the neccessary files
-    auto allFiles = files::listAllFiles(".", false, std::vector<std::string>{});
-    std::vector<files::bfs::path> specificFiles;
-    for (const auto &file : allFiles) {
-      if (file.first.string().size() > ending.size()) {
-        if (file.first.string().substr(file.first.string().size() - ending.size(),
-                              ending.size()) == ending) {
-          specificFiles.emplace_back(file.first);
-        }
-      }
+    // erase the batchRun flags to remove
+
+    for(const auto & flag : batchFlags){
+    	inputCommands.erase(flag);
     }
+    // gather the necessary files
+    if(endFlag){
+    	pattern = ".*" + ending;
+    }
+    std::vector<files::bfs::path> specificFiles;
+  	auto allFiles = bib::files::filesInFolder(".");
+  	for(const auto & f : allFiles){
+  		if(std::regex_match(f.filename().string(),std::regex{pattern})){
+  			specificFiles.emplace_back(f);
+  		}
+  	}
     // run the command on each file
     for (const auto &file : specificFiles) {
-      if (containsSubString(file.string(), "massRunLog")) {
+      if (containsSubString(file.string(), "batchRunLog")) {
         continue;
       }
       std::map<std::string, std::string> currentCommands = inputCommands;
@@ -253,7 +269,10 @@ class programRunner {
       std::cout << std::endl;
       // run the current command
       // std::cout<<currentCommands["-program"]<<std::endl;
+      stopWatch watch;
       runProgram(currentCommands);
+      std::cout << "Current Command Run Time: " << watch.totalTimeFormatted(6) << std::endl;
+      runLog << "Current Command Run Time: " << watch.totalTimeFormatted(6) << std::endl;
       std::cout << std::endl;
     }
     setUp.logRunTime(runLog);
@@ -269,13 +288,29 @@ class programRunner {
    * @return int indicating run success
    *
    */
-  virtual int massRunWithEndingThreaded(std::map<std::string, std::string> inputCommands) {
-    std::string ending = "", program = "";
+  virtual int batchRunThreaded(std::map<std::string, std::string> inputCommands) {
+    std::vector<std::string> batchFlags{"-ending","-pattern", "-program", "batchthreaded", "-numthreads"};
+    std::string ending = "", program = "",pattern = "";
     programSetUp setUp(inputCommands);
-    setUp.setOption(ending, "-ending", "FileEnding", true);
+    bool endFlag = setUp.setOption(ending , "-ending", "A file extention to run batch commands on", false);
+    setUp.setOption(pattern, "-pattern", "File Pattern to run batch command", !endFlag);
     setUp.setOption(program, "-run", "ProgramToRun", true);
     uint32_t numThreads = 2;
-    setUp.setOption(numThreads, "-numThreads,-threads", "numThreads");
+    setUp.setOption(numThreads, "-numThreads", "numThreads");
+    if(setUp.gettingFlags_){
+    	std::cout << bashCT::boldGreen("Batch") << bashCT::boldBlack(" Commands") << std::endl;
+    	setUp.printFlags(std::cout);
+    	if(program != ""){
+        for(const auto & flag : batchFlags){
+        	inputCommands.erase(flag);
+        }
+        auto currentCommands = inputCommands;
+      	currentCommands["-program"] = strToLowerRet(program);
+      	std::cout << bashCT::boldGreen(program) << bashCT::boldBlack(" Commands") << std::endl;
+        runProgram(currentCommands);
+    	}
+    	exit(1);
+    }
     setUp.printWarnings(std::cout);
     if (setUp.failed_) {
       exit(1);
@@ -285,39 +320,30 @@ class programRunner {
     // create run log
     std::ofstream runLog;
     std::string nameOfRunLog =
-        "massRunLog_" + inputCommands["-run"] + "_" + getCurrentDate() + ".txt";
+        "batchRunLog_" + inputCommands["-run"] + "_" + getCurrentDate() + ".txt";
     files::openTextFile(runLog, nameOfRunLog, ".txt", overWrite, exitOnFailureToWrite);
     runLog << "Ran " << getCurrentDate() << std::endl;
     runLog << inputCommands.find("-commandline")->second << std::endl;
-    // erase the massRunWithEnding flags to remove
-    inputCommands.erase("-ending");
-    inputCommands.erase("-program");
-    inputCommands.erase("massrunwithendingthreaded");
-    inputCommands.erase("batchthreaded");
-    if (inputCommands.find("-numThreads") != inputCommands.end()) {
-      inputCommands.erase("-numThreads");
-    }
-    if (inputCommands.find("-numthreads") != inputCommands.end()) {
-      inputCommands.erase("-numthreads");
-    }
-    if (inputCommands.find("-threads") != inputCommands.end()) {
-      inputCommands.erase("-threads");
+    // erase the batchRun flags to remove
+
+    for(const auto & flag : batchFlags){
+    	inputCommands.erase(flag);
     }
     // gather the necessary files
-    auto allFiles = files::listAllFiles(".", false, std::vector<std::string>{});
-    std::vector<files::bfs::path> specificFiles;
-    for (const auto &file : allFiles) {
-      if (file.first.string().size() > ending.size()) {
-        if (file.first.string().substr(file.first.string().size() - ending.size(),
-                              ending.size()) == ending) {
-          specificFiles.emplace_back(file.first);
-        }
-      }
+    if(endFlag){
+    	pattern = ".*" + ending;
     }
+    std::vector<files::bfs::path> specificFiles;
+  	auto allFiles = bib::files::filesInFolder(".");
+  	for(const auto & f : allFiles){
+  		if(std::regex_match(f.filename().string(),std::regex{pattern})){
+  			specificFiles.emplace_back(f);
+  		}
+  	}
     // run the command on each file
     std::vector<std::map<std::string, std::string>> allCommands;
     for (const auto &file : specificFiles) {
-      if (containsSubString(file.string(), "massRunLog")) {
+      if (containsSubString(file.string(), "batchRunLog")) {
         continue;
       }
       std::map<std::string, std::string> currentCommands = inputCommands;
@@ -343,41 +369,26 @@ class programRunner {
       currentCommands["-commandline"] = currentCommandLine.str();
       // set the program to be run
       currentCommands["-program"] = strToLowerRet(program);
-      // log current run command
-      std::cout << currentCommands["-commandline"] << std::endl;
-      // runLog << currentCommands["-commandline"] << std::endl;
-      // setUp.logRunTime(runLog);
-      setUp.logRunTime(std::cout);
-      std::cout << std::endl;
-      // run the current command
-      // std::cout<<currentCommands["-program"]<<std::endl;
-      // runProgram(currentCommands);
       allCommands.emplace_back(currentCommands);
-      std::cout << std::endl;
     }
-
-    std::vector<std::vector<std::map<std::string, std::string>>> splitCommands(numThreads);
-    uint32_t comPos = 0;
-    while (comPos < allCommands.size()) {
-      uint32_t tNum = 0;
-      while (tNum < numThreads && comPos < allCommands.size()) {
-        splitCommands[tNum].emplace_back(allCommands[comPos]);
-        ++tNum;
-        ++comPos;
-      }
-    }
-    std::vector<std::thread> threads;
-    for (uint32_t t = 0; t < numThreads; ++t) {
-      threads.emplace_back(
-          std::thread(
-          		[&](std::vector<std::map<std::string, std::string>> coms) {
-      						runProgram(coms);
-      						},
-                      splitCommands[t]));
-    }
-    for (auto &t : threads) {
-      t.join();
-    }
+  	auto pool = std::make_shared<sys::CmdPool<std::map<std::string, std::string>>>(allCommands);
+  	std::vector<std::thread> threads;
+  	for (uint32_t t = 0; t < numThreads; ++t) {
+  		threads.emplace_back(std::thread([this](const std::shared_ptr<sys::CmdPool<std::map<std::string, std::string>>> & pool) {
+				bool running = true;
+				while(running) {
+					auto currentCmd = pool->getCmd();
+					if(currentCmd.valid_) {
+						runProgram(currentCmd.cmd_);
+					} else {
+						running = false;
+					}
+				}
+			}, std::cref(pool)));
+  	}
+  	for (auto &t : threads) {
+  		t.join();
+  	}
     setUp.logRunTime(runLog);
     setUp.logRunTime(std::cout);
     return 0;

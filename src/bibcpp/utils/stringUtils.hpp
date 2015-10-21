@@ -17,7 +17,7 @@
 #include "bibcpp/stdAddition.h" //estd::to_string
 
 namespace bib {
-/**@b Take a container and change it into a delimited string
+/**@brief Take a container and change it into a delimited string
  *
  * @param con Container of values
  * @param delim The delimiter to use for output
@@ -37,7 +37,7 @@ std::string conToStr(const Container& con,
   return ret;
 }
 
-/**@b Check to see if a string contains substrings of interest
+/**@brief Check to see if a string contains substrings of interest
  *
  * @param str The string to search
  * @param contains The substrings to search for
@@ -53,7 +53,7 @@ inline bool checkForSubStrs(const std::string & str,
 	return true;
 }
 
-/**@b Check a string for several regex patterns
+/**@brief Check a string for several regex patterns
  *
  * @param str The string to check
  * @param contains The regex patterns to search for
@@ -69,7 +69,7 @@ inline bool checkForPats(const std::string & str,
 	return true;
 }
 
-/**@b Check a string for several regex patterns and return false if the string contains any of them
+/**@brief Check a string for several regex patterns and return false if the string contains any of them
  *
  * @param str The string to check
  * @param contains The regex patterns to search for
@@ -87,7 +87,7 @@ inline bool checkForPatsExclude(const std::string & str,
 
 
 
-/**@b Pad a number so that it sorts well with the rest of the numbers
+/**@brief Pad a number so that it sorts well with the rest of the numbers
  *
  * @param num The number to pad
  * @param highestNumber The highest number from the collectio that num belongs to, to determine how much to pad
@@ -107,7 +107,7 @@ std::string leftPadNumStr(T num, T highestNumber = 10) {
   return ret.str();
 }
 
-/**@b return a vector of strings by spiting a string on a delimiter
+/**@brief return a vector of strings by spiting a string on a delimiter
  *
  * @param str The string to split
  * @param delim The delimiter to split on
@@ -149,7 +149,7 @@ inline std::vector<std::string> tokenizeString(const std::string& str,
   return ret;
 }
 
-/**@b Test to see if string contains all digits
+/**@brief Test to see if string contains all digits
  *
  * @param str The string to test
  * @return Return true if all chars in str is a digit
@@ -164,7 +164,7 @@ inline bool strAllDigits(const std::string& str) {
   return true;
 }
 
-/**@b Just a convience to check to see if a str contains a substring
+/**@brief Just a convience to check to see if a str contains a substring
  *
  * @param str the string to check
  * @param subString the substring to check for
@@ -177,7 +177,7 @@ inline bool containsSubString(const std::string& str,
 
 
 
-/**@b Convertor for bool to true or false str
+/**@brief Convertor for bool to true or false str
  *
  * @param convert Bool to convert
  * @return true or false
@@ -191,7 +191,7 @@ inline std::string boolToStr(bool convert) {
 }
 
 
-/**@b Convert a string to all upper case letters
+/**@brief Convert a string to all upper case letters
  *
  * @param str String to convert
  */
@@ -200,7 +200,7 @@ inline void strToUpper(std::string& str) {
     c = toupper(c);
   }
 }
-/**@b Convert a string to all lower case letters
+/**@brief Convert a string to all lower case letters
  *
  * @param str String to convert
  */
@@ -210,7 +210,7 @@ inline void strToLower(std::string& str) {
   }
 }
 
-/**@b Convert a string to all upper case letters, leave original alone
+/**@brief Convert a string to all upper case letters, leave original alone
  *
  * @param str String to convert
  * @return str but with all upper case letters
@@ -220,7 +220,7 @@ inline std::string strToUpperRet(std::string str) {
   return str;
 }
 
-/**@b  Convert a string to all lower case letters, leave original alone
+/**@brief  Convert a string to all lower case letters, leave original alone
  *
  * @param str String to convert
  * @return str but with all lower case letters
@@ -230,7 +230,7 @@ inline std::string strToLowerRet(std::string str) {
   return str;
 }
 
-/**@b Convert a vector of strings to all lower case letters
+/**@brief Convert a vector of strings to all lower case letters
  *
  * @param vec Vector to convert
  */
@@ -240,7 +240,7 @@ inline void strVecToLower(std::vector<std::string>& vec) {
   }
 }
 
-/**@b Replace a substring in a string with a new substring
+/**@brief Replace a substring in a string with a new substring
  *
  * @param theString The string to do the replacement on
  * @param toBeReplaced The substring to be replaced
@@ -259,7 +259,7 @@ inline std::string replaceString(std::string theString,
   return theString;
 }
 
-/**@b convert int to a string hex string
+/**@brief convert int to a string hex string
  *
  * @param i the int to convert
  * @return A hexstring
@@ -271,7 +271,7 @@ inline std::string intToHex(int32_t i) {
   return stream.str();
 }
 
-/**@b convert a hexstring to a int
+/**@brief convert a hexstring to a int
  *
  * @param hString The hextstring to convert
  * @return the int version of the hexstring
@@ -284,7 +284,7 @@ inline uint32_t hexToInt(const std::string& hString) {
 }
 
 
-/**@b trim beginning whitespace
+/**@brief trim beginning whitespace
  *
  * @param s the string from which to trim the whitespace
  * @return A reference to the trimmed white space string so it can be chained with other trimming options
@@ -296,7 +296,7 @@ inline std::string &ltrim(std::string &s) {
     return s;
 }
 
-/**@b trim end whitespace
+/**@brief trim end whitespace
  *
  * @param s the string from which to trim the whitespace
  * @return A reference to the trimmed white space string so it can be chained with other trimming options
@@ -308,7 +308,7 @@ inline std::string &rtrim(std::string &s) {
     return s;
 }
 
-/**@b trim both beginning and end whitepsace
+/**@brief trim both beginning and end whitepsace
  *
  * @param s the string from which to trim the whitespace
  * @return A reference to the trimmed white space string so it can be chained with other trimming options
@@ -332,7 +332,7 @@ uint32_t paddingWidth(const CON& con, FUN f){
     return longestToString(con, f).size();
 }
 
-/**@b Print out the contents of a map with column adjusted, should be a simple key,value map where both the key and value can be converted to strings and
+/**@brief Print out the contents of a map with column adjusted, should be a simple key,value map where both the key and value can be converted to strings and
  * have the output operator << defined
  *
  * @param theMap The map to print

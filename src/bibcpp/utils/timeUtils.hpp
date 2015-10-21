@@ -14,7 +14,7 @@
 #include "bibcpp/utils/stringUtils.hpp"  //leftPadNumStr()
 
 namespace bib{
-/**@b get the current date formated as year.month.day.hours.minutes
+/**@brief get the current date formated as year.month.day.hours.minutes
  *
  * @return A string of the current date formated
  */
@@ -29,7 +29,7 @@ inline std::string getCurrentDate() {
   return timeStream.str();
 }
 
-/**@b convert string in seconds to a formated time
+/**@brief convert string in seconds to a formated time
  *
  * @param timeInSecondsOriginal The time in seconds
  * @param verbose Whether long names for hours,minutes, etc. shoudld be used
@@ -138,7 +138,7 @@ inline double getTimeDiff(sch::time_point<sch::high_resolution_clock> start){
 			sch::high_resolution_clock::now() - start).count() /
 	       static_cast<double>(sch::high_resolution_clock::period::den);
 }
-/**@b Get the difference of time in seconds between start and end
+/**@brief Get the difference of time in seconds between start and end
  *
  * @param start the start time
  * @param end the end time
@@ -300,12 +300,12 @@ public:
 	}
 };
 
-/**@b stopWatch class that prints time information on destruction
+/**@brief stopWatch class that prints time information on destruction
  *
  */
 class scopedStopWatch : public stopWatch {
 public:
-	/**@b Default Constructor
+	/**@brief Default Constructor
 	 *
 	 * @param message Message to print when the watch dies
 	 * @param formated Whether the printed messaged should be formated
@@ -314,7 +314,7 @@ public:
 			stopWatch(), message_(message), formated_(formated), out_(std::cout) {
 		setLapName(message);
 	}
-	/**@b Construct with a different print location than std::cout
+	/**@brief Construct with a different print location than std::cout
 	 *
 	 * @param message Message to print when the watch dies
 	 * @param out Where to print
@@ -325,9 +325,9 @@ public:
 			stopWatch(), message_(message), formated_(formated), out_(out) {
 		setLapName(message);
 	}
-	std::string message_;/**The message to print with the time*/
-	bool formated_;/**Whether to print the time formated */
-	/**@b destrcutor with printing the time
+	std::string message_;/**> The message to print with the time*/
+	bool formated_;/**> Whether to print the time formated */
+	/**@brief destrcutor with printing the time
 	 *
 	 */
 	std::ostream & out_;

@@ -117,7 +117,7 @@ struct lexical_caster<std::string, Source> {
 };
 
 
-/**@b The actual function to call to cast
+/**@brief The actual function to call to cast
  *
  * @param source What's to be cast
  * @return the cast of source to type Target
@@ -129,7 +129,7 @@ Target lexical_cast( const Source& source )
 }
 
 
-/**@b Lexical cast to do entire container
+/**@brief Lexical cast to do entire container
  *
  * @param con The container of elements to be cast
  * @return A new container with the cast values

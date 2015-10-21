@@ -8,6 +8,8 @@
 //
 
 #include "bibcpp/progutils/programRunner.hpp"
+#include <memory>
+
 namespace bib {
 namespace progutils {
 /**@brief A master runner to rule all sub-runners to package all sub-runners
@@ -23,37 +25,40 @@ class oneRing : public programRunner {
   /**@brief A map of key sub of sub-runner and value sub-runner
    *
    */
-  const std::map<std::string, programRunner> rings_;
+  const std::map<std::string, std::shared_ptr<programRunner>> rings_;
 
  protected:
-  /**@brief Function to added a sub-runner, used in construtor
-   *
-   * @param runner A programRunner to bring under the rule of the current
-   *oneRing program
-   * @param lower A bool of whether or not to store the sub-runner's title as
-   *lower case making look up case-insenstive
-   * @return Returns a pair of string , programRunner to added ot the rings_
-   *class member
-   *
-   *
-   */
-  static std::pair<std::string, programRunner> addRing(programRunner runner,
-                                                bool lower = true) {
-    auto name = runner.nameOfProgram_;
-    if (lower) {
-      strToLower(name);
-    }
-    return {name, runner};
-  }
-
-  //void listCommands(std::ostream &out) {}
+	/**@brief Function to added a sub-runner, used in construtor
+	 *
+	 * @param runner A programRunner to bring under the rule of the current
+	 *oneRing program
+	 * @param lower A bool of whether or not to store the sub-runner's title as
+	 *lower case making look up case-insenstive
+	 * @return Returns a pair of string , programRunner to added ot the rings_
+	 *class member
+	 *
+	 *
+	 */
+	static std::pair<std::string, std::shared_ptr<programRunner>> addRing(
+			const std::shared_ptr<programRunner> & runner, bool lower = true) {
+		auto name = runner->nameOfProgram_;
+		if (lower) {
+			strToLower(name);
+		}
+		return {name, runner};
+	}
+	template<typename T>
+	static std::pair<std::string, std::shared_ptr<programRunner>> addRing(bool lower = true) {
+		auto runner = std::make_shared<T>();
+		return addRing(runner, lower);
+	}
 
  public:
   /**@brief Constructor with a map of sub-runners and any sub-programs of
    *current oneRing master runner
    *
    */
-  oneRing(std::map<std::string, programRunner> rings,
+  oneRing(std::map<std::string, std::shared_ptr<programRunner>> rings,
           std::map<std::string, funcInfo> cmdToFunc, std::string nameOfProgram)
       : programRunner(cmdToFunc, nameOfProgram), rings_(rings) {}
 
@@ -66,7 +71,7 @@ class oneRing : public programRunner {
    */
   virtual int runProgram(std::map<std::string, std::string> inputCommands) const {
     std::string prog = inputCommands["-program"];
-    if (containsProgram(prog)) {
+    if (programRunner::containsProgram(prog)) {
       const auto &fi = cmdToFunc_.at(prog);
       return fi.func_(inputCommands);
     }
@@ -82,7 +87,7 @@ class oneRing : public programRunner {
         if (strAllDigits(progNumber)) {
           // inputCommands.erase(prog);
           if (rings_.find(progName) != rings_.end()) {
-            return rings_.at(progName).runByNumber(progNumber, inputCommands);
+            return rings_.at(progName)->runByNumber(progNumber, inputCommands);
           }
         }
       }
@@ -90,18 +95,33 @@ class oneRing : public programRunner {
     // if program is the number of one of the rings, list the program for that
     // ring
     if (rings_.find(prog) != rings_.end()) {
-      rings_.at(prog).listPrograms(std::cout, "", "none");
+      rings_.at(prog)->listPrograms(std::cout, "", "none");
       return 1;
     }
     // now try to find program in one of the rings
     for (auto &ring : rings_) {
-      if (ring.second.containsProgram(prog)) {
-        return ring.second.runProgram(inputCommands);
+      if (ring.second->containsProgram(prog)) {
+        return ring.second->runProgram(inputCommands);
       }
     }
     listPrograms(std::cout, inputCommands["-program"]);
     return 1;
   }
+
+  /**@brief A function to check to see if current program contains the
+   *sub-program
+   *
+   * @param program Name of subprogram to search for
+   */
+  virtual bool containsProgram(const std::string &program) const {
+  	for(const auto & ring : rings_){
+  		if(ring.second->containsProgram(program)){
+  			return true;
+  		}
+  	}
+    return cmdToFunc_.find(program) != cmdToFunc_.end();
+  }
+
   /**@brief List the programs listed in all sub-runner
    *
    * @param out The std::ostream object to print the info to
@@ -118,23 +138,27 @@ class oneRing : public programRunner {
     if (command != "") {
       out << "Unrecognized command " << command << std::endl;
     }
-    out << "Programs" << std::endl;
-    out << "Use " << nameOfProgram_
-        << " [PROGRAM] -help to see more details about each program"
-        << std::endl;
-    out << "Commands are not case sensitive" << std::endl;
+    if(nameOfProgram == nameOfProgram_){
+      out << "Programs" << std::endl;
+      out << "Use " << nameOfProgram_
+          << " [PROGRAM] -help to see more details about each program"
+          << std::endl;
+      out << "Commands are not case sensitive" << std::endl;
 
-    for (auto &ring : rings_) {
-      ring.second.listPrograms(out, "", nameOfProgram);
     }
+
     out << nameOfProgram_ << std::endl;
-          listCommands(out);
+    listCommands(out);
+    for (auto &ring : rings_) {
+      ring.second->listPrograms(out, "", nameOfProgram);
+    }
+
     if (command != "") {
       out << "Unrecognized command " << command << std::endl;
       std::pair<std::string, int> closestProgram = {"", 0};
       for (auto &ring : rings_) {
         std::pair<std::string, int> currentClosestProgram =
-            ring.second.closestProgram(command);
+            ring.second->closestProgram(command);
         if (currentClosestProgram.second > closestProgram.second) {
           closestProgram = currentClosestProgram;
         }
@@ -146,5 +170,4 @@ class oneRing : public programRunner {
 };
 
 }  // namespace progutils
-
 }  // namespace bib

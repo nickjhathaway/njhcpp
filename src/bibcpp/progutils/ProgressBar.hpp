@@ -19,12 +19,12 @@
 namespace bib{
 
 
-/**@b A little play class for printing a progress bar
+/**@brief A little play class for printing a progress bar
  *
  */
 class ProgressBar{
 public:
-	/**@b construct with total number to count to
+	/**@brief construct with total number to count to
 	 *
 	 * @param total The total that the progress should go to
 	 */
@@ -33,7 +33,7 @@ public:
 		progColors_ = RdYlGn_;
 	};
 
-	/**@b output current progress
+	/**@brief output current progress
 	 *
 	 * @param out the out stream to print to
 	 * @param current the current number the progress is on, should be less than total
@@ -68,7 +68,7 @@ public:
 			{9,bib::bashCT::addBGColor(29)}
 	};
 private:
-	/**@b progress and set up the stirngs to the current number
+	/**@brief progress and set up the stirngs to the current number
 	 *
 	 * @param current the current progress
 	 * @return whether the progress has changed and needs an update
@@ -94,14 +94,14 @@ private:
 		padStr_ = bib::bashCT::addBGColor(188) +  std::string(width_ - tprog_, ' ') + bib::bashCT::reset + " ";
 		return true;
 	}
-	/**@b get the current progress line
+	/**@brief get the current progress line
 	 *
 	 * @return the progress line
 	 */
 	std::string getOutStr()const{
 		return progStr_ + padStr_ + getPerStr();
 	}
-	/**@b get the precentage string of the current progress
+	/**@brief get the precentage string of the current progress
 	 *
 	 * @return
 	 */

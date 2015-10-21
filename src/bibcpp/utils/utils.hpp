@@ -52,7 +52,7 @@ bool in(const T& t, const std::vector<T>& c) {
   return contains(c, t);
 }
 
-/**@b Get a range of numbers of num long in [start,stop]
+/**@brief Get a range of numbers of num long in [start,stop]
  *
  * @param start The start of the range
  * @param stop The end of the range
@@ -60,6 +60,9 @@ bool in(const T& t, const std::vector<T>& c) {
  * @return A vector of doubles of num long in [start,stop]
  */
 inline std::vector<double> getRange(double start, double stop, uint32_t num) {
+	if(num == 1){
+		return {start};
+	}
   double difference = stop - start;
   double step = difference / (num - 1);
   std::vector<double> ans;
@@ -69,7 +72,7 @@ inline std::vector<double> getRange(double start, double stop, uint32_t num) {
   return ans;
 }
 
-/**@b Print table with columns adjusted
+/**@brief Print table with columns adjusted
  *
  * @param content A vector of vectors of string to be printed
  * @param header A vector of strings for a header if there is one, should be empty otherwise
@@ -127,7 +130,7 @@ inline void printTableOrganized(const std::vector<std::vector<std::string>>& con
 
 
 
-/**@b Get a vector of all the values stored in theMap
+/**@brief Get a vector of all the values stored in theMap
  *
  * @param theMap The map to get the values from
  * @return A vector of the mapped values
@@ -141,7 +144,7 @@ static std::vector<typename MAP::mapped_type> getVecOfMapValues(const MAP& theMa
   return ret;
 }
 
-/**@b Get a vector of all the keys stored in theMap
+/**@brief Get a vector of all the keys stored in theMap
  *
  * @param theMap The map to get the keys from
  * @return A vector of the key values
@@ -155,7 +158,7 @@ static std::vector<typename MAP::key_type> getVecOfMapKeys(const MAP& theMap) {
   return ret;
 }
 
-/**@b Round the number to the number of decimal places
+/**@brief Round the number to the number of decimal places
  *
  * @param num the number to be rounded
  * @param decPlaces the number of decimal places to round to
@@ -166,7 +169,7 @@ inline double roundDecPlaces(double num, int decPlaces) {
   return (std::floor(num * rounder + 0.5) / rounder);
 }
 
-/**@b Add another vector to vector
+/**@brief Add another vector to vector
  *
  * @param vec The vector to add to
  * @param otherVec The other vector to add it's contents to vec
@@ -178,7 +181,7 @@ void addOtherVec(std::vector<T>& vec, const std::vector<T>& otherVec) {
 }
 
 
-/**@b score cell for needleScore
+/**@brief score cell for needleScore
  *
  */
 struct scoreMatrixCell {
@@ -192,7 +195,7 @@ struct scoreMatrixCell {
 };
 
 
-/**@b function for needleScore
+/**@brief function for needleScore
  *
  * @param u the upper score
  * @param l the left score
@@ -226,7 +229,7 @@ inline int32_t needleMaximum(int32_t u, int32_t l, int32_t d, char& p) {
   }
 }
 
-/**@b Score the alignment of two strings, used to get the closest matching string
+/**@brief Score the alignment of two strings, used to get the closest matching string
  *
  * @param objA first string to compare
  * @param objB second string to compare

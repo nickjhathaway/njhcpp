@@ -12,59 +12,105 @@
 #include <map>
 
 namespace bib {
+/**@brief Getting type by taking advantage of info available in __PRETTY_FUNCTION__
+ *
+ * @return The type
+ */
+template<typename T>
+std::string typeStr(){
+	std::string pf(__PRETTY_FUNCTION__);
+	auto tEqualPos = pf.rfind("T = ");
+	auto semiColPos = pf.find(";", tEqualPos);
+	auto closeBracPos = pf.rfind("]");
+	if(tEqualPos != std::string::npos &&
+			closeBracPos != std::string::npos &&
+			closeBracPos > tEqualPos){
+		//this is for the difference in gcc and clang output of __PRETTY_FUNCTION__
+		if(semiColPos != std::string::npos){
+			return pf.substr(tEqualPos + 4, semiColPos - 4 - tEqualPos);
+		}else{
+			return pf.substr(tEqualPos + 4, closeBracPos - 4 - tEqualPos);
+		}
+	}else{
+		return "indeterminate";
+	}
+}
+
+/**@brief Getting type of a given object by taking advantage of info available in __PRETTY_FUNCTION__
+ *
+ * @param val The object to get the type of
+ * @return The type
+ */
+template<typename T>
+std::string typeStr(const T & val){
+	return typeStr<T>();
+}
+
 namespace progutils {
-/**@b A struct to get a string of what the value of a object is
+/**@brief A struct to get a string of what the value of a object is
  *
  */
-template<class T>
 struct TypeName
 {
-static std::string get() { return T::typeName(); }
+
+	template<typename U>
+	static std::string get(const U & val){
+		return typeStr(val);
+	}
+
+	template<typename U>
+	static std::string get(){
+		return typeStr<U>();
+	}
+
 };
+
+
 // add more specializations for the build-in types
 template<>
-inline std::string TypeName<int16_t>::get() {return "int16_t";}
+inline std::string TypeName::get<int16_t>() {return "int16_t";}
 template<>
-inline std::string TypeName<int32_t>::get() {return "int32_t";}
+inline std::string TypeName::get<int32_t>() {return "int32_t";}
 template<>
-inline std::string TypeName<int64_t>::get() {return "int64_t";}
+inline std::string TypeName::get<int64_t>() {return "int64_t";}
 template<>
-inline std::string TypeName<uint16_t>::get() {return "uint16_t";}
+inline std::string TypeName::get<uint16_t>() {return "uint16_t";}
 template<>
-inline std::string TypeName<uint32_t>::get() {return "uint32_t";}
+inline std::string TypeName::get<uint32_t>() {return "uint32_t";}
+#if defined( __APPLE__ ) || defined( __APPLE_CC__ ) || defined( macintosh ) || defined( __MACH__ )
 template<>
-inline std::string TypeName<uint64_t>::get() {return "uint64_t";}
-#ifndef __linux__
-template<>
-inline std::string TypeName<size_t>::get() {return "size_t";}
+inline std::string TypeName::get<uint64_t>() {return "uint64_t";}
 #endif
 template<>
-inline std::string TypeName<bool>::get() {return "bool";}
+inline std::string TypeName::get<size_t>() {return "size_t";}
 template<>
-inline std::string TypeName<double>::get() {return "double";}
+inline std::string TypeName::get<bool>() {return "bool";}
 template<>
-inline std::string TypeName<long double>::get() {return "long double";}
+inline std::string TypeName::get<double>() {return "double";}
 template<>
-inline std::string TypeName<float>::get() {return "float";}
+inline std::string TypeName::get<long double>() {return "long double";}
 template<>
-inline std::string TypeName<std::string>::get() {return "string";}
+inline std::string TypeName::get<float>() {return "float";}
+template<>
+inline std::string TypeName::get<std::string>() {return "std::string";}
 
-/**@b A function to return the type of the obj input in string fomat
+/**@brief A function to return the type of the obj input in string fomat
  *
  * @param obj The obj to get the type info from
  * @return a string of the object type
  */
 template<typename T>
 inline std::string getTypeName(const T & obj){
-	return TypeName<T>::get();
+	return TypeName::get<T>();
 }
 
-/**@b Class hold commandline flag information
+
+/**@brief Class hold commandline flag information
  *
  */
 class flag {
 public:
-	/**@b contruct with templated option, so any value can be given that can be converted to a string
+	/**@brief construct with templated option, so any value can be given that can be converted to a string
 	 *
 	 * @param opt The option value associated with the flag
 	 * @param flags The command line flags that can set the option value
@@ -86,15 +132,15 @@ public:
 		{
 	}
 
-	std::vector<std::string> flags_; /**The flags associated with this option */
-	std::string shortDescription_; /**A short description for this option */
-	bool required_; /**Whether option is required or not */
-	bool set_; /**Whether the option was set by commandline or default value*/
-	std::string setValue_; /**If set by commandline what it was set to */
-	std::string defaultValue_; /**The default value associated with this otpion */
-	std::string type_; /**The type that the option, ex. int32_t,bool,etc */
+	std::vector<std::string> flags_; /**<The flags associated with this option */
+	std::string shortDescription_; /**<A short description for this option */
+	bool required_; /**<Whether option is required or not */
+	bool set_; /**<Whether the option was set by commandline or default value*/
+	std::string setValue_; /**<If set by commandline what it was set to */
+	std::string defaultValue_; /**<The default value associated with this otpion */
+	std::string type_; /**<The type that the option, ex. int32_t,bool,etc */
 
-	/**@b Function to set the option with a new value from commandline
+	/**@brief Function to set the option with a new value from commandline
 	 *
 	 * @param option The new value for this option
 	 */
@@ -112,7 +158,7 @@ public:
 		}
 	}
 
-	/**@b Print a info on option for a file parameters used file
+	/**@brief Print a info on option for a file parameters used file
 	 *
 	 * @param delim The delimiter to use
 	 * @param header Whether to just print the header
@@ -120,13 +166,14 @@ public:
 	 */
 	std::string fullInfo(const std::string delim = "\t", bool header = false) const {
     if (header) {
-      return "ShortDescription\tvalue\tdefaultValue";
+      return "Flags\tShortDescription\tvalue\tdefaultValue";
     }
-    return shortDescription_
+    return conToStr(flags_, ",")
+    		+ delim + shortDescription_
     		+ delim + setValue_
     		+ delim + defaultValue_;
 	}
-	/**@b For printing info to the terminal with color output
+	/**@brief For printing info to the terminal with color output
 	 *
 	 * @return a string with the info
 	 */
@@ -146,18 +193,18 @@ public:
 
 };
 
-/**A class for holding all the parameters
+/**@brief A class for holding all the parameters
  *
  */
 class flagHolder {
 
  public:
-  /** Default constructor for an empty holder
+  /**@brief Default constructor for an empty holder
    *
    */
 	flagHolder() {}
 
-  /**A vector holding all the parameters
+  /**@brief A vector holding all the parameters
    *
    */
   std::map<std::string, flag> flags_;
@@ -169,14 +216,14 @@ class flagHolder {
   	flags_.emplace(conToStr(newFlag.flags_,","), newFlag);
   }
 
-  /** Output the information for all stored parameters
+  /**@brief Output the information for all stored parameters
    *
    * @param out An std::ostream object to print the info to
    *
    */
   void outputParsFile(std::ostream& out) {
   	if(!flags_.empty()){
-      flags_.begin()->second.fullInfo("\t", true);
+      out << flags_.begin()->second.fullInfo("\t", true) << std::endl;
       for (const auto & f : flags_) {
         out << f.second.fullInfo("\t") << std::endl;
       }

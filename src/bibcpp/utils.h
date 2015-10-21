@@ -1,5 +1,6 @@
 #pragma once
 
+#include "bibcpp/utils/has_member.hpp"
 #include "bibcpp/utils/utils.hpp"
 #include "bibcpp/utils/vecUtils.hpp"
 #include "bibcpp/utils/stringUtils.hpp"

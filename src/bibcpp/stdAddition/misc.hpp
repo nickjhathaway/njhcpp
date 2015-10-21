@@ -45,6 +45,21 @@ UnaryFunction for_each(Input& container, UnaryFunction f) {
   return std::for_each(container.begin(), container.end(), f);
 }
 
+/**@b non range safe position specific operations
+ *
+ * @param container the container to operator on
+ * @param positions the positions to operator on
+ * @param f the func to employ
+ * @return the func used
+ */
+template <typename Input, typename UnaryFunction>
+UnaryFunction for_each_pos(Input& container, const std::vector<uint64_t> & positions,UnaryFunction f) {
+	for(auto pos : positions){
+		f(container[pos]);
+	}
+  return f;
+}
+
 template <typename Input, typename UnaryFunction>
 UnaryFunction for_each(const Input& container, UnaryFunction f) {
   return std::for_each(container.begin(), container.end(), f);
@@ -72,7 +87,7 @@ void reverse(Container& con) {
 
 
 namespace estd {
-/**@b simply aesthetic, to make call to is_arithmetic look nicer
+/**@brief simply aesthetic, to make call to is_arithmetic look nicer
  *
  * @return Returns true if T is of type arithmetic
  */
@@ -82,23 +97,28 @@ constexpr bool isArithmetic(){
 }
 
 
-/**@b for determining if T is of type char* or const char* to declare that is a string
+/**@brief for determining if T is of type char* or const char* to declare that is a string
  *
  */
 template<typename T>
 struct is_string : public std::integral_constant<bool, std::is_same<char*, typename std::decay<T>::type>::value
 || std::is_same<const char*, typename std::decay<T>::type>::value> {};
 
-/**@b Declared so that is_string will return true for std::string along with char* and const char*
+/**@brief Declared so that is_string will return true for std::string along with char* and const char*
  *
  */
 template<>
 struct is_string<std::string> : std::true_type {};
 
+template<bool B, typename T = void>
+using Enable_if = typename std::enable_if<B,T>::type;
+
+template<typename T> constexpr bool Is_pointer(){
+	return std::is_pointer<T>::value;
+}
 
 
-
-/**@b simply aesthetic, to make call to is_string look nicer
+/**@brief simply aesthetic, to make call to is_string look nicer
  *
  * @return Returns true if T is of type arithmetic
  */
@@ -108,7 +128,7 @@ constexpr bool isString(){
 }
 
 
-/**@b Templated function to pass anything to string as long as it has an << operator
+/**@brief Templated function to pass anything to string as long as it has an << operator
  *
  * @param e Element to change to a string
  * @return The element changed into a string
@@ -120,7 +140,7 @@ std::string to_string(T e) {
   return ss.str();
 }
 
-/**@b change for bool objects to be translated to true or false, could cover up if true is a different number
+/**@brief change for bool objects to be translated to true or false, could cover up if true is a different number
  *
  * @param obj The bool to translate to a string
  * @return True if obj is true and false if obj is false
