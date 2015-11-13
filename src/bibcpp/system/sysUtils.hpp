@@ -259,6 +259,27 @@ inline std::vector<bib::sys::RunOutput> runCmdsThreaded(
 }
 
 
+/**@brief return a bool of the success of calling system which on a command
+ *
+ * @param cmd the command to look for
+ * @return a bool whether calling which on the command name was successful
+ */
+inline bool hasSysCommand(const std::string & cmd){
+	auto output = bib::sys::run({"which", cmd});
+	return output.success_;
+}
+
+/**@brief return a the full output of calling system which on a command
+ *
+ * @param cmd the command to look for
+ * @return the run output of the call to which, this way the path name and such can be recovered as well
+ */
+inline bib::sys::RunOutput hasSysCommandFullOut(const std::string & cmd){
+	auto output = bib::sys::run({"which", cmd});
+	return output;
+}
+
+
 } // namespace sys
 } // namespace bib
 

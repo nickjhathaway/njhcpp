@@ -7,7 +7,7 @@ from utils import Utils
 from genFuncs import genHelper
 def main():
     name = "bibcpp"
-    libs = "cppitertools,boost,armadillo,jsoncpp,pstreams"
+    libs = "cppitertools,boost,jsoncpp,pstreams"
     args = genHelper.parseNjhConfigureArgs()
     cmd = genHelper.mkConfigCmd(name, libs, sys.argv)
     Utils.run(cmd)
