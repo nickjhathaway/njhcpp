@@ -140,6 +140,26 @@ public:
 	std::string defaultValue_; /**<The default value associated with this otpion */
 	std::string type_; /**<The type that the option, ex. int32_t,bool,etc */
 
+  /**@brief convert to json representation
+   *
+   * @return Json::Value object
+   */
+  Json::Value toJson()const{
+  	Json::Value ret;
+  	ret["class"] = "bibcpp::progutils::flag";
+  	ret["flags_"] = bib::json::toJson(flags_);
+  	ret["shortDescription_"] = bib::json::toJson(shortDescription_);
+  	ret["required_"] = bib::json::toJson(required_);
+  	ret["set_"] = bib::json::toJson(set_);
+  	ret["setValue_"] = bib::json::toJson(setValue_);
+  	ret["defaultValue_"] = bib::json::toJson(defaultValue_);
+  	ret["type_"] = bib::json::toJson(type_);
+
+  	return ret;
+  }
+
+
+
 	/**@brief Function to set the option with a new value from commandline
 	 *
 	 * @param option The new value for this option

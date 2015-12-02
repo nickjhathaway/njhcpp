@@ -53,6 +53,20 @@ class commandLineArguments {
    */
   std::string commandLine_;
 
+  /**@brief convert to json representation
+   *
+   * @return Json::Value object
+   */
+  Json::Value toJson()const{
+  	Json::Value ret;
+  	ret["class"] = "bibcpp::progutils::commandLineArguments";
+  	ret["arguments_"] = bib::json::toJson(arguments_);
+  	ret["commandLine_"] = bib::json::toJson(commandLine_);
+  	return ret;
+  }
+
+
+
  private:
   std::string& lowerCaseGetArguments(const std::string& str) {
     if (arguments_[strToLowerRet(str)] == "") {

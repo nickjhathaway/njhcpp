@@ -16,6 +16,9 @@
 #include <regex>
 #include "bibcpp/stdAddition.h" //estd::to_string
 
+#include "bibcpp/jsonUtils/jsonUtils.hpp" //included here so that most files will have json
+
+
 namespace bib {
 /**@brief Take a container and change it into a delimited string
  *
