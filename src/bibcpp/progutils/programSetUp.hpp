@@ -223,10 +223,17 @@ public:
 	 * @param out The std::ostream out object to print to
 	 *
 	 */
-	void printWarnings(std::ostream &out) {
+	void printWarnings(std::ostream &out) const {
 		for (const auto &warn : warnings_) {
 			out << warn << std::endl;
 		}
+	}
+	/**@brief Adding warning to the warning messages
+	 *
+	 * @param warn The message
+	 */
+	void addWarning(const std::string & warn){
+		warnings_.emplace_back(warn);
 	}
 
 	/**@brief Print flags but looking at validOptions_ so needs to be called at
