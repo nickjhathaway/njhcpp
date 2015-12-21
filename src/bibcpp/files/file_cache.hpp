@@ -9,6 +9,7 @@
 #include "bibcpp/debug/exception.hpp"
 
 namespace bib {
+namespace files {
 
 namespace bfs = boost::filesystem;
 namespace sch = std::chrono;
@@ -180,5 +181,5 @@ public:
 		return content_;
 	}
 };
-
+} // namespace files
 } // namespace bib
