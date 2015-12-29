@@ -5,7 +5,8 @@
 #include <cerrno>
 #include <boost/filesystem.hpp>
 #include "bibcpp/utils/stringUtils.hpp"
-#include "bibcpp/files/fileUtilities.hpp"
+#include "bibcpp/files/fileUtilities.hpp" //files::last_write_time
+#include "bibcpp/files/fileStreamUtils.hpp" //files::get_file_contents
 #include "bibcpp/debug/exception.hpp"
 
 namespace bib {

@@ -8,7 +8,7 @@
 //
 
 #include "bibcpp/utils.h"
-#include "bibcpp/files/fileUtilities.hpp"
+#include "bibcpp/files/filePathUtils.hpp"
 #include "bibcpp/bashUtils.h"
 
 namespace bib {

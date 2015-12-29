@@ -8,6 +8,8 @@
 
 #include "bibcpp/stdAddition.h"
 #include "bibcpp/utils.h"
+#include "bibcpp/files/fileSystemUtils.hpp"
+
 namespace bib {
 namespace progutils {
 /**@brief runLog class to help log run info

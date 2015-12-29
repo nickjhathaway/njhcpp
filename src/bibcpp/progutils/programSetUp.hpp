@@ -13,6 +13,7 @@
 #include "bibcpp/progutils/commandLineArguments.hpp"
 #include "bibcpp/progutils/runLog.hpp"
 #include "bibcpp/progutils/flag.hpp"
+#include "bibcpp/files/fileStreamUtils.hpp"
 
 namespace bib {
 /**@brief Namespace for dealing with program option parsing and running sub programs

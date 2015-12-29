@@ -15,11 +15,13 @@
 #include <iomanip> //std::setFill(), std::setw()
 #include <regex>
 #include "bibcpp/stdAddition.h" //estd::to_string
-
 #include "bibcpp/jsonUtils/jsonUtils.hpp" //included here so that most files will have json
 
 
 namespace bib {
+
+
+
 /**@brief Take a container and change it into a delimited string
  *
  * @param con Container of values
@@ -386,6 +388,33 @@ inline bool beginsWith(const std::string& str, const std::string& target) {
   	return (0 == str.compare(0, target.size(), target));
   }
   return false;
+}
+
+/**@brief  append to a str only if need
+ *
+ * @param str The string to append to
+ * @param app What to append to str
+ * @return A reference to the str
+ */
+inline std::string & appendAsNeeded(std::string & str, const std::string & app){
+	if(!endsWith(str,app)){
+		str.append(app);
+
+	}
+	return str;
+}
+
+/**@brief Return str appended if required
+ *
+ * @param str The str to append to
+ * @param app What to append to the str
+ * @return str appended with app only if it is not already appended
+ */
+inline std::string appendAsNeededRet(std::string str, const std::string & app){
+	if(!endsWith(str,app)){
+		str.append(app);
+	}
+	return str;
 }
 
 } // namesapce bib
