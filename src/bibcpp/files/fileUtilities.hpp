@@ -609,6 +609,60 @@ inline std::streambuf* determineOutBuf(std::ofstream & outFile,
 	}
 }
 
+/**@brief Cross platform get line to line CR and CRLF line endings
+ *
+ * @param __is The stream to read from
+ * @param __str The string to store the info in
+ * @return The stream read from
+ */
+
+inline std::istream&
+crossPlatGetline(std::istream& __is, std::string& __str) {
+	std::istream::sentry __sen(__is, true);
+	if (__sen) {
+		__str.clear();
+		std::ios_base::iostate __err = std::ios_base::goodbit;
+		std::streamsize __extr = 0;
+		while (true) {
+			std::istream::traits_type::int_type __i = __is.rdbuf()->sbumpc();
+			if (std::istream::traits_type::eq_int_type(__i,
+					std::istream::traits_type::eof())) {
+				__err |= std::ios_base::eofbit;
+				break;
+			}
+			++__extr;
+			char __ch = std::istream::traits_type::to_char_type(__i);
+			bool foundTerm = false;
+			switch (__ch) {
+			case '\n':
+				foundTerm = true;
+				break;
+			case '\r':
+				if (__is.rdbuf()->sgetc() == '\n') {
+					__is.rdbuf()->sbumpc();
+				}
+				foundTerm = true;
+				break;
+			default:
+				break;
+			}
+			if (foundTerm) {
+				break;
+			}
+			__str.push_back(__ch);
+			if (__str.size() == __str.max_size()) {
+				__err |= std::ios_base::failbit;
+				break;
+			}
+		}
+		if (__extr == 0) {
+			__err |= std::ios_base::failbit;
+		}
+		__is.setstate(__err);
+	}
+	return __is;
+}
+
 } // namespace files
 } // namespace bib
 
