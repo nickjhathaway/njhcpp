@@ -6,7 +6,7 @@
  *      Author: nickhathaway
  */
 
-#include "bibcpp/stdAddition.h"
+#include "bibcpp/common.h"
 #include "bibcpp/utils.h"
 #include "bibcpp/files/fileSystemUtils.hpp"
 

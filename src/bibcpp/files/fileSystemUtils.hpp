@@ -14,7 +14,7 @@
 #include <sys/stat.h> //chmod
 #include <boost/filesystem.hpp>
 #include "bibcpp/utils/stringUtils.hpp" //appendAsNeededRet()
-#include "bibcpp/utils/timeUtils.hpp" //getCurrentDate()
+#include "bibcpp/utils/time/timeUtils.hpp" //getCurrentDate()
 
 namespace bib {
 namespace files {

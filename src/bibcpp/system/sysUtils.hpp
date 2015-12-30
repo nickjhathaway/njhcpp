@@ -8,46 +8,14 @@
 
 
 #include "bibcpp/utils/stringUtils.hpp"
-#include "bibcpp/jsonUtils/jsonUtils.hpp"
-#include "bibcpp/utils/timeUtils.hpp"
+#include "bibcpp/utils/time/timeUtils.hpp"
+#include "bibcpp/system/CmdPool.hpp"
+#include "bibcpp/system/RunOutput.hpp"
 #include <pstreams/pstream.h>
 #include <thread>
-#include <mutex>
-#include <atomic>
 
-namespace bib {
-namespace sys {
-
-/**@brief struct for holding output and success status of an external command
- *@todo add original run command and run duration info
- */
-struct RunOutput {
-	bool success_; /**< whether the command was successful*/
-	int32_t returnCode_; /**< the return code of the command*/
-	std::string stdOut_; /**< the output to stdout from the command*/
-	std::string stdErr_; /**< the output to stderr from the command*/
-	std::string cmd_; /**< the command*/
-	double time_; /**< time in millisecond */
-
-	/**@brief So the struct can be tested in an if statement
-	 *
-	 */
-	explicit operator bool() const {
-		return success_;
-	}
-
-	Json::Value toJson()const {
-		Json::Value ret;
-		ret["class"] = "bib::sys::RunOutput";
-		ret["cmd_"] = json::toJson(cmd_);
-		ret["succes_"] = json::toJson(success_);
-		ret["returnCode_"] = json::toJson(returnCode_);
-		ret["stdOut_"] = json::toJson(stdOut_);
-		ret["stdErr_"] = json::toJson(stdErr_);
-		ret["time_"] = json::toJson(time_);
-		return ret;
-	}
-};
+namespace bib{
+namespace sys{
 
 /**@brief run the command in cmds externally and return the status and outputs
  *
@@ -56,39 +24,11 @@ struct RunOutput {
  * @todo add run time duration
  */
 inline RunOutput run(std::vector<std::string> cmds) {
+	//cat cmds
 	std::string cmd = conToStr(cmds, " ");
-	/*
+	//start a stopwatch to clock how long it took
 	bib::stopWatch watch;
-	std::cout << "cmd1: " << cmd << std::endl;;
-	redi::ipstream s(cmd);
-	std::cout << "cmd2: " << cmd << std::endl;;
-	*/
-	/*
-	//read stdout
-	std::stringstream outSS;
-	outSS << s.out().rdbuf();
-	auto out = outSS.str();
-	trim(out);
-	//read stderr
-	std::stringstream errSS;
-	errSS << s.err().rdbuf();
-	auto err = errSS.str();
-	trim(err);*/
-/*
-	s.close();
-	double rTime = watch.totalTime();
-
-	const int32_t errCode = s.rdbuf()->status();
-	if (s.rdbuf()->exited() && !errCode) {
-		return {true, 0, "", "", cmd, rTime};
-	}
-
-	return {false, errCode, "", "", cmd, rTime};
-	*/
-	bib::stopWatch watch;
-	//std::cout << "cmd1: " << cmd << std::endl;;
 	redi::ipstream s(cmd, redi::ipstream::pstdout | redi::ipstream::pstderr);
-	//std::cout << "cmd2: " << cmd << std::endl;;
 	//read stdout
 	std::stringstream outSS;
 	outSS << s.out().rdbuf();
@@ -99,67 +39,16 @@ inline RunOutput run(std::vector<std::string> cmds) {
 	errSS << s.err().rdbuf();
 	auto err = errSS.str();
 	trim(err);
-
 	s.close();
 	double rTime = watch.totalTime();
 	const int32_t errCode = s.rdbuf()->status();
 	if (s.rdbuf()->exited() && !errCode) {
 		return {true, 0, std::move(out), std::move(err), cmd, rTime};
 	}
-
 	return {false, errCode, std::move(out), std::move(err), cmd, rTime};
-
 }
 
-/**@brief Class to hold a pool of system commands with a lock so threads can just pull from this
- *
- */
-template<typename T>
-class CmdPool {
-public:
-	/**@brief Construct with a vector of commands to run
-	 *
-	 * @param cmds The vector of commands
-	 */
-	CmdPool(const std::vector<T> & cmds): cmds_(cmds){
 
-	}
-private:
-	//std::atomic<uint32_t> currentCmd_;
-	std::vector<T> cmds_; /**< The commands to run */
-	uint32_t currentCmd_ = 0; /**< Index of what command to run next */
-
-	std::mutex mut_; /**< Mutex for locking pool while thread is grabbing command */
-public:
-	/**@brief small class to hold whether there is a next class and what it is
-	 *
-	 */
-	struct cmdStatus{
-		T cmd_;
-		bool valid_ ;
-	};
-	/**@brief grab next command to run
-	 *
-	 * @return A struct with whether there is a command to run and a string of what that command is, if invalid string will be blank
-	 */
-	cmdStatus getCmd(){
-		/*
-		auto current = currentCmd_.fetch_add(1);
-		if (currentCmd_ < cmds_.size()) {
-			return {cmds_ [current],true};
-		} else {
-			return {T {},false};
-		}*/
-
-		std::lock_guard<std::mutex> lock(mut_);
-		if(currentCmd_ < cmds_.size()){
-			++currentCmd_;
-			return {cmds_ [currentCmd_ - 1],true};
-		}else{
-			return {T{},false};
-		}
-	}
-};
 
 /**@brief Run a vector of commands on multiple threads
  * Run multiple commands on the system in several threads, no safety checks on number of threads available or

@@ -14,7 +14,7 @@
 #include <cmath> //round()
 #include <iomanip> //std::setFill(), std::setw()
 #include <regex>
-#include "bibcpp/stdAddition.h" //estd::to_string
+#include "bibcpp/common.h" //estd::to_string
 #include "bibcpp/jsonUtils/jsonUtils.hpp" //included here so that most files will have json
 
 

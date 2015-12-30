@@ -9,7 +9,7 @@
 
 #include "bibcpp/utils.h"
 #include "bibcpp/bashUtils.h"
-#include "bibcpp/stdAddition.h"
+#include "bibcpp/common.h"
 #include "bibcpp/progutils/commandLineArguments.hpp"
 #include "bibcpp/progutils/runLog.hpp"
 #include "bibcpp/progutils/flag.hpp"
@@ -28,7 +28,6 @@ namespace progutils {
 class programSetUp {
 
 public:
-	// constructors
 	/**@brief Construct the setUp with the generic argc and argv
 	 *
 	 * @param argc The number of arguments
@@ -101,8 +100,6 @@ public:
 		}
 	}
 
-	virtual ~programSetUp() {
-	}
 
 	/**@brief A commandLineArguments class to store the objects and help with flag
 	 *parsing, see commandLineArguments for more details
@@ -189,8 +186,9 @@ public:
 	void writeParametersFile(const std::string &fileName, bool overWrite,
 			bool failOnWriteFailure) {
 		std::ofstream parameterFile;
-		std::ostream out(files::determineOutBuf(parameterFile, fileName, ".txt", overWrite,
-				false,failOnWriteFailure));
+		std::ostream out(
+				files::determineOutBuf(parameterFile, fileName, ".txt", overWrite,
+						false, failOnWriteFailure));
 		//parameterFile << commands_.commandLine_ << std::endl;
 		flags_.outputParsFile(out);
 	}
@@ -233,7 +231,7 @@ public:
 	 *
 	 * @param warn The message
 	 */
-	void addWarning(const std::string & warn){
+	void addWarning(const std::string & warn) {
 		warnings_.emplace_back(warn);
 	}
 
@@ -322,43 +320,6 @@ public:
 		if (failed_) {
 			exit(1);
 		}
-	}
-
-	/**@brief Look for option and set the bool option to false if flag is found
-	 * @param option The bool option to set
-	 * @param flag The flag to be searched for
-	 * @param parName The name under which to store the option being searched for
-	 * @param required A bool indicating if the option is required and set up
-	 *should be stopped if not found, default is false
-	 *
-	 * @return Returns true if option is found or false if option is not found
-	 *
-	 */
-	bool setBoolOptionFalse(bool &option, std::string flagStr,
-			const std::string &shortDescription, bool required = false) {
-		flag currentFlag = flag(option, flagStr, shortDescription, required);
-		bool found = false;
-		for (const auto &t : currentFlag.flags_) {
-			if (commands_.lookForOptionFalse(option, t)) {
-				currentFlag.setValue(option);
-				found = true;
-				break;
-			} else {
-				found = false;
-			}
-		}
-		if (required && !found) {
-			std::stringstream tempStream;
-			tempStream << bashCT::bold + bashCT::black << "Need to have "
-					<< bashCT::red << conToStr(tokenizeString(flagStr, ","), " or ")
-					<< bashCT::black << " see " << bashCT::red
-					<< commands_["-program"] + " -help " << bashCT::black
-					<< "for more details" << bashCT::reset;
-			warnings_.emplace_back(tempStream.str());
-			failed_ = true;
-		}
-		flags_.addFlag(currentFlag);
-		return found;
 	}
 
 	/**@brief A templated function to look for options and implementation for
@@ -467,5 +428,4 @@ public:
 };
 
 }  // namespace progutils
-
 }  // namespace bib
