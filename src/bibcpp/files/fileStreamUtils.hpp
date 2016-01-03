@@ -174,10 +174,10 @@ crossPlatGetline(std::istream& __is, std::string& __str) {
 inline std::string peekLine(std::istream & is){
 	std::string ret;
 	auto currentPos = is.tellg();
-	auto state = is.rdstate();
+	//auto state = is.rdstate();
 	bib::files::crossPlatGetline(is, ret);
 	is.seekg(currentPos);
-	is.setstate(state);
+	//is.setstate(state);
 	return ret;
 }
 
