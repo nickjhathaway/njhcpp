@@ -181,8 +181,41 @@ inline std::string peekLine(std::istream & is){
 	return ret;
 }
 
+/**@brief Check if the next line the in file begins with the string
+ *
+ * @param is The input stream to read from
+ * @param str The string to check for
+ * @return Whether the next line begins with str
+ */
+inline bool nextLineBeginsWith(std::istream & is, const std::string & str){
+	if(str.empty()){
+		return false;
+	}
+	if(str.size() == 1){
+		return str.front() == is.peek();
+	}
+
+	if(str.front() == is.peek()){
+		auto nextLine = bib::files::peekLine(is);
+		if(bib::beginsWith(nextLine, str)){
+			return true;
+		}
+	}
+	return false;
 }
+
+/**@brief Check if the next line the in file begins with the character
+ *
+ * @param is The input stream to read from
+ * @param c The character to check for
+ * @return Whether the next line begins with character c
+ */
+inline bool nextLineBeginsWith(std::istream & is, char c){
+	return is.peek() == c;
 }
+
+}  //namespace files
+}  //namespace bib
 
 
 
