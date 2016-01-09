@@ -214,6 +214,27 @@ inline bool nextLineBeginsWith(std::istream & is, char c){
 	return is.peek() == c;
 }
 
+/**@brief Count the number of lines in a file
+ *
+ * @param filename The filename to count
+ * @return The number of lines in filename
+ */
+inline uint32_t countLines(const std::string & filename) {
+	std::ifstream inFile(filename);
+	if (!inFile) {
+		std::stringstream ss;
+		ss << "Error in opening " << filename << std::endl;
+		throw std::runtime_error { ss.str() };
+	}
+	uint32_t ret = 0;
+	std::string line;
+	while (bib::files::crossPlatGetline(inFile, line)) {
+		++ret;
+	}
+	return ret;
+}
+
+
 }  //namespace files
 }  //namespace bib
 
