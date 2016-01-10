@@ -35,6 +35,10 @@ public:
 	 *
 	 */
 	std::mt19937_64 mtGen_;
+	/**@brief the current seed being used for the state of mtGen_
+	 *
+	 */
+	uint64_t currentSeed_;
 	/**@brief Generator a random nuber between 0 and 1 in the range [0,1)
 	 *
 	 * @return a double in [0,1)
@@ -147,13 +151,14 @@ public:
 	 */
 	void seed() {
 		std::random_device rd;
-		mtGen_.seed(rd());
+		seedNum(rd());
 	}
 	/**@brief seed mtGen_ with the given seed
 	 *
 	 * @param givenSeed
 	 */
 	void seedNum(uint64_t givenSeed) {
+		currentSeed_ = givenSeed;
 		mtGen_.seed(givenSeed);
 	}
 };
