@@ -101,17 +101,50 @@ public:
 		}
 		return false;
 	}
-	/**@brief A bool check on the underlying gzfile
+	/**@brief A bool check on the underlying gzfile, should be used to see if file was opened
 	 *
 	 */
 	explicit operator bool() const {
 		return file_;
 	}
+
+	/**@brief Whether the buffer is empty and the gzfile is at the end of the file
+	 *
+	 * @return Whether there is anything else to be read
+	 */
+	bool done() {
+		if("" == buf_ && !gzeof(file_)){
+			std::string temp = "";
+			if (getNextChunk(temp)) {
+				buf_.append(temp);
+			}
+		}
+		return "" == buf_ && gzeof(file_);
+	}
+
 	/**@brief when the file is de-constructed, close the underlying gzfile
 	 *
 	 */
 	~gzTextFileCpp() {
 		gzclose(file_);
+	}
+
+	/**@brief Look at the next character that can be read from the gz file
+	 *
+	 *
+	 * @return
+	 */
+	int peek() {
+		if (buf_.empty()) {
+			std::string temp = "";
+			if (getNextChunk(temp)) {
+				buf_.append(temp);
+			}
+		}
+		if ("" == buf_ && gzeof(file_)) {
+			return std::ifstream::eofbit;
+		}
+		return buf_.front();
 	}
 };
 
