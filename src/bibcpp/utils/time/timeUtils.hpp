@@ -13,6 +13,7 @@
 #include "bibcpp/common.h" //to_string
 #include "bibcpp/utils/utils.hpp" // printTableOrganized(), roundDecPlaces()
 #include "bibcpp/utils/stringUtils.hpp"  //leftPadNumStr()
+#include "bibcpp/utils/lexical_cast.hpp" //lexical_cast<T>()
 
 namespace bib{
 /**@brief get the current date formated as year.month.day.hours.minutes
@@ -127,6 +128,40 @@ inline std::string getTimeFormat(double timeInSecondsOriginal, bool verbose,
   }
   return duration.str();
 }
+
+/**@brief Convert formated time back to seconds
+ *
+ * @param str The formated time string
+ * @return time in seconds
+ */
+inline double convertFormatedTimeToSecs(const std::string & str) {
+	double ret = 0;
+	auto toks = tokenizeString(str, ",");
+	for (const auto & t : toks) {
+		auto timeToks = tokenizeString(t, ":");
+		if (timeToks.size() != 2) {
+			throw std::runtime_error { bib::bashCT::boldRed(
+					"Error in processing: " + t) };
+		}
+		if (timeToks.front() == "yrs") {
+			ret += bib::lexical_cast<double>(timeToks.back()) * 86400 * 365;
+		} else if (timeToks.front() == "days") {
+			ret += bib::lexical_cast<double>(timeToks.back()) * 86400;
+		} else if (timeToks.front() == "hrs") {
+			ret += bib::lexical_cast<double>(timeToks.back()) * 3600;
+		} else if (timeToks.front() == "mins") {
+			ret += bib::lexical_cast<double>(timeToks.back()) * 60;
+		} else if (timeToks.front() == "secs") {
+			ret += bib::lexical_cast<double>(timeToks.back());
+		} else {
+			throw std::runtime_error { bib::bashCT::boldRed(
+					"Unrecognized time format: " + timeToks.front()) };
+		}
+	}
+	return ret;
+}
+
+
 namespace sch = std::chrono;
 
 /**@ Get the time in seconds since start
