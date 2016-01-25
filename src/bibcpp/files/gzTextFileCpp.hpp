@@ -41,12 +41,15 @@ public:
 			throw std::runtime_error { std::string(__PRETTY_FUNCTION__)
 					+ ":error in opening, " + filename };
 		}
+#ifndef NO_GZBUFFER_FUNC
 		//if you couldn't set the buffer, throw
 		if (gzbuffer(file_, 128 * 1024)) {
 			throw std::runtime_error { std::string(__PRETTY_FUNCTION__)
 					+ ":couldn't set gz buffer" };
 		}
+#endif
 	}
+
 
 	/**@brief Read in the next chunk of data and decompress from the file
 	 *
