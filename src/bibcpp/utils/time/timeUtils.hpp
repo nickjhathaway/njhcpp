@@ -14,6 +14,8 @@
 #include "bibcpp/utils/utils.hpp" // printTableOrganized(), roundDecPlaces()
 #include "bibcpp/utils/stringUtils.hpp"  //leftPadNumStr()
 #include "bibcpp/utils/lexical_cast.hpp" //lexical_cast<T>()
+#include "bibcpp/bashUtils.h" //bib::bashCT::boldRed()
+
 
 namespace bib{
 /**@brief get the current date formated as year.month.day.hours.minutes
