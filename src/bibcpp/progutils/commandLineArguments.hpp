@@ -381,9 +381,9 @@ public:
 		for (auto com : commands) {
 			if (com.first != "-program" && com.first != ""
 					&& com.first != "-commandline") {
-				out << com.first << " ";
+				out << " " << com.first;
 				if (com.second != "") {
-					out << com.first << " ";
+					out << " " << com.second << " ";
 				}
 			}
 		}
