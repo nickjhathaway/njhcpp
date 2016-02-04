@@ -40,17 +40,14 @@ class oneRing : public programRunner {
 	 *
 	 */
 	static std::pair<std::string, std::shared_ptr<programRunner>> addRing(
-			const std::shared_ptr<programRunner> & runner, bool lower = true) {
-		auto name = runner->nameOfProgram_;
-		if (lower) {
-			strToLower(name);
-		}
+			const std::shared_ptr<programRunner> & runner) {
+		auto name = strToLowerRet(runner->nameOfProgram_);
 		return {name, runner};
 	}
 	template<typename T>
-	static std::pair<std::string, std::shared_ptr<programRunner>> addRing(bool lower = true) {
+	static std::pair<std::string, std::shared_ptr<programRunner>> addRing() {
 		auto runner = std::make_shared<T>();
-		return addRing(runner, lower);
+		return addRing(runner);
 	}
 
  public:
@@ -69,42 +66,20 @@ class oneRing : public programRunner {
    * @param inputCommands A map of string pairs of arguments to run a sub-runner
    *
    */
-  virtual int runProgram(std::map<std::string, std::string> inputCommands) const {
-    std::string prog = inputCommands["-program"];
-    if (programRunner::containsProgram(prog)) {
-      const auto &fi = cmdToFunc_.at(prog);
-      return fi.func_(inputCommands);
-    }
-
-    // If given as PROGRAM_NUM will run the PROGRAM's NUM command
-    std::string progName = "";
-    std::string progNumber = "";
-    if (prog.find("_") != std::string::npos) {
-      std::vector<std::string> toks = tokenizeString(prog, "_");
-      if (toks.size() == 2) {
-        progName = toks[0];
-        progNumber = toks[1];
-        if (strAllDigits(progNumber)) {
-          // inputCommands.erase(prog);
-          if (rings_.find(progName) != rings_.end()) {
-            return rings_.at(progName)->runByNumber(progNumber, inputCommands);
-          }
-        }
-      }
-    }
-    // if program is the number of one of the rings, list the program for that
-    // ring
-    if (rings_.find(prog) != rings_.end()) {
-      rings_.at(prog)->listPrograms(std::cout, "", "none");
-      return 1;
+  virtual int runProgram(const CmdArgs & args) const {
+  	//if the program is one of the programs in the oneRing then run that
+    if (cmdToFunc_.find(args.subProgramLowerCase()) != cmdToFunc_.end()) {
+      const auto &fi = cmdToFunc_.at(args.subProgramLowerCase());
+      return fi.func_(args);
     }
     // now try to find program in one of the rings
     for (auto &ring : rings_) {
-      if (ring.second->containsProgram(prog)) {
-        return ring.second->runProgram(inputCommands);
+      if (ring.second->containsProgram(args.subProgramLowerCase())) {
+        return ring.second->runProgram(args);
       }
     }
-    listPrograms(std::cout, inputCommands["-program"]);
+    //if we made it here, the one ring didn't contain the program and none of the sub rings either
+    listPrograms(std::cout, args.subProgram_, nameOfProgram_);
     return 1;
   }
 
@@ -122,51 +97,45 @@ class oneRing : public programRunner {
     return cmdToFunc_.find(program) != cmdToFunc_.end();
   }
 
-  /**@brief List the programs listed in all sub-runner
-   *
-   * @param out The std::ostream object to print the info to
-   * @param command A command to compare to all stored commands to find the
-   *closest one
-   * @param nameOfProgram The name of the current program, if it doesn't equal
-   *the name of current program it is assumed another program is calling this
-   *function
-   *
-   */
-  virtual void listPrograms(std::ostream &out, const std::string &command = "",
-                            const std::string &nameOfProgram = "oneRing")
-      const {
-    if (command != "") {
-      out << "Unrecognized command " << command << std::endl;
-    }
-    if(nameOfProgram == nameOfProgram_){
-      out << "Programs" << std::endl;
-      out << "Use " << nameOfProgram_
-          << " [PROGRAM] -help to see more details about each program"
-          << std::endl;
-      out << "Commands are not case sensitive" << std::endl;
 
-    }
-
-    out << nameOfProgram_ << std::endl;
-    listCommands(out);
-    for (auto &ring : rings_) {
-      ring.second->listPrograms(out, "", nameOfProgram);
-    }
-
-    if (command != "") {
-      out << "Unrecognized command " << command << std::endl;
-      std::pair<std::string, int> closestProgram = {"", 0};
-      for (auto &ring : rings_) {
-        std::pair<std::string, int> currentClosestProgram =
-            ring.second->closestProgram(command);
-        if (currentClosestProgram.second > closestProgram.second) {
-          closestProgram = currentClosestProgram;
-        }
-      }
-      out << "Input command " << command << std::endl;
-      out << "Did you mean  " << closestProgram.first << "?" << std::endl;
-    }
-  }
+	/**@brief List the programs listed in all sub-runner
+	 *
+	 * @param out The std::ostream object to print the info to
+	 * @param command A command to compare to all stored commands to find the
+	 *closest one
+	 * @param nameOfProgram The name of the current program, if it doesn't equal
+	 *the name of current program it is assumed another program is calling this
+	 *function
+	 *
+	 */
+	virtual void listPrograms(std::ostream &out, const std::string &command,
+			const std::string &nameOfProgram) const {
+		if (nameOfProgram == nameOfProgram_) {
+			out << "Programs" << std::endl;
+			out << "Use " << nameOfProgram_
+					<< " [PROGRAM] -help to see more details about each program"
+					<< std::endl;
+			out << "Commands are not case sensitive" << std::endl;
+		}
+		out << nameOfProgram_ << std::endl;
+		listCommands(out);
+		for (auto &ring : rings_) {
+			ring.second->listPrograms(out, "", nameOfProgram);
+		}
+		if ("" != command) {
+			out << "Unrecognized command " << command << std::endl;
+			std::pair<std::string, int> theClosetProgram = closestProgram(command);
+			for (auto &ring : rings_) {
+				std::pair<std::string, int> currentClosestProgram =
+						ring.second->closestProgram(command);
+				if (currentClosestProgram.second > theClosetProgram.second) {
+					theClosetProgram = currentClosestProgram;
+				}
+			}
+			out << "Input command " << command << std::endl;
+			out << "Did you mean  " << theClosetProgram.first << "?" << std::endl;
+		}
+	}
 };
 
 }  // namespace progutils

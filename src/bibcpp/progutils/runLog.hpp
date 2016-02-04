@@ -9,6 +9,7 @@
 #include "bibcpp/common.h"
 #include "bibcpp/utils.h"
 #include "bibcpp/files/fileSystemUtils.hpp"
+#include "bibcpp/progutils/CmdArgs.hpp"
 
 namespace bib {
 namespace progutils {
@@ -118,13 +119,11 @@ class runLog {
    *commandline for logging
    *
    */
-  void startRunLog(const std::map<std::string, std::string>& inputCommands) {
+  void startRunLog(const CmdArgs & inputCommands) {
     if (runLogFile_.is_open()) {
-      runLogFile_ << "Ran on " << getCurrentDate() << std::endl;
-      auto commandlineArgs = inputCommands.find("-commandline");
-      if (commandlineArgs != inputCommands.end()) {
-        runLogFile_ << commandlineArgs->second << std::endl;
-      }
+      runLogFile_ << "Ran on: " << getCurrentDate() << std::endl;
+      runLogFile_ << "Ran from: " << inputCommands.workingDir_ << std::endl;
+      runLogFile_ << inputCommands.commandLine_ << std::endl;
     } else {
       std::cerr << "\033[1;31m";
       std::cerr << "in runLog.startRunLog()\n";

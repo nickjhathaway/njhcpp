@@ -20,7 +20,59 @@
 
 namespace bib {
 
+/**@brief Strip the right side of a string of all characters matching c
+ *
+ * @param str The string to strip
+ * @param c The character to strip from str
+ */
+inline void rstrip(std::string & str, char c){
+	size_t pos = str.size();
+	while (pos != 0 && str[pos - 1] == c){
+		--pos;
+	}
+	if(pos != str.size()){
+		str.erase(str.begin() + pos, str.end());
+	}
+}
 
+/**@brief Strip the right side of a string of all characters matching c, return result
+ *
+ * @param str The string to strip
+ * @param c The character to strip from str
+ * @return A string with c stripped from str
+ */
+inline std::string rstripRet(std::string str, char c){
+	rstrip(str,c);
+	return str;
+}
+
+/**@brief Strip the left side of a string of all characters matching c
+ *
+ * @param str The string to strip
+ * @param c The character to strip from str
+ */
+inline void lstrip(std::string & str, char c){
+	size_t pos = 0;
+	if(!str.empty()){
+		if(str[pos] == c){
+			while(pos != str.size() - 1 && str[pos + 1] == c){
+				++pos;
+			}
+			str.erase(str.begin(), str.begin() + pos + 1);
+		}
+	}
+}
+
+/**@brief Strip the left side of a string of all characters matching c, return result
+ *
+ * @param str The string to strip
+ * @param c The character to strip from str
+ * @return A string with c stripped from str
+ */
+inline std::string lstripRet(std::string str, char c){
+	lstrip(str,c);
+	return str;
+}
 
 /**@brief Take a container and change it into a delimited string
  *

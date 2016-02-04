@@ -1,26 +1,3 @@
-UNAME_S := $(shell uname -s)
-LOCAL_PATH = $(EXT_PATH)/local
-#LD_FLAGS += 
-#defaults for most projects
-COMLIBS += -I./src/
-
-#dlib
-ifeq ($(USE_DLIB),1)
-	COMLIBS += -isystem$(LOCAL_PATH)/dlib/
-	#LD_FLAGS += -Wl,-rpath,$(LOCAL_PATH)/dlib/lib \
-	#		-L$(LOCAL_PATH)/dlib/lib  \
-	#		-ldlib
-endif
-
-#libsvm
-ifeq ($(USE_LIBSVM),1)
-	COMLIBS += -isystem$(LOCAL_PATH)/libsvm/
-	#LD_FLAGS += -Wl,-rpath,$(LOCAL_PATH)/dlib/lib \
-	#		-L$(LOCAL_PATH)/dlib/lib  \
-	#		-ldlib
-endif
-
-
 
 
 #SeekDeep
@@ -97,15 +74,7 @@ ifeq ($(USE_BIBSEQDEV),1)
 			-lbibseqDev
 endif
 
-#TwoBit
-ifeq ($(USE_TWOBIT),1)
-	COMLIBS += -isystem$(LOCAL_PATH)/TwoBit/include
-	LD_FLAGS += -Wl,-rpath,$(LOCAL_PATH)/TwoBit/lib \
-			-L$(LOCAL_PATH)/TwoBit/lib  \
-			-lTwoBit
-	USE_CPPPROGUTILS=1
-	USE_CPPITERTOOLS=1
-endif
+
 
 
 #bibcpp
@@ -123,98 +92,13 @@ ifeq ($(USE_BIBCPP),1)
 			#-lbibcpp
 endif
 
-#CPPPROGUTILS
-ifeq ($(USE_CPPPROGUTILS),1)
-	COMLIBS += -I$(LOCAL_PATH)/cppprogutils
-	LD_FLAGS += -lpthread
-	USE_CPPITERTOOLS=1
-endif
-
-#CPPITERTOOLS
-ifeq ($(USE_CPPITERTOOLS),1)
-	COMLIBS += -I$(LOCAL_PATH)/cppitertools
-endif
-
-#PSTREAMS
-ifeq ($(USE_PSTREAMS),1)
-	COMLIBS += -I$(LOCAL_PATH)/pstreams
-endif
-
-#jsoncpp
-ifeq ($(USE_JSONCPP),1)
-	COMLIBS += -isystem$(LOCAL_PATH)/jsoncpp/include
-	LD_FLAGS += -Wl,-rpath,$(LOCAL_PATH)/jsoncpp/lib \
-			-L$(LOCAL_PATH)/jsoncpp/lib  \
-			-ljsoncpp
-endif
-
-
-#boost
-ifeq ($(USE_BOOST),1)
-	CXXOPT += -DBOOST_UBLAS_NDEBUG
-	COMLIBS += -isystem$(LOCAL_PATH)/boost/include
-	LD_FLAGS +=  -Wl,-rpath,$(LOCAL_PATH)/boost/lib \
-			-L$(LOCAL_PATH)/boost/lib  \
-			-lboost_system -lboost_filesystem -lboost_iostreams
-			#-lpthread -lboost_program_options -lboost_system -lboost_thread \
-			#-lboost_filesystem -lboost_iostreams -lboost_regex -lboost_serialization
-endif
-
-#cppcms
-ifeq ($(USE_CPPCMS),1)
-	COMLIBS += -isystem$(LOCAL_PATH)/cppcms/include
-	LD_FLAGS += -Wl,-rpath,$(LOCAL_PATH)/cppcms/lib \
-			-L$(LOCAL_PATH)/cppcms/lib  \
-			-lcppcms -lbooster
-endif
-
-#armadillo
-ifeq ($(USE_ARMADILLO),1)
-	COMLIBS += -isystem$(LOCAL_PATH)/armadillo/include
-	LD_FLAGS += -Wl,-rpath,$(LOCAL_PATH)/armadillo/lib \
-			-L$(LOCAL_PATH)/armadillo/lib  \
-			-larmadillo
-endif
-
-
-#shark
-ifeq ($(USE_SHARK),1)
-	COMLIBS += -isystem$(LOCAL_PATH)/shark/include
-	LD_FLAGS += -Wl,-rpath,$(LOCAL_PATH)/shark/lib \
-		-L$(LOCAL_PATH)/shark/lib  \
-		-lshark
-endif
 
 
 
-#CATCH
-ifeq ($(USE_CATCH),1)
-	COMLIBS += -I$(LOCAL_PATH)/catch/single_include
-endif
-
-#ZI_LIB
-ifeq ($(USE_ZI_LIB),1)
-	COMLIBS += -I$(LOCAL_PATH)/zi_lib
-	ifeq ($(UNAME_S),Darwin)
-
-	else
-		#CXXFLAGS += -DZI_USE_OPENMP
-    	LD_FLAGS += -lrt
-	endif
-endif
 
 
-#bamtools
-ifeq ($(USE_BAMTOOLS),1)
-	COMLIBS += -isystem$(LOCAL_PATH)/bamtools/include/bamtools
-	LD_FLAGS += -Wl,-rpath,$(LOCAL_PATH)/bamtools/lib/bamtools \
-			-L$(LOCAL_PATH)/bamtools/lib/bamtools\
-			-lbamtools
-endif
-#c url library 
-ifeq ($(USE_CURL),1)
-	LD_FLAGS += -lcurl
-endif
+
+
 
 #gtkmm library, should have 3.0 install and .pc file should be in PKG_CONFIG_PATH  
 ifeq ($(USE_GTKMM),1)
@@ -270,19 +154,6 @@ ifeq ($(USE_QT5),1)
     	COMLIBS += -I/usr/local/opt/qt5/include
 	endif
 endif
-
-#R
-ifeq ($(USE_R),1)
-	include $(ROOT)/r-makefile-common.mk
-endif
-
-#Mac specific
-ifeq ($(UNAME_S),Darwin)
-    #for dylib path fixing in macs, this gets rid of the name_size limit, which why the hell is there a name size limit
-    LD_FLAGS += -headerpad_max_install_names
-endif
-
-
 
 # from http://stackoverflow.com/a/18258352
 rwildcard=$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst *,%,$2),$d))

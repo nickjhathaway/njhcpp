@@ -9,8 +9,6 @@
 #include "bibcpp/utils/typeUtils.hpp"
 #include "bibcpp/utils/stringUtils.hpp"
 #include "bibcpp/bashUtils.h"
-
-#include <map>
 #include "bibcpp/common/misc.hpp"
 
 namespace bib {
@@ -19,7 +17,7 @@ namespace progutils {
 /**@brief Class hold commandline flag information
  *
  */
-class flag {
+class Flag {
 public:
 	/**@brief construct with templated option, so any value can be given that can be converted to a string
 	 *
@@ -29,11 +27,35 @@ public:
 	 * @param required Whether the flag is required or not
 	 */
 	template<typename T>
-	flag(const T & opt, const std::string & flags,
+	Flag(const T & opt, const std::string & flags,
 			const std::string & shortDescription, bool required) :
-			flags_(tokenizeString(flags, ",")), shortDescription_(shortDescription), required_(
+			 shortDescription_(shortDescription), required_(
 					required), set_(false), setValue_(estd::to_string(opt)), defaultValue_(
 					estd::to_string(opt)), type_(getTypeName(opt)) {
+		auto flagToks = tokenizeString(flags, ",");
+		for(const auto & flagTok : flagToks){
+			if(flagTok.empty()){
+				std::stringstream ss;
+				ss << "Error in : " << __PRETTY_FUNCTION__ << ", adding a empty flag" << std::endl;
+				ss << "flags:" << flags << std::endl;
+				throw std::runtime_error{ss.str()};
+			}
+			if('-' != flagTok.front()){
+				std::stringstream ss;
+				ss << "Error in : " << __PRETTY_FUNCTION__ << ", adding a flag that doens't start with a dash" << std::endl;
+				ss << "flags:" << flags << std::endl;
+				throw std::runtime_error{ss.str()};
+			}
+			auto pos = flagTok.find_first_not_of("-");
+
+			if(std::string::npos == pos){
+				std::stringstream ss;
+				ss << "Error in : " << __PRETTY_FUNCTION__ << ", adding a flag made up of only dashes" << std::endl;
+				ss << "flags:" << flags << std::endl;
+				throw std::runtime_error{ss.str()};
+			}
+			flags_.emplace_back(flagTok);
+		}
 	}
 
 	std::vector<std::string> flags_; /**<The flags associated with this option */
@@ -61,6 +83,23 @@ public:
 		return ret;
 	}
 
+	std::vector<std::string> flagsNoDash() const {
+		std::vector<std::string> ret;
+		for (const auto & flagStr : flags_) {
+			auto pos = flagStr.find_first_not_of("-");
+			if(std::string::npos == pos){
+				std::stringstream ss;
+				ss << "Error in : " << __PRETTY_FUNCTION__ << ", have a flag with only dashes" << std::endl;
+				ss << toJson() << std::endl;
+				throw std::runtime_error{ss.str()};
+			}
+			ret.emplace_back(flagStr.substr(pos));
+		}
+		sort(ret,
+				[](const std::string & str1, const std::string & str2) {return str1.size() > str2.size();});
+		return ret;
+	}
+
 	/**@brief Function to set the option with a new value from commandline
 	 *
 	 * @param option The new value for this option
@@ -78,6 +117,20 @@ public:
 			set_ = true;
 		}
 	}
+	static std::string fullInfoHeader(const std::string& delim) {
+		return conToStr(std::vector<std::string> { "Flags", "ShortDescription",
+				"value", "defaultValue" }, delim);
+	}
+	/**@brief Print a info on option for a file parameters used file
+	 *
+	 * @param delim The delimiter to use
+	 * @param header Whether to just print the header
+	 * @return A string with the info
+	 */
+	std::string fullInfoAutoDash(const std::string& delim) const {
+		return getFlagsStrAutoDash() + delim + shortDescription_ + delim + setValue_
+				+ delim + defaultValue_;
+	}
 
 	/**@brief Print a info on option for a file parameters used file
 	 *
@@ -85,12 +138,8 @@ public:
 	 * @param header Whether to just print the header
 	 * @return A string with the info
 	 */
-	std::string fullInfo(const std::string delim = "\t",
-			bool header = false) const {
-		if (header) {
-			return "Flags\tShortDescription\tvalue\tdefaultValue";
-		}
-		return conToStr(flags_, ",") + delim + shortDescription_ + delim + setValue_
+	std::string fullInfo(const std::string& delim) const {
+		return getFlagsStr() + delim + shortDescription_ + delim + setValue_
 				+ delim + defaultValue_;
 	}
 	/**@brief For printing info to the terminal with color output
@@ -106,49 +155,68 @@ public:
 				+ bashCT::reset + "; "
 						"(" + bashCT::addColor(202) + bashCT::bold + type_ + bashCT::reset
 				+ ")";
-
 		return out;
 	}
-
-};
-
-/**@brief A class for holding all the parameters
- *
- */
-class flagHolder {
-
-public:
-	/**@brief Default constructor for an empty holder
+	/**@brief Get a comma delimited string of the flags while automating the number of dashes to have bashed on length
 	 *
+	 * @return A string of the flags
 	 */
-	flagHolder() {
-	}
-
-	/**@brief A vector holding all the parameters
-	 *
-	 */
-	std::map<std::string, flag> flags_;
-	/**Add a parameter that was already constructed
-	 *
-	 * @param newParameter A parameter object to add to the holder
-	 */
-	void addFlag(const flag& newFlag) {
-		flags_.emplace(conToStr(newFlag.flags_, ","), newFlag);
-	}
-
-	/**@brief Output the information for all stored parameters
-	 *
-	 * @param out An std::ostream object to print the info to
-	 *
-	 */
-	void outputParsFile(std::ostream& out) {
-		if (!flags_.empty()) {
-			out << flags_.begin()->second.fullInfo("\t", true) << std::endl;
-			for (const auto & f : flags_) {
-				out << f.second.fullInfo("\t") << std::endl;
+	std::string getFlagsStrAutoDash() const {
+		auto flagsWithNoDash = flagsNoDash();
+		std::string ret;
+		for(const auto & flagStr : flagsWithNoDash){
+			if(!ret.empty()){
+				ret+= ",";
+			}
+			if(flagStr.size() == 1){
+				ret += "-" + flagStr;
+			}else{
+				ret += "--" + flagStr;
 			}
 		}
+		return ret;
 	}
+
+	/**@brief Get a vector of the flags while automating the number of dashes to have bashed on length
+	 *
+	 * @return A vector of the flags
+	 */
+	std::vector<std::string> getFlagsStrsAutoDash() const {
+		std::vector<std::string> ret;
+		auto flagsWithNoDash = flagsNoDash();
+		for(const auto & flagStr : flagsWithNoDash){
+			if(flagStr.size() == 1){
+				ret.emplace_back("-" + flagStr);
+			}else{
+				ret.emplace_back("--" + flagStr);
+			}
+		}
+		return ret;
+	}
+
+	/**@brief Get a comma delimited string of the flags
+	 *
+	 * @return A string of the flags
+	 */
+	std::string getFlagsStr() const {
+		std::string ret;
+		for(const auto & flagStr : flags_){
+			if(!ret.empty()){
+				ret+= ",";
+			}
+			ret += flagStr;
+		}
+		return ret;
+	}
+
+	/**@brief Get the flags
+	 *
+	 * @return a vector of the flags
+	 */
+	std::vector<std::string> getFlagsStrs() const {
+		return flags_;
+	}
+
 };
 
 }  // namespace progutils
