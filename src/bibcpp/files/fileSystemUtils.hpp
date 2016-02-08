@@ -15,7 +15,7 @@
 #include <boost/filesystem.hpp>
 #include "bibcpp/utils/stringUtils.hpp" //appendAsNeededRet()
 #include "bibcpp/utils/time/timeUtils.hpp" //getCurrentDate()
-
+#include "bibcpp/files/filePathUtils.hpp" //join()
 namespace bib {
 namespace files {
 namespace bfs = boost::filesystem;
@@ -288,6 +288,48 @@ inline std::vector<std::string> makeDir(std::string parentDirectory,
 		ret.emplace_back(makeDir(parentDirectory, d, perms));
 	}
 	return ret;
+}
+
+/**@brief Make directory if it doesn't exist
+ *
+ * @param parentDirectory The directory in which to make the directory
+ * @param newDirectory The new directory to make in parentDirectory
+ * @param perms The permissions to set on the new directory
+ * @return The name of the create directory or the name of the already created directory
+ */
+inline std::string makeDirP(std::string parentDirectory,
+		std::string newDirectory,
+		mode_t perms = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) {
+	std::string newDirectoryName = bib::files::join(parentDirectory,
+			replaceString(newDirectory, "TODAY", getCurrentDate()) + "/");
+	if (!bib::files::bfs::exists(newDirectoryName)) {
+		if (std::string::npos == newDirectory.find("/")) {
+			auto toks = tokenizeString(newDirectory, "/");
+			for (const auto & tok : toks) {
+				int32_t directoryStatus = 0;
+				newDirectoryName = bib::files::checkMakeDir(parentDirectory, tok,
+						directoryStatus, perms);
+				parentDirectory = join(parentDirectory, tok);
+				if (directoryStatus != 0) {
+					std::stringstream ss;
+					ss << "Error in" << __PRETTY_FUNCTION__ << ", error making directory "
+							<< newDirectoryName << std::endl;
+					throw std::runtime_error { ss.str() };
+				}
+			}
+		} else {
+			int32_t directoryStatus = 0;
+			newDirectoryName = bib::files::checkMakeDir(parentDirectory, newDirectory,
+					directoryStatus, perms);
+			if (directoryStatus != 0) {
+				std::stringstream ss;
+				ss << "Error in" << __PRETTY_FUNCTION__ << ", error making directory "
+						<< newDirectoryName << std::endl;
+				throw std::runtime_error { ss.str() };
+			}
+		}
+	}
+	return newDirectoryName;
 }
 
 /**@brief remove a non empty directory forcibly
