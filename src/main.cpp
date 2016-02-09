@@ -32,5 +32,7 @@ int main(int argc, char* argv[]){
   setUp.setOption(ft, "--ft", "ft");
   setUp.finishSetUp(std::cout);
   setUp.writeParametersFile("", false, false);
+
+
   return 0;
 }

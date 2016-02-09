@@ -40,7 +40,6 @@ inline std::string join(const std::vector<std::string> & paths){
 	if(paths.size() == 0){
 		return ret;
 	}
-
 	for(const auto & p : iter::range(paths.size() - 1)){
 		ret += appendAsNeededRet(paths[p], "/");
 	}
