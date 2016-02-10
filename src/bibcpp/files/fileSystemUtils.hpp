@@ -268,7 +268,7 @@ inline int32_t makeDir(const MkdirPar & pars) {
 			}
 		} else {
 			std::stringstream ss;
-			ss << "Error in: " << __PRETTY_FUNCTION__ << ", directory" << pars.dirName_
+			ss << "Error in: " << __PRETTY_FUNCTION__ << ", directory " << pars.dirName_
 					<< " already exists, use overWrite = true to overwrite contents "
 					<< std::endl;
 			throw std::runtime_error { ss.str() };
@@ -277,7 +277,7 @@ inline int32_t makeDir(const MkdirPar & pars) {
 	int32_t directoryStatus = mkdir(pars.dirName_.c_str(), pars.perms_);
 	if (directoryStatus != 0) {
 		std::stringstream ss;
-		ss << "Error in: " << __PRETTY_FUNCTION__ << ", in making directory"
+		ss << "Error in: " << __PRETTY_FUNCTION__ << ", in making directory "
 				<< pars.dirName_ << ", mkdir return stats: " << directoryStatus << std::endl;
 		throw std::runtime_error { ss.str() };
 	}
