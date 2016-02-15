@@ -11,9 +11,49 @@
 #include <boost/filesystem.hpp>
 #include "bibcpp/utils/stringUtils.hpp" //appendAsNeededRet()
 
+
+namespace estd {
+template <>
+inline std::string to_string(const boost::filesystem::path & path) {
+  return path.string();
+}
+}  // namespace estd
+
 namespace bib {
 namespace files {
 namespace bfs = boost::filesystem;
+
+template<typename T>
+void addAsPathToPath(std::string& path, const T& e) {
+	bib::appendAsNeeded(path, "/");
+	path.append(estd::to_string(e));
+}
+
+template<typename T>
+void addAsPathToPath(std::string& path, const std::vector<T>& items) {
+	for (const auto& e : items) {
+		addAsPathToPath(path, e);
+	}
+}
+
+template<typename T>
+void pasteAsPathAdd(std::string & path, const T& last) {
+	addAsPathToPath(path, last);
+}
+
+template<typename N, typename ... T>
+void pasteAsPathAdd(std::string& path, const N& next, const T&... rest) {
+	addAsPathToPath(path, next);
+	pasteAsPathAdd(path, rest...);
+}
+
+template<typename ... T>
+bfs::path make_path(const T&... items) {
+	std::string ret = "";
+	pasteAsPathAdd(ret, items...);
+	return bfs::path(ret.substr(1));
+}
+
 
 /**@brief Joining parent path with child path with a unix dir separator if needed
  *

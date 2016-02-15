@@ -57,7 +57,7 @@ constexpr bool isString(){
  * @return The element changed into a string
  */
 template <typename T>
-std::string to_string(T e) {
+std::string to_string(const T & e) {
   std::stringstream ss;
   ss << e;
   return ss.str();
@@ -69,7 +69,7 @@ std::string to_string(T e) {
  * @return True if obj is true and false if obj is false
  */
 template <>
-inline std::string to_string<bool>(bool obj) {
+inline std::string to_string<bool>(const bool & obj) {
 	if(obj){
 		return "true";
 	}else{
