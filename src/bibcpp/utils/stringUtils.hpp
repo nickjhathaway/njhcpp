@@ -469,4 +469,14 @@ inline std::string appendAsNeededRet(std::string str, const std::string & app){
 	return str;
 }
 
+/**@brief Determine if string has a whitespace character
+ *
+ * @param str The string to examine
+ * @return Whether str has a whitepsace character
+ */
+inline bool strHasWhitesapce(const std::string & str){
+	return std::any_of(std::begin(str), std::end(str),
+			[](char c) {return std::isspace(c);});
+}
+
 } // namesapce bib

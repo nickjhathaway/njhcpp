@@ -294,7 +294,11 @@ public:
 			} else if (args == 1 && !beginsWith(secondArg, "-")) {
 				ss << argv[args];
 			} else {
-				ss << "\"" << argv[args] << "\"";
+				if(strHasWhitesapce(argv[args])){
+					ss << "\"" << argv[args] << "\"";
+				}else{
+					ss << argv[args];
+				}
 			}
 			if (args + 1 != argc) {
 				ss << " ";
@@ -320,9 +324,18 @@ public:
 				ss << arg.first;
 			} else {
 				if (beginsWith(arg.second, "-")) {
-					ss << "\"" << arg.first << "=" << arg.second << "\"";
+					if(strHasWhitesapce(arg.first) || strHasWhitesapce(arg.second)){
+						ss << "\"" << arg.first << "=" << arg.second << "\"";
+					}else{
+						ss << arg.first << "=" << arg.second;
+					}
 				} else {
-					ss << arg.first << " \"" << arg.second << "\"";
+					ss << arg.first << " ";
+					if(strHasWhitesapce(arg.second)){
+						ss << "\""<< arg.second << "\"";
+					}else{
+						ss << arg.second;
+					}
 				}
 			}
 		}
