@@ -134,7 +134,7 @@ inline std::string get_cwd() {
  * @return The home directory if $HOME exists, blank otherwise
  */
 inline std::string getHomeStr(){
-	char * homeTest1 = getenv("HOME");
+	char * homeTest1 = ::getenv("HOME");
 	if(homeTest1){
 		return homeTest1;
 	}else{
