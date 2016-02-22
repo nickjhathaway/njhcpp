@@ -169,6 +169,34 @@ inline bib::sys::RunOutput hasSysCommandFullOut(const std::string & cmd){
 }
 
 
+/**@brief Check to see if bash environment has variable
+ *
+ * @param var The variable to check for
+ * @return whether or not the environment contains var
+ */
+inline bool EnvHasVar(const std::string & var) {
+	const char * val = ::getenv(var.c_str());
+	if (0 == val) {
+		return false;
+	} else {
+		return true;
+	}
+}
+
+/**@brief Get the value for the environmental variable
+ *
+ * @param var The variable to get the value of
+ * @return the value held in the var
+ */
+inline std::string GetEnv(const std::string & var) {
+	const char * val = ::getenv(var.c_str());
+	if (0 == val) {
+		return "";
+	} else {
+		return val;
+	}
+}
+
 } // namespace sys
 } // namespace bib
 
