@@ -361,7 +361,7 @@ class programRunner {
    */
   template <typename T>
   static std::pair<std::string, funcInfo> addFunc(std::string title, T &func,
-                                           bool alias) {
+                                           bool alias = false) {
     auto name = strToLowerRet(title);
     return {name, {std::bind(&func, std::placeholders::_1), title, alias}};
   }
