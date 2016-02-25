@@ -30,8 +30,7 @@ public:
 	 */
 	CmdArgs(int argc, char* argv[]) :
 			arguments_(parseArguments(argc, argv)) {
-		masterProgram_ = strToLowerRet(argv[0]);
-
+		masterProgram_ = argv[0];
 		std::string secondArg = "";
 		if (argc > 0) {
 			secondArg = strToLowerRet(argv[1]);
