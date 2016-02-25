@@ -93,7 +93,7 @@ class programRunner {
    */
   virtual int runProgram(const CmdArgs & args) const {
     if (containsProgram(args.subProgramLowerCase())) {
-      const auto &fi = cmdToFunc_.at(args.subProgram_);
+      const auto &fi = cmdToFunc_.at(args.subProgramLowerCase());
       return fi.func_(args);
     }
     listPrograms(std::cout, args.subProgram_, nameOfProgram_);
@@ -231,14 +231,14 @@ class programRunner {
       // log current run command
       std::cout << currentCommands.commandLine_ << std::endl;
       runLog << currentCommands.commandLine_ << std::endl;
-      setUp.logRunTime(runLog);
-      setUp.logRunTime(std::cout);
       std::cout << std::endl;
       // run the current command
       stopWatch watch;
       runProgram(currentCommands);
       std::cout << "\tCurrent Command Run Time: " << watch.totalTimeFormatted(6) << std::endl;
       runLog << "\tCurrent Command Run Time: " << watch.totalTimeFormatted(6) << std::endl;
+      setUp.logRunTime(runLog);
+      setUp.logRunTime(std::cout);
       std::cout << std::endl;
     }
     setUp.logRunTime(runLog);
