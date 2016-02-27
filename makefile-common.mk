@@ -92,9 +92,20 @@ ifeq ($(USE_BIBSEQDEV),1)
 	USE_BIBSEQ=0
 	USE_TWOBIT=1
 	USE_CURL=1
+	ifeq ($(UNAME_S),Darwin)
+    	USE_SHAREDMUTEX=1
+	endif
 	LD_FLAGS += -Wl,-rpath,$(LOCAL_PATH)/bibseqDev/lib \
 			-L$(LOCAL_PATH)/bibseqDev/lib  \
 			-lbibseqDev
+endif
+
+#sharedMutex
+ifeq ($(USE_SHAREDMUTEX),1)
+	COMLIBS += -isystem$(LOCAL_PATH)/sharedMutex/include
+	LD_FLAGS += -Wl,-rpath,$(LOCAL_PATH)/sharedMutex/lib \
+			-L$(LOCAL_PATH)/sharedMutex/lib  \
+			-lsharedMutex
 endif
 
 #TwoBit
