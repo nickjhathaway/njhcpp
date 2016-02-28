@@ -479,4 +479,36 @@ inline bool strHasWhitesapce(const std::string & str){
 			[](char c) {return std::isspace(c);});
 }
 
+
+template<typename T>
+void addAsStrToStr(std::string& str, const T& e) {
+	str.append(estd::to_string(e));
+}
+
+template<typename T>
+void addAsStrToStr(std::string& str, const std::vector<T>& items) {
+	for (const auto& e : items) {
+		str.append(estd::to_string(e));
+	}
+}
+
+template<typename T>
+void pasteAsStrAdd(std::string & str, const T& last) {
+	addAsStrToStr(str, last);
+}
+
+template<typename N, typename ... T>
+void pasteAsStrAdd(std::string& str, const N& next, const T&... rest) {
+	addAsStrToStr(str, next);
+	pasteAsStrAdd(str, rest...);
+}
+
+template<typename ... T>
+std::string pasteAsStr(const T&... items) {
+	std::string ret = "";
+	ret.reserve(sizeof...(items));
+	pasteAsStrAdd(ret, items...);
+	return ret;
+}
+
 } // namesapce bib
