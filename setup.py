@@ -18,17 +18,19 @@ BuildPaths = namedtuple("BuildPaths", 'url build_dir build_sub_dir local_dir')
 
 
 def fixDyLibOnMac(libDir):
-        files = os.listdir(libDir)
-        for file in files:
-            if os.path.isfile(file) and str(file).endswith(".dylib"):
-                try:
-                    cmd = "install_name_tool -id {full_libpath} {full_libpath}".format(full_libpath = os.path.abspath(file))
-                    Utils.run(cmd)
-                except Exception,e:
-                    print (e)
-                    print ("Failed to fix dylib for {path}".format(path = os.path.abspath(file)))
-            elif os.path.isdir(file):
-                fixDyLibOnMac(file)
+    print(libDir)
+    files = os.listdir(libDir)
+    for file in files:
+        print file
+        if os.path.isfile(file) and str(file).endswith(".dylib"):
+            try:
+                cmd = "install_name_tool -id {full_libpath} {full_libpath}".format(full_libpath = os.path.abspath(file))
+                Utils.run(cmd)
+            except Exception,e:
+                print (e)
+                print ("Failed to fix dylib for {path}".format(path = os.path.abspath(file)))
+        elif os.path.isdir(file):
+            fixDyLibOnMac(file)
 
 def runAndCapture(cmd):
     # print CT.boldRed("before process")
@@ -1021,6 +1023,7 @@ class Setup:
             raise Exception("Unrecognized lib type " + str(pack.libType_))
         if Utils.isMac():
             libPath = os.path.join(bPaths.local_dir, "lib")
+            print libPath
             if(os.path.exists(libPath)):
                 fixDyLibOnMac(libPath)
         
