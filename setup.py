@@ -168,7 +168,10 @@ class CPPLibPackage():
         build_dir = os.path.join(self.externalLibDir_.ext_build, self.name_, verName)
         fn = os.path.basename(url)
         fn_noex = fn.replace(".tar.gz", "").replace(".tar.bz2", "").replace(".git", "")
-        build_sub_dir = os.path.join(self.externalLibDir_.ext_build, self.name_, verName, fn_noex)
+        if str(fn).endswith(".git"):
+            build_sub_dir = os.path.join(self.externalLibDir_.ext_build, self.name_, verName, self.name_)
+        else:
+            build_sub_dir = os.path.join(self.externalLibDir_.ext_build, self.name_, verName, fn_noex)
         local_dir = os.path.join(self.externalLibDir_.install_dir, self.name_, verName, self.name_)
         self.versions_[verName] = CPPLibPackageVersion(self.name_, verName,BuildPaths(url, build_dir, build_sub_dir, local_dir), depends)
     
@@ -453,7 +456,7 @@ class Packages():
         return pack
     
     def __bibseqDev(self):
-        url = "https://github.com/bailey-lab/bibseqPrivate.git"
+        url = "git@github.com:bailey-lab/bibseqPrivate.git"
         name = "bibseqDev"
         buildCmd = self.__bibProjectBuildCmd()
         pack = CPPLibPackage(name, buildCmd, self.dirMaster_, "git", "master")
@@ -491,7 +494,7 @@ class Packages():
         return pack
     
     def __SeekDeepDev(self):
-        url = "https://github.com/bailey-lab/SeekDeepPrivate.git"
+        url = "git@github.com:bailey-lab/SeekDeepPrivate.git"
         name = "SeekDeepDev"
         buildCmd = self.__bibProjectBuildCmd()
         pack = CPPLibPackage(name, buildCmd, self.dirMaster_, "git", "master")
