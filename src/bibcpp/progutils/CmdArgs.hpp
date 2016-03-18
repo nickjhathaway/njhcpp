@@ -32,7 +32,7 @@ public:
 			arguments_(parseArguments(argc, argv)) {
 		masterProgram_ = argv[0];
 		std::string secondArg = "";
-		if (argc > 0) {
+		if (argc > 1) {
 			secondArg = strToLowerRet(argv[1]);
 		}
 		if (!beginsWith(secondArg, "-")) {
@@ -284,7 +284,7 @@ public:
 	static std::string logRunArgumnets(int argc, char* argv[]) {
 		std::stringstream ss;
 		std::string secondArg = "";
-		if (argc > 0) {
+		if (argc > 1) {
 			secondArg = strToLowerRet(argv[1]);
 		}
 		for (int args = 0; args < argc; ++args) {
