@@ -967,7 +967,7 @@ class Setup:
             print "failed to clone from {url}".format(url=bPath.url)
             sys.exit(1)
     
-    def __defaultBuild(self, package, version):
+    def __defaultBuild(self, package, version, fromGitTag = True):
         pack = self.__package(package)
         if not pack.hasVersion(version):
             raise Exception("No set up for version " + str(version) + " for " + str(package))
@@ -978,14 +978,26 @@ class Setup:
             print cmd
         if "git" == pack.libType_:
             Utils.mkdir(bPaths.build_dir)
-            self.__buildFromGitTag(bPaths, cmd, version)
+            if fromGitTag:
+                self.__buildFromGitTag(bPaths, cmd, version)
+            else:
+                self.__buildFromGitBranch(bPaths, cmd, version)
         elif "git-headeronly" == pack.libType_:
-            self.__gitTag(bPaths, version)
+            if fromGitTag:
+                self.__gitTag(bPaths, version)
+            else:
+                self.__gitBranch(bPaths, version)
         elif "file" == pack.libType_:
             Utils.mkdir(bPaths.build_dir)
             self.__buildFromFile(bPaths, cmd)
         else:
             raise Exception("Unrecognized lib type " + str(pack.libType_))
+        
+    def __defaultBibBuild(self, package, version):
+        if "develop" == version:
+            self.__defaultBuild(package, version, False)
+        else:
+            self.__defaultBuild(package, version, True)
         
     def updateBibProjects(self,bibProjects):
         inLibs = bibProjects.split(",")
@@ -1055,31 +1067,31 @@ class Setup:
         self.__defaultBuild("bamtools", version)
 
     def bibcpp(self, version):
-        self.__defaultBuild("bibcpp", version)
+        self.__defaultBibBuild("bibcpp", version)
 
     def bibseq(self, version):
-        self.__defaultBuild("bibseq", version)
+        self.__defaultBibBuild("bibseq", version)
         
     def twobit(self, version):
-        self.__defaultBuild("twobit", version)
+        self.__defaultBibBuild("twobit", version)
             
     def sharedMutex(self, version):
-        self.__defaultBuild("sharedmutex", version)
+        self.__defaultBibBuild("sharedmutex", version)
     
     def bibseqDev(self, version):
-        self.__defaultBuild("bibseqdev", version)
+        self.__defaultBibBuild("bibseqdev", version)
         
     def SeekDeep(self, version):
-        self.__defaultBuild("seekdeep", version)
+        self.__defaultBibBuild("seekdeep", version)
     
     def SeekDeepDev(self, version):
-        self.__defaultBuild("seekdeepdev", version)
+        self.__defaultBibBuild("seekdeepdev", version)
         
     def seqserver(self, version):
-        self.__defaultBuild("seqserver", version)
+        self.__defaultBibBuild("seqserver", version)
         
     def njhRInside(self, version):
-        self.__defaultBuild("njhrinside", version)
+        self.__defaultBibBuild("njhrinside", version)
         
     def cppprogutils(self, version):
         self.__defaultBuild("cppprogutils", version)
