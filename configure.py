@@ -9,7 +9,7 @@ def main():
     name = "bibcpp"
     libs = "boost:1_60_0,pstreams:RELEASE_0_8_1,jsoncpp:1.6.5,cppitertools:v0.1"
     args = genHelper.parseNjhConfigureArgs()
-    cmd = genHelper.mkConfigCmd(name, libs, sys.argv)
+    cmd = genHelper.mkConfigCmd(name, libs, sys.argv, "lpthread,-lz,-lrt")
     Utils.run(cmd)
     
 main()

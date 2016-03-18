@@ -442,9 +442,11 @@ class Packages():
         name = "bibseq"
         buildCmd = self.__bibProjectBuildCmd()
         pack = CPPLibPackage(name, buildCmd, self.dirMaster_, "git", "2.2.1")
-        pack.addVersion(url, "develop",[LibNameVer("bibcpp", "develop"),LibNameVer("twobit", "develop"),LibNameVer("bamtools", "2.4.0"),LibNameVer("armadillo", "6.200.3")])
+        pack.addVersion(url, "develop",[LibNameVer("bibcpp", "develop"),LibNameVer("twobit", "develop"),LibNameVer("bamtools", "v2.4.0"),LibNameVer("armadillo", "6.200.3")])
         pack.versions_["develop"].additionalLdFlags_ = ["-lcurl"] 
-        pack.addVersion(url, "2.2.1",[LibNameVer("bibcpp", "2.2.1"),LibNameVer("bamtools", "2.4.0"),LibNameVer("armadillo", "6.200.3")])
+        if Utils.isMac():
+            pack.versions_["develop"].depends_.append(LibNameVer("sharedMutex", "v0.1"))
+        pack.addVersion(url, "2.2.1",[LibNameVer("bibcpp", "2.2.1"),LibNameVer("bamtools", "v2.4.0"),LibNameVer("armadillo", "6.200.3")])
         pack.versions_["2.2.1"].additionalLdFlags_ = ["-lcurl"] 
         return pack
     
@@ -453,8 +455,11 @@ class Packages():
         name = "bibseqDev"
         buildCmd = self.__bibProjectBuildCmd()
         pack = CPPLibPackage(name, buildCmd, self.dirMaster_, "git", "master")
-        pack.addVersion(url, "master",[LibNameVer("bibcpp", "develop"),LibNameVer("twobit", "develop"),LibNameVer("curl", "default"),LibNameVer("bamtools", "2.4.0"),LibNameVer("armadillo", "6.200.3")])
-        return pack
+        pack.addVersion(url, "master",[LibNameVer("bibcpp", "develop"),LibNameVer("twobit", "develop"),LibNameVer("bamtools", "2.4.0"),LibNameVer("armadillo", "6.200.3")])
+        pack.versions_["master"].additionalLdFlags_ = ["-lcurl"]
+        if Utils.isMac():
+            pack.versions_["master"].depends_.append(LibNameVer("sharedMutex", "v0.1"))
+        return pack 
     
     def __twobit(self):
         url = "https://github.com/weng-lab/TwoBit.git"
@@ -518,7 +523,7 @@ class Packages():
         pack.versions_["develop"].additionalLdFlags_ = ["-lpthread", "-lz", "-lrt"] 
         pack.addVersion(url, "2.2.1",[LibNameVer("jsoncpp", "1.6.5"),LibNameVer("boost", "1_58_0"),LibNameVer("cppitertools", "v0.1"),LibNameVer("pstreams", "RELEASE_0_8_1")])
         pack.versions_["2.2.1"].additionalLdFlags_ = ["-lpthread", "-lz", "-lrt"]         
-        return pack
+        return pack#lcurl,"-lpthread", "-lz", "-lrt"
 
     def __boost(self):
         name = "boost"
@@ -915,7 +920,7 @@ class Setup:
     def __buildFromGitTag(self, bPath, cmd, tagName):
         if os.path.exists(bPath.build_sub_dir):
             print "pulling from {url}".format(url=bPath.url)
-            pCmd = "git checkout origin/master && git pull && git checkout " + tagName
+            pCmd = "git checkout master && git pull && git checkout " + tagName
             try:
                 Utils.run_in_dir(pCmd, bPath.build_sub_dir)
             except Exception, e:
@@ -998,13 +1003,16 @@ class Setup:
                 print "Removing " + CT.boldBlack(bPaths.local_dir)
                 Utils.rm_rf(bPaths.local_dir)
         for set in self.setUpsNeeded.keys():
+            pack = self.__package(set)
+            bPath = pack.versions_[self.setUpsNeeded[set]].bPaths_
+            if os.path.exists(os.path.join(bPath.build_dir,set, "makefile-common.mk")):
+                os.remove(os.path.join(bPath.build_dir,set, "makefile-common.mk"))
             self.__setup(set, self.setUpsNeeded[set])
         for p in self.installed:
             print p, CT.boldGreen("installed")
 
         for p in self.failedInstall:
-            print  p, CT.boldRed("failed to install")    
-        
+            print  p, CT.boldRed("failed to install")
         
     
     def installRPackageSource(self,version, sourceFile):
@@ -1179,14 +1187,12 @@ def parse_args():
 def main():
     args = parse_args()
     s = Setup(args)
-    
-        
-    
+    s.externalChecks()
     if(args.instRPackageName):
-        s.installRPackageName(args.instRPackageName[0])
+        s.installRPackageName(args.instRPackageName[0], s.packages_["r"].defaultVersion_)
         return 0
     if(args.instRPackageSource):
-        s.installRPackageSource(args.instRPackageSource[0])
+        s.installRPackageSource(args.instRPackageSource[0], s.packages_["r"].defaultVersion_)
         return 0
     if args.updateBibProjects:
         s.updateBibProjects(args.updateBibProjects)
@@ -1195,10 +1201,13 @@ def main():
         s.printAvailableSetUps()
     elif args.addBashCompletion:
         if(os.path.isdir("./bashCompletes")):
-            cmd = "cat bashCompletes/* >> ~/.bash_completion"
+            cmd = "echo >> ~/.bash_completion && cat bashCompletes/* >> ~/.bash_completion"
             Utils.run(cmd)
         if(os.path.isdir("./bash_completion.d")):
-            cmd = "cat bash_completion.d/* >> ~/.bash_completion"
+            cmd = "echo >> ~/.bash_completion && cat bash_completion.d/* >> ~/.bash_completion"
+            Utils.run(cmd)
+        if(os.path.isdir("./etc/bash_completion.d")):
+            cmd = "echo >> ~/.bash_completion && cat ./etc/bash_completion.d/* >> ~/.bash_completion"
             Utils.run(cmd)
     else:
         if len(s.setUpsNeeded) == 0:
