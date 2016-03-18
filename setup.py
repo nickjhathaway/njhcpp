@@ -825,8 +825,10 @@ class Setup:
         args = self.parseCompFile(fn)
         if 'CC' in args:
             self.CC = args['CC']
+            self.args.CC = self.CC
         if 'CXX' in args:
             self.CXX = args['CXX']
+            self.args.CXX = self.CXX
     
     def rmDirsForLibs(self,libs):
         for l in libs:
@@ -911,7 +913,7 @@ class Setup:
                 print "failed to clone from {url}".format(url=bPath.url)
                 sys.exit(1)
         try:
-            Utils.run_in_dir(cmd, bPath.build_dir)
+            Utils.run_in_dir(cmd, bPath.build_sub_dir)
         except:
             print("Failed to build, removing {d}".format(d = bPath.local_dir))
             Utils.rm_rf(bPath.local_dir)
