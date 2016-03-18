@@ -433,8 +433,10 @@ class Packages():
         pack = CPPLibPackage(name, buildCmd, self.dirMaster_, "git-headeronly", "1.0")
         pack.addHeaderOnlyVersion(url, "develop")
         pack.versions_["develop"].additionalLdFlags_ = ["-lpthread"]
+        pack.versions_["develop"].includePath_ = os.path.join(name, "develop", name)
         pack.addHeaderOnlyVersion(url, "1.0")
         pack.versions_["1.0"].additionalLdFlags_ = ["-lpthread"]
+        pack.versions_["1.0"].includePath_ = os.path.join(name, "1.0", name)
         return pack
     
     def __bibseq(self):
