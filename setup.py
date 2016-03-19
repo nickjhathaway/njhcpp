@@ -673,8 +673,7 @@ class Packages():
         if self.checkForPackVer(packVer):
             pack = self.package(packVer.name)
             for dep in pack.versions_[packVer.version].depends_:
-                dep.name = str(dep.name).lower()
-                self.addPackage(packVers, dep)
+                self.addPackage(packVers, LibNameVer(str(dep.name).lower(), dep.version))
             found = False
             for otherPackVer in packVers:
                 if otherPackVer.name == packVer.name:
