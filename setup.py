@@ -546,8 +546,8 @@ class Packages():
         name = "njhRInside"
         buildCmd = self.__bibProjectBuildCmd()
         pack = CPPLibPackage(name, buildCmd, self.dirMaster_, "git", "1.1.1")
-        pack.addVersion(url, "develop",[LibNameVer("R", "3.2.2"),LibNameVer("cppitertools", "v0.1")])
-        pack.addVersion(url, "1.1.1", [LibNameVer("R", "3.2.2"),LibNameVer("cppitertools", "v0.1")])
+        pack.addVersion(url, "develop",[LibNameVer("r", "3.2.2"),LibNameVer("cppitertools", "v0.1")])
+        pack.addVersion(url, "1.1.1", [LibNameVer("r", "3.2.2"),LibNameVer("cppitertools", "v0.1")])
         return pack
     
     def __bibcpp(self):
@@ -673,6 +673,7 @@ class Packages():
         if self.checkForPackVer(packVer):
             pack = self.package(packVer.name)
             for dep in pack.versions_[packVer.version].depends_:
+                dep.name = str(dep.name).lower()
                 self.addPackage(packVers, dep)
             found = False
             for otherPackVer in packVers:
