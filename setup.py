@@ -861,7 +861,7 @@ class Setup:
                     if "#" in v:
                         valSplit = v.split("#")
                         if valSplit[0] == '1':
-                            self.packages_.addPackage(self.setUpsNeeded, LibNameVer([k[4:].lower()],valSplit[1]))
+                            self.packages_.addPackage(self.setUpsNeeded, LibNameVer(k[4:].lower(),valSplit[1]))
                     else:
                         raise Exception("Need to supply version in compfile with USE_PACKAGE#Version")
                 
