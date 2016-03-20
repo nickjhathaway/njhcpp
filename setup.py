@@ -2,10 +2,8 @@
 
 
 
-import subprocess, sys, os, argparse
+import subprocess, sys, os, argparse,shutil
 from collections import namedtuple
-import shutil
-import cmd
 sys.path.append(os.path.join(os.path.dirname(__file__), "scripts/pyUtils"))
 sys.path.append(os.path.join(os.path.dirname(__file__), "scripts/setUpScripts"))
 from utils import Utils
@@ -765,10 +763,10 @@ class Setup:
                 self.__setup(set.name, set.version)
 
         for p in self.installed:
-            print p, CT.boldGreen("installed")
+            print p.name + ":" + str(p.version), CT.boldGreen("installed")
 
         for p in self.failedInstall:
-            print  p, CT.boldRed("failed to install")
+            print  p.name + ":" + str(p.version), CT.boldRed("failed to install")
 
     def __initSetUpFuncs(self):
         self.setUps = {"zi_lib": self.zi_lib,
@@ -913,17 +911,16 @@ class Setup:
             raise Exception("Package " + str(name) + " doesn't have version " + str(version))
         bPath = pack.versions_[version].bPaths_
         if os.path.exists(bPath.local_dir):
-            print name + ":" + version, CT.boldGreen("found at ") + CT.boldBlack(bPath.local_dir)
+            print CT.boldGreen(name + ":" + version), "found at " + CT.boldBlue(bPath.local_dir)
         else:
-            print name + ":" + version, CT.boldRed("NOT"), "found; building..."
+            print CT.boldGreen(name + ":" + version), CT.boldRed("NOT"), "found; building..."
             try:
                 self.setUps[name](version)
-                self.installed.append(name)
+                self.installed.append(LibNameVer(name, version))
             except Exception as inst:
-                print type(inst)
                 print inst 
-                print "failed to install " + name
-                self.failedInstall.append(name)
+                print CT.boldRed("failed to install ") + name + ":" + str(version)
+                self.failedInstall.append(LibNameVer(name, version))
 
     def num_cores(self):
         retCores = Utils.num_cores()
@@ -1120,10 +1117,10 @@ class Setup:
                 os.remove(os.path.join(bPath.build_dir,set.name, "makefile-common.mk"))
             self.__setup(set.name, set.version)
         for p in self.installed:
-            print p, CT.boldGreen("installed")
+            print p.name + ":" + str(p.version), CT.boldGreen("installed")
 
         for p in self.failedInstall:
-            print  p, CT.boldRed("failed to install")
+            print  p.name + ":" + str(p.version), CT.boldRed("failed to install")
         
     
     def installRPackageSource(self,version, sourceFile):
