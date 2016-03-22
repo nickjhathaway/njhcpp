@@ -466,7 +466,7 @@ class Packages():
         url = 'https://github.com/bailey-lab/cppprogutils.git'
         name = "cppprogutils"
         buildCmd = ""
-        pack = CPPLibPackage(name, buildCmd, self.dirMaster_, "git-headeronly", "1.0")
+        pack = CPPLibPackage(name, buildCmd, self.dirMaster_, "git-headeronly", "v2.0.0")
         pack.addHeaderOnlyVersion(url, "develop")
         pack.versions_["develop"].additionalLdFlags_ = ["-lpthread"]
         pack.versions_["develop"].includePath_ = os.path.join(name, "develop", name)
@@ -482,7 +482,7 @@ class Packages():
         url = "https://github.com/bailey-lab/bibseq.git"
         name = "bibseq"
         buildCmd = self.__bibProjectBuildCmd()
-        pack = CPPLibPackage(name, buildCmd, self.dirMaster_, "git", "2.2.1")
+        pack = CPPLibPackage(name, buildCmd, self.dirMaster_, "git", "v2.3.0")
         pack.addVersion(url, "develop",[LibNameVer("bibcpp", "develop"),LibNameVer("twobit", "develop"),LibNameVer("bamtools", "v2.4.0"),LibNameVer("armadillo", "6.200.3")])
         pack.versions_["develop"].additionalLdFlags_ = ["-lcurl"] 
         if Utils.isMac() and not "gcc" in self.args.CC:
@@ -492,9 +492,6 @@ class Packages():
         pack.versions_["release__v2.3.0"].additionalLdFlags_ = ["-lcurl"] 
         if Utils.isMac() and not "gcc" in self.args.CC:
             pack.versions_["release__v2.3.0"].depends_.append(LibNameVer("sharedmutex", "release__v0.2"))
-        
-        pack.addVersion(url, "2.2.1",[LibNameVer("bibcpp", "2.2.1"),LibNameVer("bamtools", "v2.4.0"),LibNameVer("armadillo", "6.200.3")])
-        pack.versions_["2.2.1"].additionalLdFlags_ = ["-lcurl"] 
         return pack
     
     def __bibseqDev(self):
@@ -512,9 +509,8 @@ class Packages():
         url = "https://github.com/weng-lab/TwoBit.git"
         name = "TwoBit"
         buildCmd = self.__bibProjectBuildCmd()
-        pack = CPPLibPackage(name, buildCmd, self.dirMaster_, "git", "1.0")
+        pack = CPPLibPackage(name, buildCmd, self.dirMaster_, "git", "v2.0.0")
         pack.addVersion(url, "develop",[LibNameVer("cppitertools", "v0.1"),LibNameVer("cppprogutils", "develop")])
-        pack.addVersion(url, "1.0",[LibNameVer("cppitertools", "v0.1"),LibNameVer("cppprogutils", "1.0")])
         pack.addVersion(url, "release__v2.0.0",[LibNameVer("cppitertools", "v0.1"),LibNameVer("cppprogutils", "release__v2.0.0")])
         return pack
     
@@ -522,9 +518,8 @@ class Packages():
         url = "https://github.com/nickjhathaway/cpp_shared_mutex.git"
         name = "sharedMutex"
         buildCmd = self.__bibProjectBuildCmd()
-        pack = CPPLibPackage(name, buildCmd, self.dirMaster_, "git", "v0.1")
+        pack = CPPLibPackage(name, buildCmd, self.dirMaster_, "git", "v0.2")
         pack.addVersion(url, "develop")
-        pack.addVersion(url, "v0.1")
         pack.addVersion(url, "release__v0.2")
         return pack 
       
@@ -532,9 +527,8 @@ class Packages():
         url = "https://github.com/bailey-lab/SeekDeep.git"
         name = "SeekDeep"
         buildCmd = self.__bibProjectBuildCmd()
-        pack = CPPLibPackage(name, buildCmd, self.dirMaster_, "git", "2.2.1")
+        pack = CPPLibPackage(name, buildCmd, self.dirMaster_, "git", "v2.3.0")
         pack.addVersion(url, "develop",[LibNameVer("bibseq", "develop"),LibNameVer("njhRInside", "develop"),LibNameVer("seqServer", "develop")])
-        pack.addVersion(url, "2.2.1",[LibNameVer("bibseq", "2.2.1"),LibNameVer("njhRInside", "1.1.1"),LibNameVer("seqServer", "1.2.1")])
         pack.addVersion(url, "release__v2.3.0",[LibNameVer("bibseq", "release__v2.3.0"),LibNameVer("seqServer", "release__v1.3.0")])
         return pack
     
@@ -550,9 +544,8 @@ class Packages():
         url = "https://github.com/nickjhathaway/seqServer.git"
         name = "seqServer"
         buildCmd = self.__bibProjectBuildCmd()
-        pack = CPPLibPackage(name, buildCmd, self.dirMaster_, "git", "1.2.1")
+        pack = CPPLibPackage(name, buildCmd, self.dirMaster_, "git", "v1.3.0")
         pack.addVersion(url, "develop",[LibNameVer("bibseqdev", "master"),LibNameVer("cppcms", "1.0.5")])
-        pack.addVersion(url, "1.2.1",[LibNameVer("bibseq", "2.2.1"),LibNameVer("cppcms", "1.0.5")])
         pack.addVersion(url, "release__v1.3.0",[LibNameVer("bibseq", "release__v2.3.0"),LibNameVer("cppcms", "1.0.5")])
         return pack
     
@@ -569,7 +562,7 @@ class Packages():
         url = "https://github.com/umass-bib/bibcpp.git"
         name = "bibcpp"
         buildCmd = self.__bibProjectBuildCmd()
-        pack = CPPLibPackage(name, buildCmd, self.dirMaster_, "git", "2.2.1")
+        pack = CPPLibPackage(name, buildCmd, self.dirMaster_, "git", "v2.3.0")
         pack.addVersion(url, "develop",[LibNameVer("jsoncpp", "1.6.5"),LibNameVer("boost", "1_60_0"),LibNameVer("cppitertools", "v0.1"),LibNameVer("pstreams", "RELEASE_0_8_1")])
         pack.versions_["develop"].additionalLdFlags_ = ["-lpthread", "-lz"]
         if not Utils.isMac():
@@ -579,11 +572,6 @@ class Packages():
         pack.versions_["release__v2.3.0"].additionalLdFlags_ = ["-lpthread", "-lz"]
         if not Utils.isMac():
             pack.versions_["release__v2.3.0"].additionalLdFlags_.append("-lrt")
-            
-        pack.addVersion(url, "2.2.1",[LibNameVer("jsoncpp", "1.6.5"),LibNameVer("boost", "1_58_0"),LibNameVer("cppitertools", "v0.1"),LibNameVer("pstreams", "RELEASE_0_8_1")])
-        pack.versions_["2.2.1"].additionalLdFlags_ = ["-lpthread", "-lz"]   
-        if not Utils.isMac():
-            pack.versions_["2.2.1"].additionalLdFlags_.append("-lrt")  
         return pack
 
     def __boost(self):
