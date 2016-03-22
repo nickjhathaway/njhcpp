@@ -8,7 +8,7 @@
 
 #include "bibcpp/utils/stringUtils.hpp" //hexToInt() intToHex()
 #include "bibcpp/utils/utils.hpp" //roundDecPlaces()
-#include "bibcpp/stdAddition.h" // to_string()
+#include "bibcpp/common.h" // to_string()
 #include "bibcpp/jsonUtils/jsonUtils.hpp" // toJson()
 namespace bib {
 

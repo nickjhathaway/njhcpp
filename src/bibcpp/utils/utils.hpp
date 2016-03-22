@@ -15,6 +15,8 @@
 #include <cppitertools/range.hpp> //range
 #include <cmath>
 
+#include "bibcpp/jsonUtils/jsonUtils.hpp" //included here so that most files will have json
+
 namespace bib{
 
 template <typename Container, typename T>

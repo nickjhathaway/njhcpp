@@ -11,7 +11,7 @@
 #include <string>
 #include <algorithm> //std::transform
 
-#include "bibcpp/stdAddition/misc.hpp" //to_string, isArithmetic, isString
+#include "bibcpp/common.h" //to_string, isArithmetic, isString
 #include <boost/type_index.hpp>
 
 namespace bib {

@@ -15,7 +15,7 @@
 #include <deque>
 #include <string>
 #include <cstdint>
-#include "bibcpp/stdAddition.h" //Enable_if
+#include "bibcpp/common.h" //Enable_if
 #include "bibcpp/utils/has_member.hpp" //has_member
 
 
@@ -122,8 +122,7 @@ static Json::Value & toJsonHelper(const VAL & val, Json::Value & ret){
 
 	template<>
 	inline Json::Value toJson(const char & val){
-		Json::Value ret(val);
-		return ret;
+		return toJson(std::string(1,val));
 	}
 
 	template<>

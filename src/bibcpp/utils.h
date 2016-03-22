@@ -4,8 +4,9 @@
 #include "bibcpp/utils/utils.hpp"
 #include "bibcpp/utils/vecUtils.hpp"
 #include "bibcpp/utils/stringUtils.hpp"
+#include "bibcpp/utils/typeUtils.hpp"
 #include "bibcpp/utils/lexical_cast.hpp"
-#include "bibcpp/utils/timeUtils.hpp"
+#include "bibcpp/utils/time.h"
 
 
 

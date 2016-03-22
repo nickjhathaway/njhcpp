@@ -14,9 +14,66 @@
 #include <cmath> //round()
 #include <iomanip> //std::setFill(), std::setw()
 #include <regex>
-#include "bibcpp/stdAddition.h" //estd::to_string
+#include "bibcpp/common.h" //estd::to_string
+#include "bibcpp/jsonUtils/jsonUtils.hpp" //included here so that most files will have json
+
 
 namespace bib {
+
+/**@brief Strip the right side of a string of all characters matching c
+ *
+ * @param str The string to strip
+ * @param c The character to strip from str
+ */
+inline void rstrip(std::string & str, char c){
+	size_t pos = str.size();
+	while (pos != 0 && str[pos - 1] == c){
+		--pos;
+	}
+	if(pos != str.size()){
+		str.erase(str.begin() + pos, str.end());
+	}
+}
+
+/**@brief Strip the right side of a string of all characters matching c, return result
+ *
+ * @param str The string to strip
+ * @param c The character to strip from str
+ * @return A string with c stripped from str
+ */
+inline std::string rstripRet(std::string str, char c){
+	rstrip(str,c);
+	return str;
+}
+
+/**@brief Strip the left side of a string of all characters matching c
+ *
+ * @param str The string to strip
+ * @param c The character to strip from str
+ */
+inline void lstrip(std::string & str, char c){
+	size_t pos = 0;
+	if(!str.empty()){
+		if(str[pos] == c){
+			while(pos != str.size() - 1 && str[pos + 1] == c){
+				++pos;
+			}
+			str.erase(str.begin(), str.begin() + pos + 1);
+		}
+	}
+}
+
+/**@brief Strip the left side of a string of all characters matching c, return result
+ *
+ * @param str The string to strip
+ * @param c The character to strip from str
+ * @return A string with c stripped from str
+ */
+inline std::string lstripRet(std::string str, char c){
+	lstrip(str,c);
+	return str;
+}
+
 /**@brief Take a container and change it into a delimited string
  *
  * @param con Container of values
@@ -383,6 +440,75 @@ inline bool beginsWith(const std::string& str, const std::string& target) {
   	return (0 == str.compare(0, target.size(), target));
   }
   return false;
+}
+
+/**@brief  append to a str only if need
+ *
+ * @param str The string to append to
+ * @param app What to append to str
+ * @return A reference to the str
+ */
+inline std::string & appendAsNeeded(std::string & str, const std::string & app){
+	if(!endsWith(str,app)){
+		str.append(app);
+
+	}
+	return str;
+}
+
+/**@brief Return str appended if required
+ *
+ * @param str The str to append to
+ * @param app What to append to the str
+ * @return str appended with app only if it is not already appended
+ */
+inline std::string appendAsNeededRet(std::string str, const std::string & app){
+	if(!endsWith(str,app)){
+		str.append(app);
+	}
+	return str;
+}
+
+/**@brief Determine if string has a whitespace character
+ *
+ * @param str The string to examine
+ * @return Whether str has a whitepsace character
+ */
+inline bool strHasWhitesapce(const std::string & str){
+	return std::any_of(std::begin(str), std::end(str),
+			[](char c) {return std::isspace(c);});
+}
+
+
+template<typename T>
+void addAsStrToStr(std::string& str, const T& e) {
+	str.append(estd::to_string(e));
+}
+
+template<typename T>
+void addAsStrToStr(std::string& str, const std::vector<T>& items) {
+	for (const auto& e : items) {
+		str.append(estd::to_string(e));
+	}
+}
+
+template<typename T>
+void pasteAsStrAdd(std::string & str, const T& last) {
+	addAsStrToStr(str, last);
+}
+
+template<typename N, typename ... T>
+void pasteAsStrAdd(std::string& str, const N& next, const T&... rest) {
+	addAsStrToStr(str, next);
+	pasteAsStrAdd(str, rest...);
+}
+
+template<typename ... T>
+std::string pasteAsStr(const T&... items) {
+	std::string ret = "";
+	ret.reserve(sizeof...(items));
+	pasteAsStrAdd(ret, items...);
+	return ret;
 }
 
 } // namesapce bib

@@ -9,10 +9,11 @@
 
 #include "bibcpp/utils.h"
 #include "bibcpp/bashUtils.h"
-#include "bibcpp/stdAddition.h"
-#include "bibcpp/progutils/commandLineArguments.hpp"
+#include "bibcpp/common.h"
+#include "bibcpp/files/fileStreamUtils.hpp"
 #include "bibcpp/progutils/runLog.hpp"
-#include "bibcpp/progutils/flag.hpp"
+#include "bibcpp/progutils/FlagHolder.hpp"
+#include "bibcpp/progutils/CmdArgs.hpp"
 
 namespace bib {
 /**@brief Namespace for dealing with program option parsing and running sub programs
@@ -27,7 +28,6 @@ namespace progutils {
 class programSetUp {
 
 public:
-	// constructors
 	/**@brief Construct the setUp with the generic argc and argv
 	 *
 	 * @param argc The number of arguments
@@ -35,11 +35,7 @@ public:
 	 *
 	 */
 	programSetUp(int argc, char *argv[]) :
-			commands_(commandLineArguments(argc, argv)) {
-		commands_.arguments_["-program"] = argv[0];
-		// get rid of the ./ if program is being called from current dir, it can
-		// mess things up latter
-		programName_ = replaceString(argv[0], "./", "");
+			commands_(CmdArgs(argc, argv)) {
 		init();
 	}
 
@@ -50,64 +46,37 @@ public:
 	 *argc and argv
 	 *
 	 */
-	programSetUp(const commandLineArguments &inputCommands) :
+	programSetUp(const CmdArgs &inputCommands) :
 			commands_(inputCommands) {
-		auto progSearch = commands_.arguments_.find("-program");
-		// if no program name (though there really should be) just call it program
-		if (commands_.arguments_.end() == progSearch) {
-			programName_ = "program";
-		} else {
-			programName_ = progSearch->second;
-		}
 		init();
 	}
 
-	/**@brief Construct the setUp with a map of string pairs converted from argc
-	 *and argv
-	 *
-	 * @param inputCommands A map of string pairs object likely converted from argc
-	 *and argv
-	 *
-	 */
-	programSetUp(const std::map<std::string, std::string> &inputCommands) :
-			commands_(commandLineArguments(inputCommands)) {
-		auto progSearch = commands_.arguments_.find("-program");
-		// if no program name (though there really should be) just call it program
-		if (commands_.arguments_.end() == progSearch) {
-			programName_ = "program";
-		} else {
-			programName_ = progSearch->second;
-		}
-		init();
-	}
 	/**@brief Initialize any defaults
 	 *
 	 */
 	void init() {
-		if (commands_.containsFlagCaseInsensitive("-getFlags")
-				|| commands_.containsFlagCaseInsensitive("-flags")
-				|| commands_.containsFlagCaseInsensitive("-h")
-				|| commands_.containsFlagCaseInsensitive("-help")) {
+		if (commands_.hasFlagCaseInsen("-getFlags")
+				|| commands_.hasFlagCaseInsen("-flags")
+				|| commands_.hasFlagCaseInsen("-h")
+				|| commands_.hasFlagCaseInsen("-help")) {
 			failed_ = true;
 		}
-		if (commands_.containsFlagCaseInsensitive("-h")
-				|| commands_.containsFlagCaseInsensitive("-help")) {
+		if (commands_.hasFlagCaseInsen("-h")
+				|| commands_.hasFlagCaseInsen("-help")) {
 			printingHelp_ = true;
 		}
-		if (commands_.containsFlagCaseInsensitive("-getFlags")
-				|| commands_.containsFlagCaseInsensitive("-flags")) {
+		if (commands_.hasFlagCaseInsen("-getFlags")
+				|| commands_.hasFlagCaseInsen("-flags")) {
 			gettingFlags_ = true;
 		}
 	}
 
-	virtual ~programSetUp() {
-	}
 
 	/**@brief A commandLineArguments class to store the objects and help with flag
 	 *parsing, see commandLineArguments for more details
 	 *
 	 */
-	commandLineArguments commands_;
+	CmdArgs commands_;
 
 	/**@brief A class using the std::chrono library to log infomration about run times
 	 *
@@ -154,11 +123,6 @@ public:
 	 */
 	flagHolder flags_;
 
-	/**@brief The name of the program associated with the current setUp object
-	 *
-	 */
-	std::string programName_;
-
 	/**@brief A runLog object for optional logging of run time info, won't be
 	 *started unless programSetUp::startARunLog is called
 	 *
@@ -172,9 +136,10 @@ public:
 	 */
 	void startARunLog(const std::string &dirName) {
 		rLog_.setFilenameAndOpen(
-				dirName + "runLog_" + replaceString(programName_, "./", "") + ".txt",
-				timer_.start_);
-		rLog_.startRunLog(commands_.arguments_);
+				dirName + "runLog_"
+						+ replaceString(replaceString(commands_.getProgramName(), "./", ""),
+								" ", "-") + ".txt", timer_.start_);
+		rLog_.startRunLog(commands_);
 	}
 
 	/**@brief A function to write info on the parameters set during the set up
@@ -188,8 +153,9 @@ public:
 	void writeParametersFile(const std::string &fileName, bool overWrite,
 			bool failOnWriteFailure) {
 		std::ofstream parameterFile;
-		std::ostream out(files::determineOutBuf(parameterFile, fileName, ".txt", overWrite,
-				false,failOnWriteFailure));
+		std::ostream out(
+				files::determineOutBuf(parameterFile, fileName, ".txt", overWrite,
+						false, failOnWriteFailure));
 		//parameterFile << commands_.commandLine_ << std::endl;
 		flags_.outputParsFile(out);
 	}
@@ -199,19 +165,10 @@ public:
 	 *
 	 */
 	void lookForInvalidOptions() {
-		std::vector<std::string> currentFlags = getVecOfMapKeys(flags_.flags_);
-		currentFlags.push_back("-program");
-		if (commands_.arguments_.find("-program") != commands_.arguments_.end()) {
-			currentFlags.push_back(commands_["-program"]);
-		}
-		currentFlags.push_back("-commandline");
-		strVecToLower(currentFlags);
-		std::vector<std::string> expandedOptions;
-		for (const auto &op : currentFlags) {
-			addOtherVec(expandedOptions, tokenizeString(op, ","));
-		}
+		auto flagStrs = flags_.getFlags();
+		strVecToLower(flagStrs);
 		for (const auto &com : commands_.arguments_) {
-			if (!contains(expandedOptions, com.first)) {
+			if (!contains(flagStrs, com.first)) {
 				warnings_.emplace_back(
 						bashCT::bold + bashCT::red + "Unrecognized option, " + com.first
 								+ " not using" + bashCT::reset);
@@ -223,10 +180,17 @@ public:
 	 * @param out The std::ostream out object to print to
 	 *
 	 */
-	void printWarnings(std::ostream &out) {
+	void printWarnings(std::ostream &out) const {
 		for (const auto &warn : warnings_) {
 			out << warn << std::endl;
 		}
+	}
+	/**@brief Adding warning to the warning messages
+	 *
+	 * @param warn The message
+	 */
+	void addWarning(const std::string & warn) {
+		warnings_.emplace_back(warn);
 	}
 
 	/**@brief Print flags but looking at validOptions_ so needs to be called at
@@ -302,10 +266,10 @@ public:
 	 *
 	 */
 	void finishSetUp(std::ostream &out) {
-		if (commands_.containsFlagCaseInsensitive("-getFlags")
-				|| commands_.containsFlagCaseInsensitive("-flags")
-				|| commands_.containsFlagCaseInsensitive("-h")
-				|| commands_.containsFlagCaseInsensitive("-help")) {
+		if (commands_.hasFlagCaseInsen("-getFlags")
+				|| commands_.hasFlagCaseInsen("-flags")
+				|| commands_.hasFlagCaseInsen("-h")
+				|| commands_.hasFlagCaseInsen("-help")) {
 			printFlags(out);
 			exit(1);
 		}
@@ -314,43 +278,6 @@ public:
 		if (failed_) {
 			exit(1);
 		}
-	}
-
-	/**@brief Look for option and set the bool option to false if flag is found
-	 * @param option The bool option to set
-	 * @param flag The flag to be searched for
-	 * @param parName The name under which to store the option being searched for
-	 * @param required A bool indicating if the option is required and set up
-	 *should be stopped if not found, default is false
-	 *
-	 * @return Returns true if option is found or false if option is not found
-	 *
-	 */
-	bool setBoolOptionFalse(bool &option, std::string flagStr,
-			const std::string &shortDescription, bool required = false) {
-		flag currentFlag = flag(option, flagStr, shortDescription, required);
-		bool found = false;
-		for (const auto &t : currentFlag.flags_) {
-			if (commands_.lookForOptionFalse(option, t)) {
-				currentFlag.setValue(option);
-				found = true;
-				break;
-			} else {
-				found = false;
-			}
-		}
-		if (required && !found) {
-			std::stringstream tempStream;
-			tempStream << bashCT::bold + bashCT::black << "Need to have "
-					<< bashCT::red << conToStr(tokenizeString(flagStr, ","), " or ")
-					<< bashCT::black << " see " << bashCT::red
-					<< commands_["-program"] + " -help " << bashCT::black
-					<< "for more details" << bashCT::reset;
-			warnings_.emplace_back(tempStream.str());
-			failed_ = true;
-		}
-		flags_.addFlag(currentFlag);
-		return found;
 	}
 
 	/**@brief A templated function to look for options and implementation for
@@ -368,10 +295,10 @@ public:
 	template<typename T>
 	bool setOption(T &option, std::string flagStr,
 			const std::string &shortDescription, bool required = false) {
-		flag currentFlag = flag(option, flagStr, shortDescription, required);
+		Flag currentFlag(option, flagStr, shortDescription, required);
 		bool found = false;
 		for (const auto &fTok : currentFlag.flags_) {
-			if (commands_.lookForOption(option, fTok)) {
+			if (commands_.lookForOptionCaseInsen(option, fTok)) {
 				currentFlag.setValue(option);
 				found = true;
 				break;
@@ -385,7 +312,7 @@ public:
 			tempStream << bashCT::bold + bashCT::black << "Need to have "
 					<< bashCT::red << conToStr(tokenizeString(flagStr, ","), " or ")
 					<< bashCT::black << " see " << bashCT::red
-					<< commands_["-program"] + " -help " << bashCT::black
+					<< commands_.getProgramName() + " -help " << bashCT::black
 					<< "for more details" << bashCT::reset;
 			warnings_.emplace_back(tempStream.str());
 			failed_ = true;
@@ -408,7 +335,7 @@ public:
 	 * seconds etc.
 	 */
 	std::string getRunTime() {
-		return programName_ + " (" + timer_.totalTimeFormatted(2) + ")";
+		return commands_.getProgramName() + " (" + timer_.totalTimeFormatted(2) + ")";
 	}
 
 	/**@brief Function to log the run time to a std::ostream
@@ -416,7 +343,6 @@ public:
 	 */
 	void logRunTime(std::ostream &out) {
 		out << getRunTime() << std::endl;
-		return;
 	}
 
 	/**@brief A function to find out if help is need or required, called with a
@@ -427,9 +353,9 @@ public:
 	 * @return return true if a help message should be printed or false if no help
 	 * is needed
 	 */
-	bool needsHelp(uint32_t minAmountOfArgs = 1) {
-		return (commands_.containsFlagCaseInsensitive("-help")
-				|| commands_.containsFlagCaseInsensitive("-h")
+	bool needsHelp(uint32_t minAmountOfArgs = 0) {
+		return (commands_.hasFlagCaseInsen("-help")
+				|| commands_.hasFlagCaseInsen("-h")
 				|| commands_.numberOfCommands() <= minAmountOfArgs);
 	}
 
@@ -443,21 +369,18 @@ public:
 	void writeOutCommandLineArguments(
 			const std::map<std::string, std::string> &commandLineArgumentsMap,
 			std::ostream &out) {
-		int optionCount = 0;
+		uint32_t optionCount = 0;
 		std::vector<std::string> columnNames = { "OptionNum", "Flag", "Option" };
 		std::vector<std::vector<std::string>> content;
 		for (const auto &mContent : commandLineArgumentsMap) {
-			if (mContent.first != "-commandline" && mContent.first != "-program") {
-				content.emplace_back(
-						std::vector<std::string> { estd::to_string(optionCount) + ")",
-								mContent.first, mContent.second });
-				++optionCount;
-			}
+			content.emplace_back(
+					std::vector<std::string> { estd::to_string(optionCount) + ")",
+							mContent.first, mContent.second });
+			++optionCount;
 		}
 		printTableOrganized(content, columnNames, out);
 	}
 };
 
 }  // namespace progutils
-
 }  // namespace bib
