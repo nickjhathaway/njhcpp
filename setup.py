@@ -268,7 +268,7 @@ class Packages():
     
     def __pstreams(self):
         name = "pstreams"
-        url = 'https://github.com/nickjhathaway/pstreams'
+        url = 'https://github.com/nickjhathaway/pstreams.git'
         buildCmd = ""
         pack = CPPLibPackage(name, buildCmd, self.dirMaster_, "git-headeronly", "RELEASE_0_8_1")
         pack.addHeaderOnlyVersion(url, "master")
@@ -292,13 +292,14 @@ class Packages():
         url = "https://github.com/open-source-parsers/jsoncpp.git"
         name = "jsoncpp"
         buildCmd = "mkdir -p build && cd build && CC={CC} CXX={CXX} cmake -DCMAKE_CXX_FLAGS=-fPIC -DCMAKE_EXE_LINKER_FLAGS=-fPIC -DCMAKE_INSTALL_PREFIX:PATH={local_dir} ..  && make -j {num_cores} install"
-        pack = CPPLibPackage(name, buildCmd, self.dirMaster_, "git", "1.6.5")
+        pack = CPPLibPackage(name, buildCmd, self.dirMaster_, "git", "1.7.1")
         pack.addVersion(url, "1.6.5")
+        pack.addVersion(url, "1.7.1")
         pack.addVersion(url, "master")
         return pack
     
     def __mongoc(self):
-        url = "https://github.com/mongodb/mongo-c-driver"
+        url = "https://github.com/mongodb/mongo-c-driver.git"
         name = "mongoc"
         if Utils.isMac():
             buildCmd = "sed -i.bak s/git:/http:/g .gitmodules && CC={CC} CXX={CXX}  PKG_CONFIG_PATH=/usr/local/opt/openssl/lib/pkgconfig:$PKG_CONFIG_PATH ./autogen.sh --prefix={local_dir}&& make -j {num_cores}  && make install"
@@ -315,7 +316,7 @@ class Packages():
         return pack
     
     def __mongocxx(self):
-        url = "https://github.com/mongodb/mongo-cxx-driver"
+        url = "https://github.com/mongodb/mongo-cxx-driver.git"
         name = "mongocxx"
         buildCmd = "cd build && PKG_CONFIG_PATH=/Users/nick/testing/testingSetUpAgain/external/local/mongoc/{mongoc_ver}/mongoc/lib/pkgconfig/:PKG_CONFIG_PATH CC={CC} CXX={CXX} cmake -DCMAKE_BUILD_TYPE=Release -DLIBBSON_DIR={external}/local/mongoc/{mongoc_ver}/mongoc/ -DLIBMONGOC_DIR={external}/local/mongoc/{mongoc_ver}/mongoc/ -DCMAKE_INSTALL_PREFIX={local_dir} .. && make -j {num_cores} && make install"
         pack = CPPLibPackage(name, buildCmd, self.dirMaster_, "git", "07d4243445b5f0f333bf0ee9b3f482e74adf67a4")
@@ -563,7 +564,7 @@ class Packages():
         name = "bibcpp"
         buildCmd = self.__bibProjectBuildCmd()
         pack = CPPLibPackage(name, buildCmd, self.dirMaster_, "git", "v2.3.0")
-        pack.addVersion(url, "develop",[LibNameVer("jsoncpp", "1.6.5"),LibNameVer("boost", "1_60_0"),LibNameVer("cppitertools", "v0.1"),LibNameVer("pstreams", "RELEASE_0_8_1")])
+        pack.addVersion(url, "develop",[LibNameVer("jsoncpp", "1.7.1"),LibNameVer("boost", "1_60_0"),LibNameVer("cppitertools", "v0.1"),LibNameVer("pstreams", "RELEASE_0_8_1")])
         pack.versions_["develop"].additionalLdFlags_ = ["-lpthread", "-lz"]
         if not Utils.isMac():
             pack.versions_["develop"].additionalLdFlags_.append("-lrt")
@@ -951,6 +952,8 @@ class Setup:
     def __buildFromFile(self, packVer, cmd):
         bPath = packVer.bPaths_
         if self.noInternet_:
+            newUrl = bPath.url.replace(".git","/archive/" + str(packVer.nameVer_.version) + ".tar.gz").replace("git@github.com:", "https://github.com/")
+            bPath = BuildPaths(newUrl, bPath.build_dir, bPath.build_sub_dir, bPath.local_dir)
             base_file = os.path.basename(bPath.url)
             fnp = os.path.join(self.dirMaster_.ext_tars,packVer.nameVer_.name, base_file)
             if not os.path.exists(fnp):
@@ -1257,7 +1260,10 @@ class Setup:
             pack = self.__package(set.name) 
             packVer = pack.versions_[set.version]
             url = packVer.getDownloadUrl()
-            fnp = Utils.get_file_if_size_diff(url, os.path.join(self.dirMaster_.ext_tars, packVer.nameVer_.name))
+            dest = os.path.join(self.dirMaster_.ext_tars, packVer.nameVer_.name)
+            print ("Downloading " + CT.boldGreen(url) + " to " + CT.boldBlue(dest))
+            fnp = Utils.get_file(url, dest)
+        print ("Now run \"./setup.py --compfile compfile.mk --outMakefile makefile-common.mk --noInternet\" to build libraries")
 
     def externalChecks(self):
         ccWhich = Utils.which(self.CC)
