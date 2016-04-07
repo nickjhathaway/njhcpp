@@ -188,7 +188,7 @@ class CPPLibPackage():
             raise Exception("Error in getBuildDir" + self.name_ + " doesn't have version " + str(version))
     
     def getGitRefs(self, url):
-        if self.libType_.beginswith("git"):
+        if self.libType_.startswith("git"):
             cap = Utils.runAndCapture("git ls-remote {url}".format(url = url))
             branches = []
             tags = []
@@ -677,6 +677,8 @@ class Packages():
     def writeMakefile(self, packVers, filename, overwrite = False, append = False):
         if os.path.exists(filename) and not overwrite and not append:
             raise Exception("File: " + str(filename) + " already exists, use --overWrite to overwrite it")
+        elif os.path.exists(filename) and overwrite:
+            os.remove(filename)
         elif os.path.exists(filename) and append:
             with open(filename, "a") as f:
                 for packVer in packVers:
@@ -694,7 +696,7 @@ class Packages():
                     if "" != pvLdFlags:
                         f.write("#" + packVer.name + ":" + packVer.version + " LDFLAGS\n")
                         f.write("LD_FLAGS += " + pvLdFlags + "\n")
-        with open(filename, "w") as f:
+        with open(filename, "a") as f:
             f.write("#Utils\n")
             f.write("# from http://stackoverflow.com/a/18258352\n")
             f.write("rwildcard=$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst *,%,$2),$d))\n")
@@ -867,6 +869,20 @@ class Setup:
             sys.stdout.write("\t")
             sys.stdout.write(",".join(pack.getVersions()))
             sys.stdout.write("\n")
+            
+    def printGitRefs(self):
+        self.__initSetUpFuncs()
+        print "Git branches and tags:"
+        for set in self.setUpsNeeded:
+            print set.name
+            pack = self.__package(set.name)
+            refs = pack.getGitRefs(pack.versions_[pack.defaultVersion_].bPaths_.url)
+            print "\t" + "Branches"
+            for b in refs.branches:
+                print "\t\t" + b
+            print "\t" + "Tags"
+            for t in refs.tags:
+                print "\t\t" + t
 
     def __processArgsForSetupsNeeded(self):
         if self.args.libs:
@@ -1083,7 +1099,9 @@ class Setup:
             For header only libraries, will be put directly into local
         '''
         if self.noInternet_:
-            fnp = os.path.join(self.dirMaster_.ext_tars,packVer.nameVer_.name, packVer.nameVer_.version)
+            newUrl = bPath.url.replace(".git","/archive/" + str(packVer.nameVer_.version) + ".tar.gz").replace("git@github.com:", "https://github.com/")
+            base_file = os.path.basename(newUrl)
+            fnp = os.path.join(self.dirMaster_.ext_tars,packVer.nameVer_.name, base_file)
             Utils.clear_dir(os.path.dirname(bPath.local_dir))
             Utils.untar(fnp, os.path.dirname(bPath.local_dir))
             ## might not be the best way to do this but works for now
@@ -1378,6 +1396,7 @@ def parse_args():
     parser.add_argument('--compfile', type=str, nargs=1)
     parser.add_argument('--libs', type=str, help="The libraries to install")
     parser.add_argument('--printLibs', action = "store_true", help="Print Available Libs")
+    parser.add_argument('--printGitRefs', action = "store_true", help="Print Git branhes and tags for git projects")
     parser.add_argument('--forceUpdate', action = "store_true", help="Remove already installed libs and re-install")
     parser.add_argument('--updateBibProjects', type = str, help="Remove already installed libs and re-install")
     parser.add_argument('--CC', type=str, nargs=1)
@@ -1411,6 +1430,7 @@ def main():
         return 0
     if args.printLibs:
         s.printAvailableSetUps()
+        return 0
     elif args.addBashCompletion:
         if(os.path.isdir("./bashCompletes")):
             cmd = "echo >> ~/.bash_completion && cat bashCompletes/* >> ~/.bash_completion"
@@ -1425,6 +1445,9 @@ def main():
         if len(s.setUpsNeeded) == 0 and not args.compfile:
             s.printAvailableSetUps()
             return 1
+        elif args.printGitRefs:
+            s.printGitRefs()
+            return 0
         else:
             if args.justDownload:
                 s.downloadFiles()
