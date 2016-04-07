@@ -679,6 +679,7 @@ class Packages():
             raise Exception("File: " + str(filename) + " already exists, use --overWrite to overwrite it")
         elif os.path.exists(filename) and overwrite:
             os.remove(filename)
+            self.writeMakefile(packVers, filename, overwrite, append)
         elif os.path.exists(filename) and append:
             with open(filename, "a") as f:
                 for packVer in packVers:
@@ -696,31 +697,32 @@ class Packages():
                     if "" != pvLdFlags:
                         f.write("#" + packVer.name + ":" + packVer.version + " LDFLAGS\n")
                         f.write("LD_FLAGS += " + pvLdFlags + "\n")
-        with open(filename, "a") as f:
-            f.write("#Utils\n")
-            f.write("# from http://stackoverflow.com/a/18258352\n")
-            f.write("rwildcard=$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst *,%,$2),$d))\n")
-            f.write("#Default CXXFLAGS\n")
-            f.write("COMLIBS += " + self.getDefaultIncludeFlags() + "\n")
-            dLdFlags = self.getDefaultLDFlags( )
-            if "" != dLdFlags:
-                f.write("#Default LDFLAGS\n")
-                f.write("LD_FLAGS += " + dLdFlags + "\n")
-            for packVer in packVers:
-                pack = self.package(packVer.name)
-                #if bib project, add the flags of it's dependencies
-                if pack.bibProject_:
-                        cmd = "python ./setup.py --compfile compfile.mk --numCores 1 --append --outMakefile {makefileCommon}".format(makefileCommon = os.path.abspath(filename))
-                        dir = pack.getBuildSubDir(packVer.version)
-                        Utils.run_in_dir(cmd, dir)
-                pvIncFlags = self.getIncludeFlags(packVer)
-                if "" != pvIncFlags:
-                    f.write("#" + packVer.name + ":" + packVer.version + " CXXFLAGS\n")
-                    f.write("COMLIBS += " + pvIncFlags + "\n")
-                pvLdFlags = self.getLdFlags(packVer)
-                if "" != pvLdFlags:
-                    f.write("#" + packVer.name + ":" + packVer.version + " LDFLAGS\n")
-                    f.write("LD_FLAGS += " + pvLdFlags + "\n")
+        else:
+            with open(filename, "a") as f:
+                f.write("#Utils\n")
+                f.write("# from http://stackoverflow.com/a/18258352\n")
+                f.write("rwildcard=$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst *,%,$2),$d))\n")
+                f.write("#Default CXXFLAGS\n")
+                f.write("COMLIBS += " + self.getDefaultIncludeFlags() + "\n")
+                dLdFlags = self.getDefaultLDFlags( )
+                if "" != dLdFlags:
+                    f.write("#Default LDFLAGS\n")
+                    f.write("LD_FLAGS += " + dLdFlags + "\n")
+                for packVer in packVers:
+                    pack = self.package(packVer.name)
+                    #if bib project, add the flags of it's dependencies
+                    if pack.bibProject_:
+                            cmd = "python ./setup.py --compfile compfile.mk --numCores 1 --append --outMakefile {makefileCommon}".format(makefileCommon = os.path.abspath(filename))
+                            dir = pack.getBuildSubDir(packVer.version)
+                            Utils.run_in_dir(cmd, dir)
+                    pvIncFlags = self.getIncludeFlags(packVer)
+                    if "" != pvIncFlags:
+                        f.write("#" + packVer.name + ":" + packVer.version + " CXXFLAGS\n")
+                        f.write("COMLIBS += " + pvIncFlags + "\n")
+                    pvLdFlags = self.getLdFlags(packVer)
+                    if "" != pvLdFlags:
+                        f.write("#" + packVer.name + ":" + packVer.version + " LDFLAGS\n")
+                        f.write("LD_FLAGS += " + pvLdFlags + "\n")
     
     def addPackage(self, packVers, packVer):
         packVer = LibNameVer(packVer.name, packVer.version.replace("/", "__"))
