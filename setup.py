@@ -994,7 +994,6 @@ class Setup:
         bPath = packVer.bPaths_
         if self.noInternet_:
             newUrl = bPath.url.replace(".git","/archive/" + str(packVer.nameVer_.version) + ".tar.gz").replace("git@github.com:", "https://github.com/")
-            print newUrl
             bPath = BuildPaths(newUrl, bPath.build_dir, bPath.build_sub_dir, bPath.local_dir)
             base_file = os.path.basename(bPath.url)
             fnp = os.path.join(self.dirMaster_.ext_tars,packVer.nameVer_.name, base_file)
@@ -1106,7 +1105,9 @@ class Setup:
             For header only libraries, will be put directly into local
         '''
         if self.noInternet_:
-            fnp = os.path.join(self.dirMaster_.ext_tars,packVer.nameVer_.name, packVer.nameVer_.version)
+            newUrl = bPath.url.replace(".git","/archive/" + str(packVer.nameVer_.version) + ".tar.gz").replace("git@github.com:", "https://github.com/")
+            base_file = os.path.basename(newUrl)
+            fnp = os.path.join(self.dirMaster_.ext_tars,packVer.nameVer_.name, base_file)
             Utils.clear_dir(os.path.dirname(bPath.local_dir))
             Utils.untar(fnp, os.path.dirname(bPath.local_dir))
             ## might not be the best way to do this but works for now
