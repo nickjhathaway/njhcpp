@@ -100,36 +100,6 @@ inline std::vector<bib::sys::RunOutput> runCmdsThreaded(
 					}
 				}
 			};
-	/*
-	auto runCmds =
-			[&verbose](const std::shared_ptr<CmdPool<std::string>> & pool) {
-				bool running = true;
-				while(running) {
-					auto currentCmd = pool->getCmd();
-					if(currentCmd.valid_) {
-						if(verbose) {
-							auto tId = std::this_thread::get_id();
-							std::cout << "Thread: " << tId << std::endl;
-							std::cout << "\tRunning: " << currentCmd.cmd_ << std::endl;
-						}
-						auto currentOut = bib::sys::run(std::vector<std::string> {currentCmd.cmd_});
-						if(verbose){
-							auto tId = std::this_thread::get_id();
-							std::cout << "\tThread: " << tId << std::endl;
-							std::cout << "\tDone running: " << currentCmd.cmd_ << std::endl;
-						}
-						{
-							if(verbose){
-								auto tId = std::this_thread::get_id();
-								std::cout << "\tThread: " << tId << std::endl;
-								std::cout << "\tInserting Results from: " << currentCmd.cmd_ << std::endl;
-							}
-						}
-					} else {
-						running = false;
-					}
-				}
-			};*/
 	if (debug) {
 		for (const auto & cmd : cmds) {
 			std::cout << cmd << std::endl;

@@ -7,13 +7,12 @@
 #include "bibcpp/utils/stringUtils.hpp"
 #include "bibcpp/files/fileUtilities.hpp" //files::last_write_time
 #include "bibcpp/files/fileStreamUtils.hpp" //files::get_file_contents
-#include "bibcpp/debug/exception.hpp"
+
 
 namespace bib {
 namespace files {
 
-namespace bfs = boost::filesystem;
-namespace sch = std::chrono;
+
 
 /**@brief A file object that holds the contents of a file and updates the contents if the file changed since the last time it was read
  *
@@ -37,7 +36,6 @@ public:
 	 */
 	FileCache() :
 			fnp_("") {
-		//load();
 	}
 	/**@brief constructor with the content of the file
 	 *

@@ -16,26 +16,40 @@
 #include "bibcpp/utils/stringUtils.hpp" //appendAsNeededRet()
 #include "bibcpp/utils/time/timeUtils.hpp" //getCurrentDate()
 #include "bibcpp/files/filePathUtils.hpp" //join()
+#include "bibcpp/files/fileUtilities.hpp"
+
 namespace bib {
 namespace files {
-namespace bfs = boost::filesystem;
+
 
 // from http://boost.2283326.n4.nabble.com/filesystem-6521-Directory-listing-using-C-11-range-based-for-loops-td4570988.html
 /**@brief Class to allow to iterator over a directory's content with c11 for loop semantics
  *
  */
 class dir {
-	bfs::path p_;
+	bfs::path p_; /**< directory to iterator over*/
 
 public:
+	/**@brief Construct with directory to iterate over
+	 *
+	 * @param p Path to a directory
+	 */
 	inline dir(bfs::path p) :
 			p_(p) {
 	}
 
+	/**@brief Beginning of directory iteration
+	 *
+	 * @return a boost::filesystem::directory_iterator
+	 */
 	bfs::directory_iterator begin() {
 		return bfs::directory_iterator(p_);
 	}
 
+	/**@brief End of directory iteration
+	 *
+	 * @return a boost::filesystem::directory_iterator, that's just empty
+	 */
 	bfs::directory_iterator end() {
 		return bfs::directory_iterator();
 	}
@@ -101,7 +115,7 @@ inline std::map<bfs::path, bool> listAllFiles(const std::string & dirName,
 	if (!contains.empty()) {
 		std::map<bfs::path, bool> specificFiles;
 		for (const auto & f : files) {
-			if (checkForSubStrs(f.first.string(), contains)) {
+			if (checkForSubStrs(bfs::basename(f.first), contains)) {
 				specificFiles.emplace(f);
 			}
 		}
@@ -126,7 +140,7 @@ inline std::map<bfs::path, bool> listAllFiles(const std::string & dirName,
 	if (!contains.empty()) {
 		std::map<bfs::path, bool> specificFiles;
 		for (const auto & f : files) {
-			if (checkForPats(f.first.string(), contains)) {
+			if (checkForPats(bfs::basename(f.first), contains)) {
 				specificFiles.emplace(f);
 			}
 		}
@@ -153,8 +167,8 @@ inline std::map<bfs::path, bool> listAllFiles(const std::string & dirName,
 	if (!contains.empty() || !excludes.empty()) {
 		std::map<bfs::path, bool> specificFiles;
 		for (const auto & f : files) {
-			if (checkForPats(f.first.string(), contains)
-					&& checkForPatsExclude(f.first.string(), excludes)) {
+			if (checkForPats(bfs::basename(f.first), contains)
+					&& checkForPatsExclude(bfs::basename(f.first), excludes)) {
 				specificFiles.emplace(f);
 			}
 		}
@@ -236,25 +250,47 @@ inline bool rmDirForce(const std::string & dirName) {
 }
 
 
+/**@brief Class to hold parameters to make directory functions
+ *
+ */
 class MkdirPar {
 public:
+	/**@brief Directory to make, overwrite false by default
+	 *
+	 * @param dirName The directory to construct
+	 */
 	explicit MkdirPar(const std::string & dirName) :
 			dirName_(dirName) {
 	}
+	/**@brief Constructor with directory to make and whether to overwrite it if it exists
+	 *
+	 * @param dirName The directory to construct
+	 * @param overWriteDir To overwrite the directory
+	 */
 	explicit MkdirPar(const std::string & dirName, bool overWriteDir) :
 			dirName_(dirName), overWriteDir_(overWriteDir) {
 	}
-	std::string dirName_;
-	bool overWriteDir_ = false;
-	mode_t perms_ = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
+
+	/**@brief Constructor with directory to make, whether to overwrite it if it exists, and what permissions to give it
+	 *
+	 * @param dirName The directory to construct
+	 * @param overWriteDir To overwrite the directory
+	 * @param perms The permissions to give to the directory
+	 */
+	explicit MkdirPar(const std::string & dirName, bool overWriteDir, mode_t perms) :
+			dirName_(dirName), overWriteDir_(overWriteDir), perms_(perms) {
+	}
+
+	std::string dirName_; /**< the directory to make*/
+	bool overWriteDir_ = false; /**< whether or not to overwrite directory */
+	mode_t perms_ = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH; /**< the permissions to set on directory*/
 };
 
-/**@brief make directory with given permissions and check for existence
+
+/**@brief Make directory with using bib::files::MkdirPar
  *
- * @param dirName The name of the directory to make
- * @param overWrite Whether to overwrite the directory if it already exists
- * @param perms The permissions for the directory defaults to read,write,execute for user and group and read,execute for others
- * @return
+ * @param pars a bib::files::MkdirPar that will have directory name, whether to overwrite, and permissions
+ * @return the status of making the directory
  */
 inline int32_t makeDir(const MkdirPar & pars) {
 	if (bfs::exists(pars.dirName_)) {
@@ -283,54 +319,48 @@ inline int32_t makeDir(const MkdirPar & pars) {
 	}
 	return directoryStatus;
 }
+
 /**@brief Make a directory in the given parent directory with the given permissions
  *
  * @param parentDirectory The directory wihin which to create the new directory
  * @param newDirectory The name of the new directory to create (can contain the key work TODAY which will be replaced with current date YYYY-MM-DD)
  * @param overWrite Whether to overwrite the directory if it already exists
- * @param perms The permissions for the directory defaults to read,write,execute for user and group and read,execute for others
  * @return The name of the created directory
  */
 inline std::string makeDir(const std::string & parentDirectory,
-		const std::string & newDirectory, bool overWrite) {
-	std::string newDirectoryName = join(parentDirectory,
-			replaceString(newDirectory, "TODAY", getCurrentDate()) + "/");
-	makeDir(MkdirPar(newDirectoryName, overWrite));
-	return newDirectoryName;
+		const MkdirPar & newDirectory) {
+	std::string ret = bib::files::join(parentDirectory,
+			replaceString(newDirectory.dirName_, "TODAY", getCurrentDate()) + "/");
+	MkdirPar params = newDirectory;
+	params.dirName_ = ret;
+	makeDir(params);
+	return ret;
 }
-
-
-
 
 /**@brief Make several directories in the given parent directory with the given permissions
  *
  * @param parentDirectory The directory wihin which to create the new directory
  * @param newDirectories The names of the new directories to create
  * @param overWrite Whether to overwrite the directory if it already exists
- * @param perms The permissions for the directory defaults to read,write,execute for user and group and read,execute for others
  * @return The names of the created directories
  */
+
 inline std::vector<std::string> makeDir(std::string parentDirectory,
-		std::vector<std::string> newDirectories, bool overWrite) {
+		std::vector<MkdirPar> newDirectories) {
 	std::vector<std::string> ret;
 	for (const auto & d : newDirectories) {
-		ret.emplace_back(join(parentDirectory, d));
-		makeDir(MkdirPar(ret.back(), overWrite));
+		ret.emplace_back(makeDir(parentDirectory, d));
 	}
 	return ret;
 }
 
 
 
-/**@brief Make directory if it doesn't exist
+/**@brief Make directory with bib::files::MkdirPar if it doesn't exist
  *
- * @param parentDirectory The directory in which to make the directory
- * @param newDirectory The new directory to make in parentDirectory
- * @param perms The permissions to set on the new directory
- * @return The name of the create directory or the name of the already created directory
+ * @param pars a bib::files::MkdirPar that will have directory name, whether to overwrite, and permissions
  */
 inline void makeDirP(const MkdirPar & newDirectory) {
-
 	auto toks = tokenizeString(newDirectory.dirName_, "/");
 	std::string growingDir = "";
 	for (const auto & tok : toks) {
@@ -347,14 +377,15 @@ inline void makeDirP(const MkdirPar & newDirectory) {
  *
  * @param parentDirectory The directory in which to make the directory
  * @param newDirectory The new directory to make in parentDirectory
- * @param perms The permissions to set on the new directory
- * @return The name of the create directory or the name of the already created directory
+ * @return The name of the created directory or the name of the already created directory
  */
 inline std::string makeDirP(const std::string &parentDirectory,
-		const std::string & newDirectory) {
+		const MkdirPar & newDirectory) {
 	std::string ret = bib::files::join(parentDirectory,
-			replaceString(newDirectory, "TODAY", getCurrentDate()) + "/");
-	makeDirP(MkdirPar(ret));
+			replaceString(newDirectory.dirName_, "TODAY", getCurrentDate()) + "/");
+	MkdirPar params = newDirectory;
+	params.dirName_ = ret;
+	makeDirP(params);
 	return ret;
 }
 

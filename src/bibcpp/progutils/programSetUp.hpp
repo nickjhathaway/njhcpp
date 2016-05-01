@@ -58,11 +58,11 @@ public:
 		if (commands_.hasFlagCaseInsen("-getFlags")
 				|| commands_.hasFlagCaseInsen("-flags")
 				|| commands_.hasFlagCaseInsen("-h")
-				|| commands_.hasFlagCaseInsen("-help")) {
+				|| commands_.hasFlagCaseInsen("--help")) {
 			failed_ = true;
 		}
 		if (commands_.hasFlagCaseInsen("-h")
-				|| commands_.hasFlagCaseInsen("-help")) {
+				|| commands_.hasFlagCaseInsen("--help")) {
 			printingHelp_ = true;
 		}
 		if (commands_.hasFlagCaseInsen("-getFlags")
@@ -209,7 +209,7 @@ public:
 		}
 		std::map<std::string, std::string> infoOutHelp;
 		infoOutHelp["-flags,-getFlags"] = "Print flags";
-		infoOutHelp["-h,-help"] = "Print a more detail help message if available";
+		infoOutHelp["-h,--help"] = "Print a more detail help message if available";
 		std::pair<uint32_t, uint32_t> paddings { 0, 0 };
 		auto keyFunc = [](const auto & kv) {return kv.first;};
 		auto valFunc =
@@ -269,7 +269,7 @@ public:
 		if (commands_.hasFlagCaseInsen("-getFlags")
 				|| commands_.hasFlagCaseInsen("-flags")
 				|| commands_.hasFlagCaseInsen("-h")
-				|| commands_.hasFlagCaseInsen("-help")) {
+				|| commands_.hasFlagCaseInsen("--help")) {
 			printFlags(out);
 			exit(1);
 		}
@@ -312,7 +312,7 @@ public:
 			tempStream << bashCT::bold + bashCT::black << "Need to have "
 					<< bashCT::red << conToStr(tokenizeString(flagStr, ","), " or ")
 					<< bashCT::black << " see " << bashCT::red
-					<< commands_.getProgramName() + " -help " << bashCT::black
+					<< commands_.getProgramName() + " --help " << bashCT::black
 					<< "for more details" << bashCT::reset;
 			warnings_.emplace_back(tempStream.str());
 			failed_ = true;
@@ -354,7 +354,7 @@ public:
 	 * is needed
 	 */
 	bool needsHelp(uint32_t minAmountOfArgs = 0) {
-		return (commands_.hasFlagCaseInsen("-help")
+		return (commands_.hasFlagCaseInsen("--help")
 				|| commands_.hasFlagCaseInsen("-h")
 				|| commands_.numberOfCommands() <= minAmountOfArgs);
 	}

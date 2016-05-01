@@ -30,6 +30,10 @@ struct RunOutput {
 		return success_;
 	}
 
+	/**@brief convert to json object from jsoncpp
+	 *
+	 * @return a json objects
+	 */
 	Json::Value toJson() const {
 		Json::Value ret;
 		ret["class"] = "bib::sys::RunOutput";

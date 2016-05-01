@@ -45,9 +45,10 @@ public:
 	std::string endMessage_; /**< End Message */
 	std::ostream & out_; /**< Where to print messages */
 	bool debug_; /**< Debug flag to turn off printing  */
-	//destructor, print the end message for when the obj goes out of scope
+
 	/**@brief destructor with print message
 	 *
+	 * print the end message for when the obj goes out of scope
 	 */
 	~scopedMessage(){
 		if(debug_) out_ << bib::bashCT::red << endMessage_ << bib::bashCT::reset << std::endl;

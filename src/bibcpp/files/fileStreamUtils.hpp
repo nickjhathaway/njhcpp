@@ -12,7 +12,7 @@
 #include <boost/filesystem.hpp>
 #include "bibcpp/utils/stringUtils.hpp" //appendAsNeededRet()
 #include "bibcpp/files/fileSystemUtils.hpp"
-#include "bibcpp/debug/exception.hpp"
+
 
 namespace bib {
 namespace files {

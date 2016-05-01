@@ -116,7 +116,7 @@ class programRunner {
 		if (nameOfProgram == nameOfProgram_) {
 			out << "Programs" << std::endl;
 			out << "Use " << nameOfProgram_
-					<< " [PROGRAM] -help to see more details about each program"
+					<< " [PROGRAM] --help to see more details about each program"
 					<< std::endl;
 			out << "Commands are not case sensitive" << std::endl;
 			listCommands(out);

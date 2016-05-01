@@ -78,7 +78,7 @@ inline std::string to_string<bool>(const bool & obj) {
 }
 
 //  added to std:: stou, stous, stos because they are not in the standard
-// library
+//  library
 //  so that they have similar behavior to the other string conversions
 inline uint32_t stou(const std::string& str, size_t* idx = 0, int base = 10) {
   auto firstConverion = std::stol(str, idx, base);

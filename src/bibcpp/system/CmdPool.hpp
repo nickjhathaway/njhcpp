@@ -30,7 +30,6 @@ public:
 
 	}
 private:
-	//std::atomic<uint32_t> currentCmd_;
 	std::vector<T> cmds_; /**< The commands to run */
 	uint32_t currentCmd_ = 0; /**< Index of what command to run next */
 
