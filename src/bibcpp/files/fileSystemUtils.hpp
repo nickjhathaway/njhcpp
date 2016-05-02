@@ -115,7 +115,7 @@ inline std::map<bfs::path, bool> listAllFiles(const std::string & dirName,
 	if (!contains.empty()) {
 		std::map<bfs::path, bool> specificFiles;
 		for (const auto & f : files) {
-			if (checkForSubStrs(bfs::basename(f.first), contains)) {
+			if (checkForSubStrs(f.first.filename().string(), contains)) {
 				specificFiles.emplace(f);
 			}
 		}
@@ -140,7 +140,7 @@ inline std::map<bfs::path, bool> listAllFiles(const std::string & dirName,
 	if (!contains.empty()) {
 		std::map<bfs::path, bool> specificFiles;
 		for (const auto & f : files) {
-			if (checkForPats(bfs::basename(f.first), contains)) {
+			if (checkForPats(f.first.filename().string(), contains)) {
 				specificFiles.emplace(f);
 			}
 		}
@@ -167,8 +167,8 @@ inline std::map<bfs::path, bool> listAllFiles(const std::string & dirName,
 	if (!contains.empty() || !excludes.empty()) {
 		std::map<bfs::path, bool> specificFiles;
 		for (const auto & f : files) {
-			if (checkForPats(bfs::basename(f.first), contains)
-					&& checkForPatsExclude(bfs::basename(f.first), excludes)) {
+			if (checkForPats(f.first.filename().string(), contains)
+					&& checkForPatsExclude(f.first.filename().string(), excludes)) {
 				specificFiles.emplace(f);
 			}
 		}
