@@ -48,8 +48,8 @@ UnaryFunction for_each(Input& container, UnaryFunction f) {
  * @param f the func to employ
  * @return the func used
  */
-template <typename Input, typename UnaryFunction>
-UnaryFunction for_each_pos(Input& container, const std::vector<uint64_t> & positions,UnaryFunction f) {
+template <typename Input,typename POS, typename UnaryFunction>
+UnaryFunction for_each_pos(Input& container, const std::vector<POS> & positions, UnaryFunction f) {
 	for(auto pos : positions){
 		f(container[pos]);
 	}
