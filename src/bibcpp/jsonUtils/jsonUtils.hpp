@@ -15,8 +15,10 @@
 #include <deque>
 #include <string>
 #include <cstdint>
+#include <iostream>
 #include "bibcpp/common.h" //Enable_if
 #include "bibcpp/utils/has_member.hpp" //has_member
+#include "bibcpp/debug/exception.hpp" //Exception
 
 
 
@@ -202,6 +204,32 @@ Json::Value toJson(const T & t){
 }
 
 
+/**@brief Parse a string into a Json::Value object
+ *
+ * @param jsonStr String formated in json
+ * @return A Json::Value object
+ */
+inline Json::Value parse(const std::string & jsonStr){
+	Json::Reader reader;
+	Json::Value root;
+	auto stats =  reader.parse(jsonStr,root);
+	if(!stats){
+		std::cerr << "Error in parsing jsonStr for readObjectIOOptions in " << __PRETTY_FUNCTION__ << std::endl;
+		std::cerr << jsonStr << std::endl;
+		throw bib::err::Exception(bib::err::F() << "Could not construct from jsonStr");
+	}
+	return root;
+}
+
+/**@brief Write a json formated string with little white space, one line
+ *
+ * @param val The json object
+ * @return A string with only one line with values in val written in json format
+ */
+inline std::string writeAsOneLine(const Json::Value & val){
+	Json::FastWriter jWriter;
+	return jWriter.write(val);
+}
 
 
 
