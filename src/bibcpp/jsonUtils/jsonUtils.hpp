@@ -107,9 +107,13 @@ static Json::Value & toJsonHelper(const VAL & val, Json::Value & ret){
 		return converter::toJson(t);
 	}
 
+	template<>
+	inline Json::Value toJson(const Json::Value & val) {
+		return val;
+	}
 
 	template<>
-	inline Json::Value toJson(const std::string & val){
+	inline Json::Value toJson(const std::string & val) {
 		Json::Value ret(val);
 		return ret;
 	}
