@@ -39,12 +39,17 @@ public:
 	 *
 	 * @param out the out stream to print to
 	 * @param current the current number the progress is on, should be less than total
+	 * @param showTime Whether to show duration and ETA
 	 */
-	void outputProg(std::ostream & out, uint32_t current) {
+	void outputProg(std::ostream & out, uint32_t current, bool showTime = false) {
 		if (progress(current)) {
-			out << "\r" << getOutStr();
+			out << "\r" << getOutStr(showTime);
 			out.flush();
+			if(current == total_){
+				std::cout << std::endl;
+			}
 		}
+
 	}
 	std::map<uint32_t, std::string> progColors_;
 	std::map<uint32_t, std::string> readToGreen_ = { { 0, bib::bashCT::addBGColor(
@@ -67,16 +72,23 @@ private:
 	 */
 	bool progress(uint32_t current) {
 		if (current > total_) {
-			std::cerr << std::endl << "Error, " << current
+			std::cerr << std::endl << __PRETTY_FUNCTION__ << ": Error, " << current
 					<< "would progress further than total: " << total_ << std::endl;
+		}
+		if(1 == current){
+			watch_.reset();
 		}
 		current_ = current;
 		currentProgress_ = current_ / static_cast<double>(total_);
+		//set current progress
 		tprog_ = std::round(currentProgress_ * width_);
 		if (tprog_ == oldtProg_ && current < total_) {
 			oldtProg_ = tprog_;
 			return false;
 		}
+
+		//set new time
+		watch_.startNewLap();
 		oldtProg_ = tprog_;
 		progStr_ = "";
 		for (auto i : iter::range(tprog_ / step_ + 1)) {
@@ -90,12 +102,21 @@ private:
 	}
 	/**@brief get the current progress line
 	 *
+	 * @param showTime Whether to show duration and ETA
+	 *
 	 * @return the progress line
 	 */
-	std::string getOutStr() const {
-		return progStr_ + padStr_ + getPerStr();
+	std::string getOutStr(bool showTime = false) const {
+		std::string add = "";
+		if(showTime){
+			add = ":dur: " + getTimeFormat(watch_.totalTime(), true, 0);
+			if(tprog_ > 1){
+				add += "; ETA: " + getTimeFormat(watch_.getAverageLapTime() * (width_ - tprog_), true, 0);
+			}
+		}
+		return progStr_ + padStr_ + getPerStr() + add;
 	}
-	/**@brief get the precentage string of the current progress
+	/**@brief get the percentage string of the current progress
 	 *
 	 * @return
 	 */
