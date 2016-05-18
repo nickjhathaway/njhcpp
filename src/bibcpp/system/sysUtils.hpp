@@ -167,6 +167,22 @@ inline std::string GetEnv(const std::string & var) {
 	}
 }
 
+/**@brief Test if std::cout is going to terminal or being redirected
+ *
+ * @return true if going to terminal
+ */
+inline bool stdoutTerminal(){
+	return isatty(STDOUT_FILENO);
+}
+
+/**@brief Test if std::cin is from terminal or being redirected
+ *
+ * @return true if coming from terminal
+ */
+inline bool stdinTerminal(){
+	return isatty(STDIN_FILENO);
+}
+
 } // namespace sys
 } // namespace bib
 
