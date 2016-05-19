@@ -108,10 +108,12 @@ private:
 	 */
 	std::string getOutStr(bool showTime = false) const {
 		std::string add = "";
-		if(showTime){
+		if (showTime) {
 			add = ":dur: " + getTimeFormat(watch_.totalTime(), true, 0);
-			if(tprog_ > 1){
-				add += "; ETA: " + getTimeFormat(watch_.getAverageLapTime() * (width_ - tprog_), true, 0);
+			if (tprog_ > 1) {
+				add += "; ETA: "
+						+ getTimeFormat(watch_.getAverageLapTime() * (width_ - tprog_),
+								true, 0) + std::string(' ', 10);
 			}
 		}
 		return progStr_ + padStr_ + getPerStr() + add;
