@@ -113,7 +113,7 @@ private:
 			if (tprog_ > 1) {
 				add += "; ETA: "
 						+ getTimeFormat(watch_.getAverageLapTime() * (width_ - tprog_),
-								true, 0) + std::string(' ', 10);
+								true, 0) + std::string(10, ' ');
 			}
 		}
 		return progStr_ + padStr_ + getPerStr() + add;
