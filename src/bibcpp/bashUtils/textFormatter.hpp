@@ -128,7 +128,7 @@ inline std::string addBGColor(uint32_t colorCode) {
  * @param out The out stream to print to, should be the terminal or something that understand these escape character codes
  */
 inline void outputPossibleColors(std::ostream & out) {
-	std::vector<uint32_t> possColors(216);
+	std::vector<uint32_t> possColors(216, 0);
 	std::iota(possColors.begin(), possColors.end(), 16U);
 	for (auto i : possColors) {
 		out << addBGColor(i) << i << reset << "\n";
