@@ -16,6 +16,7 @@
 #include <string>
 #include <cstdint>
 #include <iostream>
+#include <boost/filesystem.hpp>
 #include "bibcpp/common.h" //Enable_if
 #include "bibcpp/utils/has_member.hpp" //has_member
 #include "bibcpp/debug/exception.hpp" //Exception
@@ -124,6 +125,11 @@ static Json::Value & toJsonHelper(const VAL & val, Json::Value & ret){
 
 	inline Json::Value toJson(char * val){
 		return toJson(std::string(val));
+	}
+
+	template<>
+	inline Json::Value toJson(const boost::filesystem::path & val) {
+		return toJson(val.string());
 	}
 
 	template<>
