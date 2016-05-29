@@ -185,12 +185,12 @@ inline std::vector<std::string> tokenizeString(const std::string& str,
       ret.emplace_back(tempStr);
     }
   } else {
-    if (str.find(delim) == std::string::npos) {
+    if (std::string::npos == str.find(delim)  ) {
       ret.push_back(str);
     } else {
       std::size_t pos = str.find(delim, 0);
       std::size_t oldPos = -delim.size();
-      while (pos != std::string::npos) {
+      while (std::string::npos != pos) {
         ret.emplace_back(
             str.substr(oldPos + delim.size(), pos - oldPos - delim.size()));
         oldPos = pos;
@@ -231,12 +231,12 @@ inline bool strAllDigits(const std::string& str) {
  */
 inline bool containsSubString(const std::string& str,
                               const std::string& subString) {
-  return (str.find(subString) != std::string::npos);
+  return (std::string::npos != str.find(subString));
 }
 
 
 
-/**@brief Convertor for bool to true or false str
+/**@brief Converter for bool to true or false str
  *
  * @param convert Bool to convert
  * @return true or false
@@ -255,10 +255,11 @@ inline std::string boolToStr(bool convert) {
  * @param str String to convert
  */
 inline void strToUpper(std::string& str) {
-  for (auto& c : str) {
-    c = toupper(c);
-  }
+	for (auto& c : str) {
+		c = toupper(c);
+	}
 }
+
 /**@brief Convert a string to all lower case letters
  *
  * @param str String to convert
@@ -485,7 +486,6 @@ inline bool beginsWith(const std::string& str, const std::string& target) {
 inline std::string & appendAsNeeded(std::string & str, const std::string & app){
 	if(!endsWith(str,app)){
 		str.append(app);
-
 	}
 	return str;
 }
