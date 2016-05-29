@@ -34,6 +34,16 @@ bool contains(const std::vector<T>& c, const T& t) {
   return find(c, t) != c.end();
 }
 
+template<typename Container, typename COMP>
+auto find(Container& c, const typename Container::value_type & t, COMP comp) -> decltype(c.begin()) {
+	return std::find_if(c.begin(), c.end(), [&t,&comp](const typename Container::value_type & other) {return comp(t, other);});
+}
+
+template<typename C, typename COMP>
+bool contains(const C& c, const typename C::value_type & t, COMP comp) {
+	return find(c, t, comp) != std::end(c);
+}
+
 template <typename C, typename T>
 bool has(const C& c, const T& t) {
   return contains(c, t);
