@@ -224,9 +224,33 @@ inline Json::Value parse(const std::string & jsonStr){
 	Json::Value root;
 	auto stats =  reader.parse(jsonStr,root);
 	if(!stats){
-		std::cerr << "Error in parsing jsonStr for readObjectIOOptions in " << __PRETTY_FUNCTION__ << std::endl;
-		std::cerr << jsonStr << std::endl;
-		throw bib::err::Exception(bib::err::F() << "Could not construct from jsonStr");
+		std::stringstream ss;
+		ss << "Error in parsing jsonStr in " << __PRETTY_FUNCTION__ << std::endl;
+		ss << jsonStr << std::endl;
+		throw bib::err::Exception(ss.str());
+	}
+	return root;
+}
+
+/**@brief Parse json file and create Json::Value object
+ *
+ * @param filename the file to  read in
+ * @return a Json::Value object with the contents of filename
+ */
+inline Json::Value parseFile(const std::string & filename){
+	Json::Reader reader;
+	Json::Value root;
+	std::ifstream inFile(filename);
+	if(!inFile){
+		std::stringstream ss;
+		ss << __PRETTY_FUNCTION__ << " error in opening: " << filename << std::endl;
+		throw std::runtime_error{ss.str()};
+	}
+	auto stats =  reader.parse(inFile,root);
+	if(!stats){
+		std::stringstream ss;
+		ss << "Error in parsing file" << filename << " in " << __PRETTY_FUNCTION__ << std::endl;
+		throw bib::err::Exception(ss.str());
 	}
 	return root;
 }
