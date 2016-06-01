@@ -198,7 +198,7 @@ inline void openTextFile(std::ofstream& file, const std::string & filename,
 			if (exitOnFailure) {
 				throw std::runtime_error { ss.str() };
 			} else {
-				std::cout << ss.str() << std::endl;
+				std::cerr << ss.str() << std::endl;
 			}
 		}
 	} else {
@@ -209,7 +209,7 @@ inline void openTextFile(std::ofstream& file, const std::string & filename,
 			if (exitOnFailure) {
 				throw std::runtime_error { ss.str() };
 			} else {
-				std::cout << ss.str() << std::endl;
+				std::cerr << ss.str() << std::endl;
 			}
 		} else {
 			chmod(filename.c_str(),

@@ -17,7 +17,7 @@ namespace files {
 /**@brief Class to read a text file that's been gz zipped
  *
  */
-template<size_t BUFFER = 1200>
+template<size_t BUFFER = 10240>
 class gzTextFileCpp {
 	gzFile file_; /**< a gzFile object*/
 	const static uint32_t bufferSize_ = BUFFER; /**< buffer size of the reading in from gz ziped file in chars*/
