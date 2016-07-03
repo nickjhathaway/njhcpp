@@ -8,10 +8,74 @@
  */
 
 #include "bibcpp/files/fileUtilities.hpp"
-
+#include <zlib.h>
+#include "bibcpp/utils/typeUtils.hpp" //bib::TypeName::get
 
 namespace bib {
 namespace files {
+
+/**@brief Write out a vector as a chunk of data to compressed binary file
+ *
+ * @param fnp The file to write to, will overwrite it if it already exits
+ * @param d The vector to write
+ */
+template<typename T>
+void writePODvectorGz(bfs::path fnp, const std::vector<T> d) {
+
+	if (bfs::exists(fnp)) {
+		bfs::remove(fnp);
+	}
+	bib::files::touch(fnp);
+	uint64_t numBytes = d.size() * sizeof(T);
+	//bfs::resize_file(fnp, numBytes);
+	auto gzFileOut = gzopen(bib::appendAsNeededRet(fnp.string(), ".gz").c_str(), "bw");
+	/** @todo figure way to test if the file opened
+	if (!()) {
+		throw bib::err::Exception(bib::err::F() << "could not open file " << fnp);
+	}*/
+	gzwrite(gzFileOut, d.data(), numBytes);
+	gzclose(gzFileOut);
+
+	//std::cout << "wrote " << fnp << " (" << d.size() << " elements)" << std::endl;
+}
+
+/**@brief Read a chunk of data from a compressed binary file, most likely written by bib::files::writePODvector
+ *
+ * @param fnp A filename to read the data from
+ * @return The data from the file back as a vector
+ */
+template<typename T>
+std::vector<T> readPODvectorGz(bfs::path fnp) {
+	auto gzInFile = gzopen(fnp.string().c_str(), "rb");
+	auto pos = gztell(gzInFile);
+	if (EOF == pos) {
+		throw bib::err::Exception(bib::err::F() << __PRETTY_FUNCTION__ << ": error in opening " << fnp);
+	}
+	std::vector<T> ret;
+	gzbuffer(gzInFile, 128 * 1024);
+	uint32_t bufferSize = 10000;
+	auto bufferBytes = sizeof(T) * bufferSize;
+	std::vector<T> temp(bufferSize);
+	while(!gzeof(gzInFile)){
+
+		int32_t bytes_read = gzread(gzInFile, temp.data(), bufferBytes);
+		if(0 != bytes_read % sizeof(T)){
+			std::stringstream ss;
+			ss << "Error in: " << __PRETTY_FUNCTION__
+					<< " read in " << bytes_read
+					<< " bytes which is not divisible by the size of " << bib::TypeName::get<T>()
+					<< ", " << sizeof(T) << std::endl;
+			throw std::runtime_error{ss.str()};
+		}
+		uint32_t elements_read = bytes_read/sizeof(T);
+		if(0 != elements_read){
+			ret.insert(ret.begin(), temp.begin(), temp.begin() + elements_read);
+		}
+	}
+	gzclose(gzInFile);
+	return ret;
+}
+
 
 /**@brief Write out a vector as a chunk of data
  *
