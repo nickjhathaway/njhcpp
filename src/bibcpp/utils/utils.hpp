@@ -54,6 +54,12 @@ bool has(const std::vector<T>& c, const T& t) {
   return contains(c, t);
 }
 
+template<typename C, typename T, typename PRED>
+bool has(const C& c, const T& t, PRED pred) {
+	return std::any_of(std::begin(c), std::end(c),
+			[&t,pred](const typename C::value_type & val) {return pred(val,t);});
+}
+
 template <typename C, typename T>
 bool in(const T& t, const C& c) {
   return contains(c, t);
