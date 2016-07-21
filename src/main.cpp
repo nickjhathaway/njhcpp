@@ -17,7 +17,9 @@ int main(int argc, char* argv[]){
 	double dt = 10.01;
 	long double ldt = 100.01;
 	float ft = 1.01;
+	bib::files::bfs::path testPath = "/home/hathawan";
   bib::progutils::programSetUp setUp(argc, argv);
+  setUp.setOption(testPath, "--testPath", "testPath");
   setUp.setOption(ui16t, "--ui16t", "ui16t");
   setUp.setOption(ui32t, "--ui32t", "ui32t");
   setUp.setOption(ui64t, "--ui64t", "ui64t");

@@ -11,6 +11,7 @@
 #include "bibcpp/files/filePathUtils.hpp"
 #include "bibcpp/bashUtils.h"
 
+
 namespace bib {
 namespace progutils {
 
@@ -19,12 +20,42 @@ namespace progutils {
  *
  */
 class CmdArgs {
+public:
+	/**@brief for determining if T is a type supported by convert command line argument
+	 *
+	 */
 	template<typename T>
-	void convertArg(const std::string & arg, T & outVal) {
-		static_assert(true, "Type not supported in bib::progutils::CmdArgs::convertArg");
+	struct is_cmdArg_supported_type : public std::integral_constant<bool,
+	   std::is_same<std::string, typename std::decay<T>::type>::value
+	|| std::is_same<boost::filesystem::path, typename std::decay<T>::type>::value
+	|| std::is_same<bool, typename std::decay<T>::type>::value
+	|| std::is_same<int, typename std::decay<T>::type>::value
+	|| std::is_same<short, typename std::decay<T>::type>::value
+	|| std::is_same<int, typename std::decay<T>::type>::value
+	|| std::is_same<long, typename std::decay<T>::type>::value
+	|| std::is_same<long long, typename std::decay<T>::type>::value
+	|| std::is_same<unsigned short, typename std::decay<T>::type>::value
+	|| std::is_same<unsigned int, typename std::decay<T>::type>::value
+	|| std::is_same<unsigned long, typename std::decay<T>::type>::value
+	|| std::is_same<double, typename std::decay<T>::type>::value
+	|| std::is_same<long double, typename std::decay<T>::type>::value
+	|| std::is_same<float, typename std::decay<T>::type>::value
+	> {};
+
+	/**@brief simply aesthetic, to make call to is_cmdArg_supported_type look nicer
+	 *
+	 * @return Returns true if T is of type arithmetic
+	 */
+	template<typename T>
+	constexpr bool isSupportedType(){
+		return is_cmdArg_supported_type<T>::value;
 	}
 
-public:
+	template<typename T>
+	void convertArg(const std::string & arg, T & outVal) {
+		static_assert(isSupportedType<T>(), "Type not supported in bib::progutils::CmdArgs::convertArg");
+	}
+
 	/**@brief Construct from the generic argc and argv c++ arguments
 	 *
 	 */
@@ -78,6 +109,36 @@ public:
 	 *
 	 */
 	std::string workingDir_;
+
+	/**@brief return bool to indicated whether a help statement was requested
+	 *
+	 */
+	bool printingHelp(){
+		return hasFlagCaseInsenNoDash("-h") ||
+						hasFlagCaseInsenNoDash("--help");
+	}
+
+	/**@brief return bool to indicated whether simply flags were requested
+	 *
+	 */
+	bool gettingFlags(){
+		return hasFlagCaseInsenNoDash("-getFlags")
+						|| hasFlagCaseInsenNoDash("-flags");
+	}
+
+	/**@brief return bool to indicated whether simply to print version, verbose
+	 *
+	 */
+	bool gettingVersion(){
+		return hasFlagCaseInsenNoDash("--version");
+	}
+
+	/**@brief dumping version, just print version and nothing else
+	 *
+	 */
+	bool gettingDumpVersion(){
+		return hasFlagCaseInsenNoDash("--dumpversion");
+	}
 
 	/**@brief convert to json representation
 	 *
@@ -166,6 +227,7 @@ public:
 	template<typename T>
 	bool lookForOptionCaseInsen(T & option, const std::string& flag) {
 		if (hasFlagCaseInsen(flag)) {
+
 			convertArg(getArgCaseInsen(flag, getTypeName(option) == "bool"), option);
 			return true;
 		} else {
@@ -227,8 +289,10 @@ public:
 		lstrip(flag, '-');
 		strToLower(flag);
 		for (const auto & arg : arguments_) {
-			if (lstripRet(strToLowerRet(arg.first), '-') == flag) {
-				return true;
+			if('-' == arg.first.front()){
+				if (lstripRet(strToLowerRet(arg.first), '-') == flag) {
+					return true;
+				}
 			}
 		}
 		return false;
@@ -486,6 +550,13 @@ public:
 		return arguments_.size();
 	}
 };
+
+// boost::filesystem::path
+template<>
+inline void CmdArgs::convertArg(const std::string& option,
+		boost::filesystem::path & outVal) {
+	outVal = option;
+}
 
 // std::string
 template<>

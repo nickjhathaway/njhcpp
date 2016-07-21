@@ -55,19 +55,11 @@ public:
 	 *
 	 */
 	void init() {
-		if (commands_.hasFlagCaseInsen("-getFlags")
-				|| commands_.hasFlagCaseInsen("-flags")
-				|| commands_.hasFlagCaseInsen("-h")
-				|| commands_.hasFlagCaseInsen("--help")) {
+		if (commands_.gettingVersion()
+				|| commands_.gettingDumpVersion()
+				|| commands_.gettingFlags()
+				|| commands_.printingHelp()) {
 			failed_ = true;
-		}
-		if (commands_.hasFlagCaseInsen("-h")
-				|| commands_.hasFlagCaseInsen("--help")) {
-			printingHelp_ = true;
-		}
-		if (commands_.hasFlagCaseInsen("-getFlags")
-				|| commands_.hasFlagCaseInsen("-flags")) {
-			gettingFlags_ = true;
 		}
 	}
 
@@ -97,15 +89,7 @@ public:
 	 */
 	bool failed_ = false;
 
-	/**@brief A bool to indicated whether a help statement was requested
-	 *
-	 */
-	bool printingHelp_ = false;
 
-	/**@brief A bool to indicated whether simply flags were requested
-	 *
-	 */
-	bool gettingFlags_ = false;
 
 	/**@brief The maximum width to allow for messages
 	 *
@@ -266,10 +250,7 @@ public:
 	 *
 	 */
 	void finishSetUp(std::ostream &out) {
-		if (commands_.hasFlagCaseInsen("-getFlags")
-				|| commands_.hasFlagCaseInsen("-flags")
-				|| commands_.hasFlagCaseInsen("-h")
-				|| commands_.hasFlagCaseInsen("--help")) {
+		if (commands_.printingHelp() || commands_.gettingFlags() ) {
 			printFlags(out);
 			exit(1);
 		}
@@ -295,10 +276,12 @@ public:
 	template<typename T>
 	bool setOption(T &option, std::string flagStr,
 			const std::string &shortDescription, bool required = false) {
+
 		Flag currentFlag(option, flagStr, shortDescription, required);
 		bool found = false;
 		for (const auto &fTok : currentFlag.flags_) {
 			if (commands_.lookForOptionCaseInsen(option, fTok)) {
+
 				currentFlag.setValue(option);
 				found = true;
 				break;

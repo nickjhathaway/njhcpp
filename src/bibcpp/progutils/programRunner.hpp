@@ -51,13 +51,36 @@ class programRunner {
    *
    */
   const std::string nameOfProgram_;
+
+  /**@brief Major Version of Program
+   *
+   */
+  const std::string versionMajor_;
+
+  /**@brief Minor Version of Program
+   *
+   */
+  const std::string versionMinor_;
+
+  /**@brief Pathlevel Version of Program
+   *
+   */
+  const std::string versionPatchlevel_;
+
   /**@brief Constructor with map of funcInfo structs holding the sub programs and the
    *name of the master program
    *
    */
   programRunner(std::map<std::string, funcInfo> cmdToFunc,
-                std::string nameOfProgram)
-      : cmdToFunc_(cmdToFunc), nameOfProgram_(nameOfProgram) {}
+                std::string nameOfProgram,
+								std::string versionMajor = "1",
+								std::string versionMinor = "0",
+								std::string versionPatchLevel = "0")
+      : cmdToFunc_(cmdToFunc), nameOfProgram_(nameOfProgram),
+				versionMajor_(versionMajor),
+				versionMinor_(versionMinor),
+				versionPatchlevel_(versionPatchLevel) {
+	}
 
   virtual ~programRunner() {}
   /**@brief Run one of the subprogram with given arguments stored in argv if
@@ -76,6 +99,14 @@ class programRunner {
       return 0;
     }
     auto cmds = CmdArgs(argc, argv);
+  	if(cmds.gettingVersion()){
+      listPrograms(std::cout,"", nameOfProgram_);
+      return 0;
+  	}
+  	if(cmds.gettingDumpVersion()){
+      std::cout << dumpversion() << std::endl;
+      return 0;
+  	}
     if ("batch" == cmds.subProgramLowerCase()) {
       return batchRun(cmds);
     }else if ("batchthreaded" == cmds.subProgramLowerCase()) {
@@ -99,7 +130,14 @@ class programRunner {
     listPrograms(std::cout, args.subProgram_, nameOfProgram_);
     return 1;
   }
-
+  /**@brief Get the version
+	 *
+	 * @return a string of the version
+	 */
+	std::string dumpversion() const {
+		return versionMajor_ + "." + versionMinor_ + "." + versionPatchlevel_;
+	}
+ public:
   /**@brief List the contained subprograms and if given with a command option,
    *print the closest sub-program
    *
@@ -110,10 +148,10 @@ class programRunner {
    *means another program called it
    *
    */
- public:
 	virtual void listPrograms(std::ostream &out, const std::string &command,
 			const std::string &nameOfProgram) const {
 		if (nameOfProgram == nameOfProgram_) {
+			out << "Version: " << dumpversion() << std::endl;
 			out << "Programs" << std::endl;
 			out << "Use " << nameOfProgram_
 					<< " [PROGRAM] --help to see more details about each program"
@@ -174,7 +212,7 @@ class programRunner {
     bool endFlag = setUp.setOption(ending , "-ending", "A file extension to run batch commands on", false);
     setUp.setOption(pattern, "-pattern", "File Pattern to run batch command", !endFlag);
     setUp.setOption(program, "-run", "ProgramToRun", true);
-    if(setUp.gettingFlags_){
+    if(setUp.commands_.gettingFlags()){
     	std::cout << bashCT::boldGreen("Batch") << bashCT::boldBlack(" Commands") << std::endl;
     	setUp.printFlags(std::cout);
     	if(program != ""){
@@ -263,7 +301,7 @@ class programRunner {
     setUp.setOption(program, "-run", "Program To Run a Batch of Commands with", true);
     uint32_t numThreads = 2;
     setUp.setOption(numThreads, "-batchThreads", "Number of Threads use for the batch commands");
-    if(setUp.gettingFlags_){
+    if(setUp.commands_.gettingFlags()){
     	std::cout << bashCT::boldGreen("Batch") << bashCT::boldBlack(" Commands") << std::endl;
     	setUp.printFlags(std::cout);
     	if(program != ""){

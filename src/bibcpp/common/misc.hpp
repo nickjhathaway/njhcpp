@@ -27,6 +27,7 @@ template<typename T>
 struct is_string : public std::integral_constant<bool, std::is_same<char*, typename std::decay<T>::type>::value
 || std::is_same<const char*, typename std::decay<T>::type>::value> {};
 
+
 /**@brief Declared so that is_string will return true for std::string along with char* and const char*
  *
  */
