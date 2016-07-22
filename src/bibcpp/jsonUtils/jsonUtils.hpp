@@ -81,7 +81,8 @@ static Json::Value & toJsonHelper(const VAL & val, Json::Value & ret){
 				toJsonHelper(val,ret);
 			}
 			if(ret.isNull()){
-				ret = "";
+				/**@todo make sure this is only being called for array like objects */
+				ret = Json::arrayValue;
 			}
 			return ret;
 		}
