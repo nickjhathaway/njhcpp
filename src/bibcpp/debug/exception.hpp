@@ -86,5 +86,19 @@ public:
 		return what_.c_str();
 	}
 };
+
+
+/**@brief Generate the beginning of the warning message by stating filename, file line, and function name
+ *
+ * @param file The file name, generally created by __FILE__
+ * @param line The line number, generally created by __LINE__
+ * @param funcName The function name, generally created by __PRETTY_FUNCTION__
+ * @return A slightly formated string with with file, line and funcName concatenated together
+ */
+inline std::string genWarningStr(const std::string & file, const std::string & line, const std::string & funcName){
+	return file + ":" + line + " " + funcName;
+}
+
+
 } // namespace err
 } // namespace bib
