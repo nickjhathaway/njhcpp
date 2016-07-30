@@ -34,7 +34,7 @@ $(OBJ_DIR):
 
 $(OBJ_DIR)/%.o: %.cpp $(HEADERS)
 	@mkdir -p $(OBJ_DIR)/$(shell dirname $<)
-	$(CXX) -DNOT_HEADER_ONLY $(COMMON) -fpic -c $< -o $@
+	$(CXX) $(COMMON) -fpic -c $< -o $@
 
 
 $(BIN): $(OBJ)
