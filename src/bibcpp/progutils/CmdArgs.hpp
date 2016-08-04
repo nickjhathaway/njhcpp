@@ -61,7 +61,8 @@ public:
 	 */
 	CmdArgs(int argc, char* argv[]) :
 			arguments_(parseArguments(argc, argv)) {
-		masterProgram_ = argv[0];
+		masterProgram_ = files::bfs::path(argv[0]).filename().string();
+		masterProgramRaw_ = argv[0];
 		std::string secondArg = "";
 		if (argc > 1) {
 			secondArg = strToLowerRet(argv[1]);
@@ -80,8 +81,9 @@ public:
 	CmdArgs(const std::string & masterProgram, const std::string & subProgram,
 			const std::map<std::string, std::string>& inputCommands,
 			const std::string & commandLine, const std::string & workingDir) :
-			masterProgram_(masterProgram), subProgram_(subProgram), arguments_(
-					inputCommands), commandLine_(commandLine), workingDir_(workingDir) {
+			masterProgram_(masterProgram), masterProgramRaw_(masterProgram), subProgram_(
+					subProgram), arguments_(inputCommands), commandLine_(commandLine), workingDir_(
+					workingDir) {
 		if ("" != subProgram_) {
 			removeArgumentCaseInsen(subProgram_);
 		}
@@ -91,6 +93,10 @@ public:
 	 *
 	 */
 	std::string masterProgram_;
+	/**@brief Name of the main Master Program being called, the name of the executable
+		 *
+		 */
+	std::string masterProgramRaw_;
 	/**@brief Name of the subprogram if there is one
 	 *
 	 */
@@ -148,6 +154,7 @@ public:
 		Json::Value ret;
 		ret["class"] = "bibcpp::progutils::commandLineArguments";
 		ret["masterProgram_"] = bib::json::toJson(masterProgram_);
+		ret["masterProgramRaw_"] = bib::json::toJson(masterProgramRaw_);
 		ret["subProgram_"] = bib::json::toJson(subProgram_);
 		ret["arguments_"] = bib::json::toJson(arguments_);
 		ret["commandLine_"] = bib::json::toJson(commandLine_);
