@@ -144,8 +144,7 @@ public:
 		flags_.outputParsFile(out);
 	}
 
-	/**@brief Called at the end of set up to look for any invalid options but
-	 *comparing current arguments to validOptions_
+	/**@brief Called at the end of set up to look for any invalid options
 	 *
 	 */
 	void lookForInvalidOptions() {
@@ -153,6 +152,24 @@ public:
 		strVecToLower(flagStrs);
 		for (const auto &com : commands_.arguments_) {
 			if (!contains(flagStrs, com.first)) {
+				warnings_.emplace_back(
+						bashCT::bold + bashCT::red + "Unrecognized option, " + com.first
+								+ " not using" + bashCT::reset);
+			}
+		}
+	}
+
+	/**@brief Called at the end of set up to look for any invalid options, ignoring dashes
+	 *
+	 */
+	void lookForInvalidOptionsDashInsens() {
+		auto flagStrs = flags_.getFlags();
+		strVecToLower(flagStrs);
+		for(auto & f : flagStrs){
+			lstrip(f, '-');
+		}
+		for (const auto &com : commands_.arguments_) {
+			if (!contains(flagStrs, lstripRet(com.first, '-'))) {
 				warnings_.emplace_back(
 						bashCT::bold + bashCT::red + "Unrecognized option, " + com.first
 								+ " not using" + bashCT::reset);
@@ -186,13 +203,13 @@ public:
 		std::map<std::string, std::string> infoOutNotRequried;
 		for (const auto & f : flags_.flags_) {
 			if (f.second.required_) {
-				infoOutRequried[f.first] = f.second.helpInfo();
+				infoOutRequried[f.second.getFlagsStrAutoDash()] = f.second.helpInfo();
 			} else {
-				infoOutNotRequried[f.first] = f.second.helpInfo();
+				infoOutNotRequried[f.second.getFlagsStrAutoDash()] = f.second.helpInfo();
 			}
 		}
 		std::map<std::string, std::string> infoOutHelp;
-		infoOutHelp["-flags,-getFlags"] = "Print flags";
+		infoOutHelp["--getFlags"] = "Print flags";
 		infoOutHelp["-h,--help"] = "Print a more detail help message if available";
 		std::pair<uint32_t, uint32_t> paddings { 0, 0 };
 		auto keyFunc = [](const auto & kv) {return kv.first;};
@@ -254,7 +271,7 @@ public:
 			printFlags(out);
 			exit(1);
 		}
-		lookForInvalidOptions();
+		lookForInvalidOptionsDashInsens();
 		printWarnings(out);
 		if (failed_) {
 			exit(1);
@@ -279,12 +296,12 @@ public:
 
 		Flag currentFlag(option, flagStr, shortDescription, required);
 		bool found = false;
+		std::vector<std::string> flagsFound;
 		for (const auto &fTok : currentFlag.flags_) {
-			if (commands_.lookForOptionCaseInsen(option, fTok)) {
-
+			if (commands_.lookForOptionDashCaseInsen(option, fTok)) {
 				currentFlag.setValue(option);
 				found = true;
-				break;
+				flagsFound.emplace_back(fTok);
 			} else {
 				found = false;
 			}
@@ -297,6 +314,13 @@ public:
 					<< bashCT::black << " see " << bashCT::red
 					<< commands_.getProgramName() + " --help " << bashCT::black
 					<< "for more details" << bashCT::reset;
+			warnings_.emplace_back(tempStream.str());
+			failed_ = true;
+		}
+		if (found && flagsFound.size() > 1) {
+			std::stringstream tempStream;
+			tempStream << "Found multiple flags for the same option, found "
+					<< conToStr(flagsFound, ", ") << " but should only have one";
 			warnings_.emplace_back(tempStream.str());
 			failed_ = true;
 		}

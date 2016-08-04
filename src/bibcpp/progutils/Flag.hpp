@@ -6,8 +6,7 @@
  *      Author: nickhathaway
  */
 
-#include "bibcpp/utils/typeUtils.hpp"
-#include "bibcpp/utils/stringUtils.hpp"
+#include "bibcpp/utils.h"
 #include "bibcpp/bashUtils.h"
 #include "bibcpp/common/misc.hpp"
 
@@ -54,6 +53,12 @@ public:
 				ss << "flags:" << flags << std::endl;
 				throw std::runtime_error{ss.str()};
 			}
+			if(has(flags_, flagTok, [](const std::string & conVal, const std::string & inVal){ return strToLowerRet(lstripRet(conVal, '-')) == strToLowerRet(lstripRet(inVal, '-'));})){
+				std::stringstream ss;
+				ss << "Error in : " << __PRETTY_FUNCTION__ << ", adding a flag that was already added, " << flagTok << std::endl;
+				ss << "flags: " << flags << std::endl;
+				throw std::runtime_error{ss.str()};
+			}
 			flags_.emplace_back(flagTok);
 		}
 	}
@@ -72,7 +77,7 @@ public:
 	 */
 	Json::Value toJson() const {
 		Json::Value ret;
-		ret["class"] = "bibcpp::progutils::flag";
+		ret["class"] = getTypeName(*this);
 		ret["flags_"] = bib::json::toJson(flags_);
 		ret["shortDescription_"] = bib::json::toJson(shortDescription_);
 		ret["required_"] = bib::json::toJson(required_);
@@ -139,7 +144,7 @@ public:
 	 * @return A string with the info
 	 */
 	std::string fullInfo(const std::string& delim) const {
-		return getFlagsStr() + delim + shortDescription_ + delim + setValue_
+		return getFlagsStrAutoDash() + delim + shortDescription_ + delim + setValue_
 				+ delim + defaultValue_;
 	}
 	/**@brief For printing info to the terminal with color output
@@ -215,6 +220,34 @@ public:
 	 */
 	std::vector<std::string> getFlagsStrs() const {
 		return flags_;
+	}
+
+	/**@brief Get a UID by concatenating the flags with auto dashing for flag length and sorting and using lower case
+	 *
+	 * @return a UID
+	 */
+	std::string getUIDAutoDash() const {
+		auto flagsAutoDash = getFlagsStrsAutoDash();
+		for(auto & f : flagsAutoDash){
+			strToLower(f);
+		}
+		sort(flagsAutoDash);
+		return conToStr(flagsAutoDash, ",");
+	}
+
+	/**@brief Auto add dashes to flag by length of str
+	 *
+	 * @param str the flag to add dashes to
+	 * @return the flag with dashes
+	 */
+	static std::string autoDashFlag(std::string str){
+		lstrip(str, '-');
+		if(str.size() > 1){
+			str = "--" + str;
+		}else{
+			str = "-" + str;
+		}
+		return str;
 	}
 
 };

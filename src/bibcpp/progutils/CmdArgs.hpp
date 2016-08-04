@@ -128,8 +128,7 @@ public:
 	 *
 	 */
 	bool gettingFlags(){
-		return hasFlagCaseInsenNoDash("-getFlags")
-						|| hasFlagCaseInsenNoDash("-flags");
+		return hasFlagCaseInsenNoDash("-getFlags");
 	}
 
 	/**@brief return bool to indicated whether simply to print version, verbose
@@ -231,6 +230,12 @@ private:
 	}
 
 public:
+	/**@brief Look for options with ignoring case
+	 *
+	 * @param option the option to set associated with flag
+	 * @param flag The flag string to look for
+	 * @return whether the flag was found
+	 */
 	template<typename T>
 	bool lookForOptionCaseInsen(T & option, const std::string& flag) {
 		if (hasFlagCaseInsen(flag)) {
@@ -241,6 +246,22 @@ public:
 			return false;
 		}
 	}
+	/**@brief Look for options with ignoring the number of dashes and case
+	 *
+	 * @param option the option to set associated with flag
+	 * @param flag The flag string to look for
+	 * @return whether the flag was found
+	 */
+	template<typename T>
+	bool lookForOptionDashCaseInsen(T & option, const std::string& flag) {
+		if (hasFlagCaseInsenNoDash(flag)) {
+			convertArg(getArgCaseInsenNoDash(flag, getTypeName(option) == "bool"), option);
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	/** @brief Check to see if flag is present as is
 	 *
 	 * Checks for the present of a flag while being case sensitive
@@ -470,20 +491,46 @@ public:
 					throw std::runtime_error { ss.str() };
 				}
 
-				if (argv[i][0] == '-') {
+				if (nextParam.front() == '-') {
+					uint32_t pos = 0;
+					uint32_t dashCount = 0;
+					while(pos < nextParam.length() && nextParam[pos] == '-'){
+						++dashCount;
+						++pos;
+					}
+					if(dashCount > 2){
+						std::stringstream ss;
+						std::cout << "Error, flags should only start with 1 or 2 dashes, not " << dashCount << ", " << nextParam << "\n";
+						throw std::runtime_error { ss.str() };
+					}
+					if(dashCount == 1){
+						if (storage.find("-" + nextParam) != storage.end()) {
+							std::stringstream ss;
+							std::cout << "Error, already have " << nextParam << " as " << "-" << nextParam<< std::endl;
+							std::cout << "Check if you entered it in twice" << std::endl;
+							throw std::runtime_error { ss.str() };
+						}
+					}else if(dashCount == 2){
+						if (storage.find(nextParam.substr(1)) != storage.end()) {
+							std::stringstream ss;
+							std::cout << "Error, already have " << nextParam << " as " << nextParam.substr(1) << std::endl;
+							std::cout << "Check if you entered it in twice" << std::endl;
+							throw std::runtime_error { ss.str() };
+						}
+					}
 					if (i + 1 >= argc) {
-						storage.insert(std::make_pair(strToLowerRet(argv[i]), ""));
+						storage.insert(std::make_pair(strToLowerRet(nextParam), ""));
 					} else {
 						if (argv[i + 1][0] == '-') {
-							storage.insert(std::make_pair(strToLowerRet(argv[i]), ""));
+							storage.insert(std::make_pair(strToLowerRet(nextParam), ""));
 						} else {
 							storage.insert(
-									std::make_pair(strToLowerRet(argv[i]), argv[i + 1]));
+									std::make_pair(strToLowerRet(nextParam), argv[i + 1]));
 							++i;
 						}
 					}
 				} else {
-					storage.insert(std::make_pair(strToLowerRet(argv[i]), ""));
+					storage.insert(std::make_pair(strToLowerRet(nextParam), ""));
 				}
 			}
 		}
@@ -531,18 +578,44 @@ public:
 				}
 
 				if (argv[i][0] == '-') {
+					uint32_t pos = 0;
+					uint32_t dashCount = 0;
+					while(pos < nextParam.length() && nextParam[pos] == '-'){
+						++dashCount;
+						++pos;
+					}
+					if(dashCount > 2){
+						std::stringstream ss;
+						std::cout << "Error, flags should only start with 1 or 2 dashes, not " << dashCount << ", " << nextParam << "\n";
+						throw std::runtime_error { ss.str() };
+					}
+					if(dashCount == 1){
+						if (storage.find("-" + nextParam) != storage.end()) {
+							std::stringstream ss;
+							std::cout << "Error, already have " << nextParam << " as " << "-" << nextParam << std::endl;
+							std::cout << "Check if you entered it in twice" << std::endl;
+							throw std::runtime_error { ss.str() };
+						}
+					}else if(dashCount == 2){
+						if (storage.find(nextParam.substr(1)) != storage.end()) {
+							std::stringstream ss;
+							std::cout << "Error, already have " << nextParam << " as " << nextParam.substr(1) << std::endl;
+							std::cout << "Check if you entered it in twice" << std::endl;
+							throw std::runtime_error { ss.str() };
+						}
+					}
 					if (i + 1 >= argc) {
-						storage.insert(std::make_pair(argv[i], ""));
+						storage.insert(std::make_pair(nextParam, ""));
 					} else {
 						if (argv[i + 1][0] == '-') {
-							storage.insert(std::make_pair(argv[i], ""));
+							storage.insert(std::make_pair(nextParam, ""));
 						} else {
-							storage.insert(std::make_pair(argv[i], argv[i + 1]));
+							storage.insert(std::make_pair(nextParam, argv[i + 1]));
 							++i;
 						}
 					}
 				} else {
-					storage.insert(std::make_pair(argv[i], ""));
+					storage.insert(std::make_pair(nextParam, ""));
 				}
 			}
 		}
