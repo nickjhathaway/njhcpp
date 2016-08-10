@@ -302,8 +302,6 @@ public:
 				currentFlag.setValue(option);
 				found = true;
 				flagsFound.emplace_back(fTok);
-			} else {
-				found = false;
 			}
 		}
 
