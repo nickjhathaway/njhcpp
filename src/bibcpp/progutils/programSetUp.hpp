@@ -55,19 +55,11 @@ public:
 	 *
 	 */
 	void init() {
-		if (commands_.hasFlagCaseInsen("-getFlags")
-				|| commands_.hasFlagCaseInsen("-flags")
-				|| commands_.hasFlagCaseInsen("-h")
-				|| commands_.hasFlagCaseInsen("-help")) {
+		if (commands_.gettingVersion()
+				|| commands_.gettingDumpVersion()
+				|| commands_.gettingFlags()
+				|| commands_.printingHelp()) {
 			failed_ = true;
-		}
-		if (commands_.hasFlagCaseInsen("-h")
-				|| commands_.hasFlagCaseInsen("-help")) {
-			printingHelp_ = true;
-		}
-		if (commands_.hasFlagCaseInsen("-getFlags")
-				|| commands_.hasFlagCaseInsen("-flags")) {
-			gettingFlags_ = true;
 		}
 	}
 
@@ -97,15 +89,7 @@ public:
 	 */
 	bool failed_ = false;
 
-	/**@brief A bool to indicated whether a help statement was requested
-	 *
-	 */
-	bool printingHelp_ = false;
 
-	/**@brief A bool to indicated whether simply flags were requested
-	 *
-	 */
-	bool gettingFlags_ = false;
 
 	/**@brief The maximum width to allow for messages
 	 *
@@ -160,8 +144,7 @@ public:
 		flags_.outputParsFile(out);
 	}
 
-	/**@brief Called at the end of set up to look for any invalid options but
-	 *comparing current arguments to validOptions_
+	/**@brief Called at the end of set up to look for any invalid options
 	 *
 	 */
 	void lookForInvalidOptions() {
@@ -169,6 +152,24 @@ public:
 		strVecToLower(flagStrs);
 		for (const auto &com : commands_.arguments_) {
 			if (!contains(flagStrs, com.first)) {
+				warnings_.emplace_back(
+						bashCT::bold + bashCT::red + "Unrecognized option, " + com.first
+								+ " not using" + bashCT::reset);
+			}
+		}
+	}
+
+	/**@brief Called at the end of set up to look for any invalid options, ignoring dashes
+	 *
+	 */
+	void lookForInvalidOptionsDashInsens() {
+		auto flagStrs = flags_.getFlags();
+		strVecToLower(flagStrs);
+		for(auto & f : flagStrs){
+			lstrip(f, '-');
+		}
+		for (const auto &com : commands_.arguments_) {
+			if (!contains(flagStrs, lstripRet(com.first, '-'))) {
 				warnings_.emplace_back(
 						bashCT::bold + bashCT::red + "Unrecognized option, " + com.first
 								+ " not using" + bashCT::reset);
@@ -202,14 +203,14 @@ public:
 		std::map<std::string, std::string> infoOutNotRequried;
 		for (const auto & f : flags_.flags_) {
 			if (f.second.required_) {
-				infoOutRequried[f.first] = f.second.helpInfo();
+				infoOutRequried[f.second.getFlagsStrAutoDash()] = f.second.helpInfo();
 			} else {
-				infoOutNotRequried[f.first] = f.second.helpInfo();
+				infoOutNotRequried[f.second.getFlagsStrAutoDash()] = f.second.helpInfo();
 			}
 		}
 		std::map<std::string, std::string> infoOutHelp;
-		infoOutHelp["-flags,-getFlags"] = "Print flags";
-		infoOutHelp["-h,-help"] = "Print a more detail help message if available";
+		infoOutHelp["--getFlags"] = "Print flags";
+		infoOutHelp["-h,--help"] = "Print a more detail help message if available";
 		std::pair<uint32_t, uint32_t> paddings { 0, 0 };
 		auto keyFunc = [](const auto & kv) {return kv.first;};
 		auto valFunc =
@@ -266,14 +267,11 @@ public:
 	 *
 	 */
 	void finishSetUp(std::ostream &out) {
-		if (commands_.hasFlagCaseInsen("-getFlags")
-				|| commands_.hasFlagCaseInsen("-flags")
-				|| commands_.hasFlagCaseInsen("-h")
-				|| commands_.hasFlagCaseInsen("-help")) {
+		if (commands_.printingHelp() || commands_.gettingFlags() ) {
 			printFlags(out);
 			exit(1);
 		}
-		lookForInvalidOptions();
+		lookForInvalidOptionsDashInsens();
 		printWarnings(out);
 		if (failed_) {
 			exit(1);
@@ -295,15 +293,15 @@ public:
 	template<typename T>
 	bool setOption(T &option, std::string flagStr,
 			const std::string &shortDescription, bool required = false) {
+
 		Flag currentFlag(option, flagStr, shortDescription, required);
 		bool found = false;
+		std::vector<std::string> flagsFound;
 		for (const auto &fTok : currentFlag.flags_) {
-			if (commands_.lookForOptionCaseInsen(option, fTok)) {
+			if (commands_.lookForOptionDashCaseInsen(option, fTok)) {
 				currentFlag.setValue(option);
 				found = true;
-				break;
-			} else {
-				found = false;
+				flagsFound.emplace_back(fTok);
 			}
 		}
 
@@ -312,8 +310,15 @@ public:
 			tempStream << bashCT::bold + bashCT::black << "Need to have "
 					<< bashCT::red << conToStr(tokenizeString(flagStr, ","), " or ")
 					<< bashCT::black << " see " << bashCT::red
-					<< commands_.getProgramName() + " -help " << bashCT::black
+					<< commands_.getProgramName() + " --help " << bashCT::black
 					<< "for more details" << bashCT::reset;
+			warnings_.emplace_back(tempStream.str());
+			failed_ = true;
+		}
+		if (found && flagsFound.size() > 1) {
+			std::stringstream tempStream;
+			tempStream << "Found multiple flags for the same option, found "
+					<< conToStr(flagsFound, ", ") << " but should only have one";
 			warnings_.emplace_back(tempStream.str());
 			failed_ = true;
 		}
@@ -354,7 +359,7 @@ public:
 	 * is needed
 	 */
 	bool needsHelp(uint32_t minAmountOfArgs = 0) {
-		return (commands_.hasFlagCaseInsen("-help")
+		return (commands_.hasFlagCaseInsen("--help")
 				|| commands_.hasFlagCaseInsen("-h")
 				|| commands_.numberOfCommands() <= minAmountOfArgs);
 	}

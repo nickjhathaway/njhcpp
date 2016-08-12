@@ -7,6 +7,7 @@
  */
 
 #include "bibcpp/common.h"
+#include <boost/filesystem/path.hpp>
 
 namespace bib {
 
@@ -91,6 +92,7 @@ template<>
 inline std::string TypeName::get<float>() {return "float";}
 template<>
 inline std::string TypeName::get<std::string>() {return "std::string";}
+
 
 /**@brief A function to return the type of the obj input in string fomat
  *

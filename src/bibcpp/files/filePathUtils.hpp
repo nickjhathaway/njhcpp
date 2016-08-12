@@ -10,6 +10,7 @@
 #include <string>
 #include <boost/filesystem.hpp>
 #include "bibcpp/utils/stringUtils.hpp" //appendAsNeededRet()
+#include "bibcpp/files/fileUtilities.hpp"
 
 
 namespace estd {
@@ -47,6 +48,11 @@ void pasteAsPathAdd(std::string& path, const N& next, const T&... rest) {
 	pasteAsPathAdd(path, rest...);
 }
 
+/**@brief take several different types of objects and convert to a path
+ *
+ * @param items items to combine into a path name
+ * @return a path from all the items given
+ */
 template<typename ... T>
 bfs::path make_path(const T&... items) {
 	std::string ret = "";
@@ -88,7 +94,7 @@ inline std::string join(const std::vector<std::string> & paths){
 
 /**@brief Return full path name even if the path doesn't actually exists
  *
- * @param path The path to gt the full path name for
+ * @param path The path to get the full path name for
  * @return The full path with . or .. remove and by following symlinks
  */
 inline bfs::path normalize(const boost::filesystem::path &path) {
@@ -116,11 +122,10 @@ inline bfs::path normalize(const boost::filesystem::path &path) {
 			result /= *it;
 		}
 	}
-
 	return result;
 }
 
-/**@brief convience function to just get the string of the current path from a bfs path object of the current path
+/**@brief convenience function to just get the string of the current path from a bfs path object of the current path
  *
  * @return A string of the current path
  */

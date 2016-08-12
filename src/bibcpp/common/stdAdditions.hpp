@@ -13,17 +13,20 @@
 
 namespace bib{
 
-template <typename T>
+
+template<typename T>
 void iota(std::vector<T>& vec, const T& value) {
-  std::iota(vec.begin(), vec.end(), value);
+	std::iota(vec.begin(), vec.end(), value);
 }
-template <typename Container, typename URNG>
+
+template<typename Container, typename URNG>
 void shuffle(Container & con, URNG && g) {
-  std::shuffle(con.begin(), con.end(), g);
+	std::shuffle(con.begin(), con.end(), g);
 }
 
 template<typename Container, typename UnaryPredicate>
-typename std::iterator_traits<typename Container::const_iterator>::difference_type count_if(const Container & con, UnaryPredicate p){
+typename std::iterator_traits<typename Container::const_iterator>::difference_type count_if(
+		const Container & con, UnaryPredicate p) {
 	return std::count_if(con.begin(), con.end(), p);
 }
 
@@ -45,8 +48,8 @@ UnaryFunction for_each(Input& container, UnaryFunction f) {
  * @param f the func to employ
  * @return the func used
  */
-template <typename Input, typename UnaryFunction>
-UnaryFunction for_each_pos(Input& container, const std::vector<uint64_t> & positions,UnaryFunction f) {
+template <typename Input,typename POS, typename UnaryFunction>
+UnaryFunction for_each_pos(Input& container, const std::vector<POS> & positions, UnaryFunction f) {
 	for(auto pos : positions){
 		f(container[pos]);
 	}

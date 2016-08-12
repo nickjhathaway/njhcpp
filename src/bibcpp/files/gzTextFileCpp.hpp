@@ -17,15 +17,15 @@ namespace files {
 /**@brief Class to read a text file that's been gz zipped
  *
  */
-template<size_t BUFFER = 1200>
+template<size_t BUFFER = 10240>
 class gzTextFileCpp {
-	gzFile file_;
-	const static uint32_t bufferSize_ = BUFFER;
-	const uint32_t byteBufferSize_ = bufferSize_ * sizeof(char);
-	std::array<char, bufferSize_> charData_;
-	std::string buf_;
-	std::string filename_;
-	std::string terminator_;
+	gzFile file_; /**< a gzFile object*/
+	const static uint32_t bufferSize_ = BUFFER; /**< buffer size of the reading in from gz ziped file in chars*/
+	const uint32_t byteBufferSize_ = bufferSize_ * sizeof(char); /**< the calculated buffer size in bytes*/
+	std::array<char, bufferSize_> charData_; /**< the data array to hold current data*/
+	std::string buf_; /**< the string buffer*/
+	std::string filename_; /**< the filename to be read*/
+	std::string terminator_; /**< the line terminator*/
 public:
 	/**@brief Construct with the filename and the terminator for the file
 	 *

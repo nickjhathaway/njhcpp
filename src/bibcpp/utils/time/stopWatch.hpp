@@ -57,13 +57,34 @@ protected:
 	std::vector<std::pair<std::string, double>> lapTimes_;
 public:
 	//functions
+	/**@brief Reset watch to time point
+	 *
+	 * @param startingPoint The time point to set watch to
+	 * @param startingLapTime The starting watch time
+	 */
+	void reset(sch::time_point<sch::high_resolution_clock> startingPoint,
+			const std::string & startingLapTime) {
+		lapTimes_.clear();
+		start_ = startingPoint;
+		currentLap_ = startingPoint;
+		currentLapName_ = startingLapTime;
+	}
+
+	/**@brief Reset starting point of watch to now
+	 *
+	 */
+	void reset() {
+		reset(sch::high_resolution_clock::now(), "1");
+	}
+
 	/**@brief Get the current lap name
 	 *
 	 * @return the current lap name
 	 */
-	std::string getLapName()const{
+	std::string getLapName() const {
 		return currentLapName_;
 	}
+
 	/**@brief Set the current lap name
 	 *
 	 * @param lapName the new name for the current lap name
@@ -75,10 +96,10 @@ public:
 	/**@brief Get time in seconds since start
 	 * @return A double for time in seconds
 	 */
-
-	double totalTime(){
+	double totalTime() const{
 		return getTimeDiff(start_);
 	}
+
 	/**@brief Get formatted time since start formatted
 	 *
 	 * @param decPlaces How many decimal places to round to
@@ -87,12 +108,14 @@ public:
 	std::string totalTimeFormatted(int32_t decPlaces = 6){
 		return getTimeFormat(getTimeDiff(start_),true, decPlaces);
 	}
+
 	/**@brief Get time in seconds since last point
 	 * @return A double for time in seconds
 	 */
 	double timeLap(){
 		return getTimeDiff(currentLap_);
 	}
+
 	/**@brief Get formatted time since last point formatted
 	 *
 	 * @param decPlaces How many decimal places to round to
@@ -101,9 +124,7 @@ public:
 	std::string timeLapFormatted(int32_t decPlaces = 6){
 		return getTimeFormat(getTimeDiff(currentLap_),true, decPlaces);
 	}
-	/**@brief
-	 * @param withName If a name is given, current lap time will be logged with that name
-	 */
+
 
 	/**@brief Start a new lap, log the time since last time point and reset the currentLap_ to now
 	 *
@@ -126,6 +147,7 @@ public:
 		}
 		currentLap_ = timeNew;
 	}
+
 	/**@brief Determine if stopWatch has lap times
 	 *
 	 * @return return true if lap times were recordered and false if no lap times
@@ -161,6 +183,22 @@ public:
 			}
 		}
 	}
+
+	/**@brief Get the average lap time in seconds
+	 *
+	 * @return the average lap time in seconds
+	 */
+	double getAverageLapTime() const{
+		if(lapTimes_.empty()){
+			return 0;
+		}
+		double sum = 0;
+
+		for(const auto & lap : lapTimes_){
+			sum += lap.second;
+		}
+		return sum/lapTimes_.size();
+	}
 };
 
 /**@brief stopWatch class that prints time information on destruction
@@ -177,6 +215,7 @@ public:
 			stopWatch(), message_(message), formated_(formated), out_(std::cout) {
 		setLapName(message);
 	}
+
 	/**@brief Construct with a different print location than std::cout
 	 *
 	 * @param message Message to print when the watch dies
@@ -188,12 +227,14 @@ public:
 			stopWatch(), message_(message), formated_(formated), out_(out) {
 		setLapName(message);
 	}
-	std::string message_;/**> The message to print with the time*/
-	bool formated_;/**> Whether to print the time formated */
+
+	std::string message_; /**> The message to print with the time*/
+	bool formated_; /**> Whether to print the time formated */
+	std::ostream & out_; /**< The stream to print the times to*/
+
 	/**@brief destrcutor with printing the time
 	 *
 	 */
-	std::ostream & out_;
 	~scopedStopWatch(){
 		if(lapTimes_.size() == 0){
 			startNewLap();

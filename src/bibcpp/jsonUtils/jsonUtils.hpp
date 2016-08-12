@@ -15,8 +15,11 @@
 #include <deque>
 #include <string>
 #include <cstdint>
+#include <iostream>
+#include <boost/filesystem.hpp>
 #include "bibcpp/common.h" //Enable_if
 #include "bibcpp/utils/has_member.hpp" //has_member
+#include "bibcpp/debug/exception.hpp" //Exception
 
 
 
@@ -78,7 +81,8 @@ static Json::Value & toJsonHelper(const VAL & val, Json::Value & ret){
 				toJsonHelper(val,ret);
 			}
 			if(ret.isNull()){
-				ret = "";
+				/**@todo make sure this is only being called for array like objects */
+				ret = Json::arrayValue;
 			}
 			return ret;
 		}
@@ -105,9 +109,13 @@ static Json::Value & toJsonHelper(const VAL & val, Json::Value & ret){
 		return converter::toJson(t);
 	}
 
+	template<>
+	inline Json::Value toJson(const Json::Value & val) {
+		return val;
+	}
 
 	template<>
-	inline Json::Value toJson(const std::string & val){
+	inline Json::Value toJson(const std::string & val) {
 		Json::Value ret(val);
 		return ret;
 	}
@@ -118,6 +126,11 @@ static Json::Value & toJsonHelper(const VAL & val, Json::Value & ret){
 
 	inline Json::Value toJson(char * val){
 		return toJson(std::string(val));
+	}
+
+	template<>
+	inline Json::Value toJson(const boost::filesystem::path & val) {
+		return toJson(val.string());
 	}
 
 	template<>
@@ -202,6 +215,56 @@ Json::Value toJson(const T & t){
 }
 
 
+/**@brief Parse a string into a Json::Value object
+ *
+ * @param jsonStr String formated in json
+ * @return A Json::Value object
+ */
+inline Json::Value parse(const std::string & jsonStr){
+	Json::Reader reader;
+	Json::Value root;
+	auto stats =  reader.parse(jsonStr,root);
+	if(!stats){
+		std::stringstream ss;
+		ss << "Error in parsing jsonStr in " << __PRETTY_FUNCTION__ << std::endl;
+		ss << jsonStr << std::endl;
+		throw bib::err::Exception(ss.str());
+	}
+	return root;
+}
+
+/**@brief Parse json file and create Json::Value object
+ *
+ * @param filename the file to  read in
+ * @return a Json::Value object with the contents of filename
+ */
+inline Json::Value parseFile(const std::string & filename){
+	Json::Reader reader;
+	Json::Value root;
+	std::ifstream inFile(filename);
+	if(!inFile){
+		std::stringstream ss;
+		ss << __PRETTY_FUNCTION__ << " error in opening: " << filename << std::endl;
+		throw std::runtime_error{ss.str()};
+	}
+	auto stats =  reader.parse(inFile,root);
+	if(!stats){
+		std::stringstream ss;
+		ss << "Error in parsing file" << filename << " in " << __PRETTY_FUNCTION__ << std::endl;
+		throw bib::err::Exception(ss.str());
+	}
+	return root;
+}
+
+/**@brief Write a json formated string with little white space, one line
+ *
+ * @param val The json object
+ * @return A string with only one line with values in val written in json format
+ */
+inline std::string writeAsOneLine(const Json::Value & val){
+	Json::FastWriter jWriter;
+	return jWriter.write(val);
+}
 
 
 

@@ -20,6 +20,8 @@
 
 namespace bib {
 
+
+
 /**@brief Strip the right side of a string of all characters matching c
  *
  * @param str The string to strip
@@ -183,12 +185,12 @@ inline std::vector<std::string> tokenizeString(const std::string& str,
       ret.emplace_back(tempStr);
     }
   } else {
-    if (str.find(delim) == std::string::npos) {
+    if (std::string::npos == str.find(delim)  ) {
       ret.push_back(str);
     } else {
       std::size_t pos = str.find(delim, 0);
       std::size_t oldPos = -delim.size();
-      while (pos != std::string::npos) {
+      while (std::string::npos != pos) {
         ret.emplace_back(
             str.substr(oldPos + delim.size(), pos - oldPos - delim.size()));
         oldPos = pos;
@@ -229,12 +231,12 @@ inline bool strAllDigits(const std::string& str) {
  */
 inline bool containsSubString(const std::string& str,
                               const std::string& subString) {
-  return (str.find(subString) != std::string::npos);
+  return (std::string::npos != str.find(subString));
 }
 
 
 
-/**@brief Convertor for bool to true or false str
+/**@brief Converter for bool to true or false str
  *
  * @param convert Bool to convert
  * @return true or false
@@ -253,10 +255,11 @@ inline std::string boolToStr(bool convert) {
  * @param str String to convert
  */
 inline void strToUpper(std::string& str) {
-  for (auto& c : str) {
-    c = toupper(c);
-  }
+	for (auto& c : str) {
+		c = toupper(c);
+	}
 }
+
 /**@brief Convert a string to all lower case letters
  *
  * @param str String to convert
@@ -375,6 +378,12 @@ inline std::string &trim(std::string& s) {
     return ltrim(rtrim(s));
 }
 
+/**@brief Get the longest string of all the elements in a container
+ *
+ * @param con The container
+ * @param f Function to get an object out of the container
+ * @return A string of the longest element if converted to strings
+ */
 template <typename CON, typename FUN>
 std::string longestToString(const CON& con, FUN f){
     auto t = [&f](auto& e){ return estd::to_string(f(e)); };
@@ -384,6 +393,12 @@ std::string longestToString(const CON& con, FUN f){
     return t(*longest);
 }
 
+/**@brief Get the length of the longest string representation in container by using a function to get elements
+ *
+ * @param con The container to query
+ * @param f A function to get elements out of the container
+ * @return The length of the longest string representation
+ */
 template <typename CON, typename FUN>
 uint32_t paddingWidth(const CON& con, FUN f){
     return longestToString(con, f).size();
@@ -414,6 +429,14 @@ void mapOutColAdjust(const MAP& theMap,
   }
 }
 
+
+/**@brief Get the padding for two columns from a map
+ *
+ * @param theMap A map you're going to print
+ * @param paddings The paddings to compare to and set
+ * @param kFunc A value to get the keys in the map
+ * @param vFunc A value to get the values in the map
+ */
 template<typename MAP, typename KEYFUNC, typename VALUEFUNC>
 void compareColPaddings(const MAP& theMap,
 		std::pair<uint32_t, uint32_t> & paddings, KEYFUNC kFunc, VALUEFUNC vFunc) {
@@ -427,14 +450,26 @@ void compareColPaddings(const MAP& theMap,
 	}
 }
 
-inline bool endsWith(const std::string& a, const std::string& b) {
+/**@brief Function to test if a string ends with another
+ *
+ * @param str The string to test
+ * @param target The target string to see if str ends with this
+ * @return Whether str ends with target
+ */
+inline bool endsWith(const std::string& str, const std::string& target) {
   // http://stackoverflow.com/a/874160
-  if (a.size() >= b.size()) {
-    return (0 == a.compare(a.size() - b.size(), b.size(), b));
+  if (str.size() >= target.size()) {
+    return (0 == str.compare(str.size() - target.size(), target.size(), target));
   }
   return false;
 }
 
+/**@brief Function to test if a string starts with another
+ *
+ * @param str The string to test
+ * @param target The target string to see if str starts with this
+ * @return Whether str starts with target
+ */
 inline bool beginsWith(const std::string& str, const std::string& target) {
   if (target.size() <= str.size()){
   	return (0 == str.compare(0, target.size(), target));
@@ -451,7 +486,6 @@ inline bool beginsWith(const std::string& str, const std::string& target) {
 inline std::string & appendAsNeeded(std::string & str, const std::string & app){
 	if(!endsWith(str,app)){
 		str.append(app);
-
 	}
 	return str;
 }
@@ -503,12 +537,32 @@ void pasteAsStrAdd(std::string& str, const N& next, const T&... rest) {
 	pasteAsStrAdd(str, rest...);
 }
 
+/**@brief Paste all objects as one string
+ *
+ * @param items All things to paste together
+ * @return A string of all the items pasted together
+ */
 template<typename ... T>
 std::string pasteAsStr(const T&... items) {
 	std::string ret = "";
 	ret.reserve(sizeof...(items));
 	pasteAsStrAdd(ret, items...);
 	return ret;
+}
+
+
+/**@brief Remove all whitespace from string
+ *
+ * @param s The string to remove whitespace from
+ * @return A universal reference to the result
+ */
+template<typename T>
+T && removeAllWhitespace(T && s) {
+	s.erase(
+			std::remove_if(s.begin(), s.end(),
+					[]( char ch ) {return std::isspace<char>( ch, std::locale::classic() );}),
+			s.end());
+	return std::forward<T>(s);
 }
 
 } // namesapce bib

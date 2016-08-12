@@ -27,6 +27,7 @@ template<typename T>
 struct is_string : public std::integral_constant<bool, std::is_same<char*, typename std::decay<T>::type>::value
 || std::is_same<const char*, typename std::decay<T>::type>::value> {};
 
+
 /**@brief Declared so that is_string will return true for std::string along with char* and const char*
  *
  */
@@ -78,7 +79,7 @@ inline std::string to_string<bool>(const bool & obj) {
 }
 
 //  added to std:: stou, stous, stos because they are not in the standard
-// library
+//  library
 //  so that they have similar behavior to the other string conversions
 inline uint32_t stou(const std::string& str, size_t* idx = 0, int base = 10) {
   auto firstConverion = std::stol(str, idx, base);

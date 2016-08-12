@@ -60,35 +60,35 @@ const std::string flashing = "\033[5m"; /**< flashing text*/
 const std::string lighten =  "\033[2m"; /**< decrease saturation of text*/
 const std::string invert =   "\033[7m"; /**< invert background and text colors*/
 // Background
-const std::string on_Black = "\033[40m";      /**< Black background*/
-const std::string on_Red = "\033[41m";        /**< Red background*/
-const std::string on_Green = "\033[42m";      /**< Green background*/
-const std::string on_Yellow = "\033[43m";     /**< Yellow background*/
-const std::string on_Blue = "\033[44m";       /**< Blue background*/
-const std::string on_Purple = "\033[45m";     /**< Purple background*/
-const std::string on_Cyan = "\033[46m";       /**< Cyan background*/
-const std::string on_White = "\033[47m";      /**< White background*/
+const std::string on_Black =  "\033[40m"; /**< Black background*/
+const std::string on_Red =    "\033[41m"; /**< Red background*/
+const std::string on_Green =  "\033[42m"; /**< Green background*/
+const std::string on_Yellow = "\033[43m"; /**< Yellow background*/
+const std::string on_Blue =   "\033[44m"; /**< Blue background*/
+const std::string on_Purple = "\033[45m"; /**< Purple background*/
+const std::string on_Cyan =   "\033[46m"; /**< Cyan background*/
+const std::string on_White =  "\033[47m"; /**< White background*/
 
 // High Intensity
-const std::string iBlack = "\033[90m";      /**< Black high intensity text*/
-const std::string iRed = "\033[91m";        /**< Red high intensity text*/
-const std::string iGreen = "\033[92m";      /**< Green high intensity text*/
-const std::string iYellow = "\033[93m";     /**< Yellow high intensity text*/
-const std::string iBlue = "\033[94m";       /**< Blue high intensity text*/
-const std::string iPurple = "\033[95m";     /**< Purple high intensity text*/
-const std::string iCyan = "\033[96m";       /**< Cyan high intensity text*/
-const std::string iWhite = "\033[97m";      /**< White high intensity text*/
+const std::string iBlack =  "\033[90m"; /**< Black high intensity text*/
+const std::string iRed =    "\033[91m"; /**< Red high intensity text*/
+const std::string iGreen =  "\033[92m"; /**< Green high intensity text*/
+const std::string iYellow = "\033[93m"; /**< Yellow high intensity text*/
+const std::string iBlue =   "\033[94m"; /**< Blue high intensity text*/
+const std::string iPurple = "\033[95m"; /**< Purple high intensity text*/
+const std::string iCyan =   "\033[96m"; /**< Cyan high intensity text*/
+const std::string iWhite =  "\033[97m"; /**< White high intensity text*/
 
 
 // High Intensity backgrounds
-const std::string on_IBlack = "\033[100m";  /**< Black high intensity background*/
-const std::string on_IRed = "\033[101m";    /**< Red high intensity background*/
-const std::string on_IGreen = "\033[102m";  /**< Green high intensity background*/
+const std::string on_IBlack =  "\033[100m"; /**< Black high intensity background*/
+const std::string on_IRed =    "\033[101m"; /**< Red high intensity background*/
+const std::string on_IGreen =  "\033[102m"; /**< Green high intensity background*/
 const std::string on_IYellow = "\033[103m"; /**< Yellow high intensity background*/
-const std::string on_IBlue = "\033[104m";   /**< Blue high intensity background*/
+const std::string on_IBlue =   "\033[104m"; /**< Blue high intensity background*/
 const std::string on_IPurple = "\033[105m"; /**< Purple high intensity background*/
-const std::string on_ICyan = "\033[106m";   /**< Cyan high intensity background*/
-const std::string on_IWhite = "\033[107m";  /**< White high intensity background*/
+const std::string on_ICyan =   "\033[106m"; /**< Cyan high intensity background*/
+const std::string on_IWhite =  "\033[107m"; /**< White high intensity background*/
 
 /**the regex pattern representing the bash terminal formating*/
 const std::regex formatPattern {"\\\033\\[\\d+m"};
@@ -128,7 +128,7 @@ inline std::string addBGColor(uint32_t colorCode) {
  * @param out The out stream to print to, should be the terminal or something that understand these escape character codes
  */
 inline void outputPossibleColors(std::ostream & out) {
-	std::vector<uint32_t> possColors(216);
+	std::vector<uint32_t> possColors(216, 0);
 	std::iota(possColors.begin(), possColors.end(), 16U);
 	for (auto i : possColors) {
 		out << addBGColor(i) << i << reset << "\n";
@@ -166,13 +166,13 @@ inline std::string boldBlack(const std::string & str) {
  * @param str The string to get the length from
  * @return The printing length
  */
-inline uint32_t getPrintLen(const std::string & str){
+inline uint32_t getPrintLen(const std::string & str) {
 
 	std::smatch match;
-	std::regex_search( str,match, formatPattern);
+	std::regex_search(str, match, formatPattern);
 	uint32_t matchLen = match.length();
 	std::string strMatch = match.suffix().str();
-	while(std::regex_search( strMatch,match, formatPattern)){
+	while (std::regex_search(strMatch, match, formatPattern)) {
 		strMatch = match.suffix().str();
 		matchLen += match.length();
 	}

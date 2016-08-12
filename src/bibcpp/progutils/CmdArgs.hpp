@@ -11,6 +11,7 @@
 #include "bibcpp/files/filePathUtils.hpp"
 #include "bibcpp/bashUtils.h"
 
+
 namespace bib {
 namespace progutils {
 
@@ -19,18 +20,49 @@ namespace progutils {
  *
  */
 class CmdArgs {
+public:
+	/**@brief for determining if T is a type supported by convert command line argument
+	 *
+	 */
 	template<typename T>
-	void convertArg(const std::string & arg, T & outVal) {
-		static_assert(true, "Type not supported in bib::progutils::CmdArgs::convertArg");
+	struct is_cmdArg_supported_type : public std::integral_constant<bool,
+	   std::is_same<std::string, typename std::decay<T>::type>::value
+	|| std::is_same<boost::filesystem::path, typename std::decay<T>::type>::value
+	|| std::is_same<bool, typename std::decay<T>::type>::value
+	|| std::is_same<int, typename std::decay<T>::type>::value
+	|| std::is_same<short, typename std::decay<T>::type>::value
+	|| std::is_same<int, typename std::decay<T>::type>::value
+	|| std::is_same<long, typename std::decay<T>::type>::value
+	|| std::is_same<long long, typename std::decay<T>::type>::value
+	|| std::is_same<unsigned short, typename std::decay<T>::type>::value
+	|| std::is_same<unsigned int, typename std::decay<T>::type>::value
+	|| std::is_same<unsigned long, typename std::decay<T>::type>::value
+	|| std::is_same<double, typename std::decay<T>::type>::value
+	|| std::is_same<long double, typename std::decay<T>::type>::value
+	|| std::is_same<float, typename std::decay<T>::type>::value
+	> {};
+
+	/**@brief simply aesthetic, to make call to is_cmdArg_supported_type look nicer
+	 *
+	 * @return Returns true if T is of type arithmetic
+	 */
+	template<typename T>
+	constexpr bool isSupportedType(){
+		return is_cmdArg_supported_type<T>::value;
 	}
 
-public:
+	template<typename T>
+	void convertArg(const std::string & arg, T & outVal) {
+		static_assert(isSupportedType<T>(), "Type not supported in bib::progutils::CmdArgs::convertArg");
+	}
+
 	/**@brief Construct from the generic argc and argv c++ arguments
 	 *
 	 */
 	CmdArgs(int argc, char* argv[]) :
 			arguments_(parseArguments(argc, argv)) {
-		masterProgram_ = argv[0];
+		masterProgram_ = files::bfs::path(argv[0]).filename().string();
+		masterProgramRaw_ = argv[0];
 		std::string secondArg = "";
 		if (argc > 1) {
 			secondArg = strToLowerRet(argv[1]);
@@ -49,8 +81,9 @@ public:
 	CmdArgs(const std::string & masterProgram, const std::string & subProgram,
 			const std::map<std::string, std::string>& inputCommands,
 			const std::string & commandLine, const std::string & workingDir) :
-			masterProgram_(masterProgram), subProgram_(subProgram), arguments_(
-					inputCommands), commandLine_(commandLine), workingDir_(workingDir) {
+			masterProgram_(masterProgram), masterProgramRaw_(masterProgram), subProgram_(
+					subProgram), arguments_(inputCommands), commandLine_(commandLine), workingDir_(
+					workingDir) {
 		if ("" != subProgram_) {
 			removeArgumentCaseInsen(subProgram_);
 		}
@@ -60,6 +93,10 @@ public:
 	 *
 	 */
 	std::string masterProgram_;
+	/**@brief Name of the main Master Program being called, the name of the executable
+		 *
+		 */
+	std::string masterProgramRaw_;
 	/**@brief Name of the subprogram if there is one
 	 *
 	 */
@@ -79,6 +116,35 @@ public:
 	 */
 	std::string workingDir_;
 
+	/**@brief return bool to indicated whether a help statement was requested
+	 *
+	 */
+	bool printingHelp(){
+		return hasFlagCaseInsenNoDash("-h") ||
+						hasFlagCaseInsenNoDash("--help");
+	}
+
+	/**@brief return bool to indicated whether simply flags were requested
+	 *
+	 */
+	bool gettingFlags(){
+		return hasFlagCaseInsenNoDash("-getFlags");
+	}
+
+	/**@brief return bool to indicated whether simply to print version, verbose
+	 *
+	 */
+	bool gettingVersion(){
+		return hasFlagCaseInsenNoDash("--version");
+	}
+
+	/**@brief dumping version, just print version and nothing else
+	 *
+	 */
+	bool gettingDumpVersion(){
+		return hasFlagCaseInsenNoDash("--dumpversion");
+	}
+
 	/**@brief convert to json representation
 	 *
 	 * @return Json::Value object
@@ -87,6 +153,7 @@ public:
 		Json::Value ret;
 		ret["class"] = "bibcpp::progutils::commandLineArguments";
 		ret["masterProgram_"] = bib::json::toJson(masterProgram_);
+		ret["masterProgramRaw_"] = bib::json::toJson(masterProgramRaw_);
 		ret["subProgram_"] = bib::json::toJson(subProgram_);
 		ret["arguments_"] = bib::json::toJson(arguments_);
 		ret["commandLine_"] = bib::json::toJson(commandLine_);
@@ -163,15 +230,38 @@ private:
 	}
 
 public:
+	/**@brief Look for options with ignoring case
+	 *
+	 * @param option the option to set associated with flag
+	 * @param flag The flag string to look for
+	 * @return whether the flag was found
+	 */
 	template<typename T>
 	bool lookForOptionCaseInsen(T & option, const std::string& flag) {
 		if (hasFlagCaseInsen(flag)) {
+
 			convertArg(getArgCaseInsen(flag, getTypeName(option) == "bool"), option);
 			return true;
 		} else {
 			return false;
 		}
 	}
+	/**@brief Look for options with ignoring the number of dashes and case
+	 *
+	 * @param option the option to set associated with flag
+	 * @param flag The flag string to look for
+	 * @return whether the flag was found
+	 */
+	template<typename T>
+	bool lookForOptionDashCaseInsen(T & option, const std::string& flag) {
+		if (hasFlagCaseInsenNoDash(flag)) {
+			convertArg(getArgCaseInsenNoDash(flag, getTypeName(option) == "bool"), option);
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	/** @brief Check to see if flag is present as is
 	 *
 	 * Checks for the present of a flag while being case sensitive
@@ -227,8 +317,10 @@ public:
 		lstrip(flag, '-');
 		strToLower(flag);
 		for (const auto & arg : arguments_) {
-			if (lstripRet(strToLowerRet(arg.first), '-') == flag) {
-				return true;
+			if('-' == arg.first.front()){
+				if (lstripRet(strToLowerRet(arg.first), '-') == flag) {
+					return true;
+				}
 			}
 		}
 		return false;
@@ -399,20 +491,46 @@ public:
 					throw std::runtime_error { ss.str() };
 				}
 
-				if (argv[i][0] == '-') {
+				if (nextParam.front() == '-') {
+					uint32_t pos = 0;
+					uint32_t dashCount = 0;
+					while(pos < nextParam.length() && nextParam[pos] == '-'){
+						++dashCount;
+						++pos;
+					}
+					if(dashCount > 2){
+						std::stringstream ss;
+						std::cout << "Error, flags should only start with 1 or 2 dashes, not " << dashCount << ", " << nextParam << "\n";
+						throw std::runtime_error { ss.str() };
+					}
+					if(dashCount == 1){
+						if (storage.find("-" + nextParam) != storage.end()) {
+							std::stringstream ss;
+							std::cout << "Error, already have " << nextParam << " as " << "-" << nextParam<< std::endl;
+							std::cout << "Check if you entered it in twice" << std::endl;
+							throw std::runtime_error { ss.str() };
+						}
+					}else if(dashCount == 2){
+						if (storage.find(nextParam.substr(1)) != storage.end()) {
+							std::stringstream ss;
+							std::cout << "Error, already have " << nextParam << " as " << nextParam.substr(1) << std::endl;
+							std::cout << "Check if you entered it in twice" << std::endl;
+							throw std::runtime_error { ss.str() };
+						}
+					}
 					if (i + 1 >= argc) {
-						storage.insert(std::make_pair(strToLowerRet(argv[i]), ""));
+						storage.insert(std::make_pair(strToLowerRet(nextParam), ""));
 					} else {
 						if (argv[i + 1][0] == '-') {
-							storage.insert(std::make_pair(strToLowerRet(argv[i]), ""));
+							storage.insert(std::make_pair(strToLowerRet(nextParam), ""));
 						} else {
 							storage.insert(
-									std::make_pair(strToLowerRet(argv[i]), argv[i + 1]));
+									std::make_pair(strToLowerRet(nextParam), argv[i + 1]));
 							++i;
 						}
 					}
 				} else {
-					storage.insert(std::make_pair(strToLowerRet(argv[i]), ""));
+					storage.insert(std::make_pair(strToLowerRet(nextParam), ""));
 				}
 			}
 		}
@@ -460,18 +578,44 @@ public:
 				}
 
 				if (argv[i][0] == '-') {
+					uint32_t pos = 0;
+					uint32_t dashCount = 0;
+					while(pos < nextParam.length() && nextParam[pos] == '-'){
+						++dashCount;
+						++pos;
+					}
+					if(dashCount > 2){
+						std::stringstream ss;
+						std::cout << "Error, flags should only start with 1 or 2 dashes, not " << dashCount << ", " << nextParam << "\n";
+						throw std::runtime_error { ss.str() };
+					}
+					if(dashCount == 1){
+						if (storage.find("-" + nextParam) != storage.end()) {
+							std::stringstream ss;
+							std::cout << "Error, already have " << nextParam << " as " << "-" << nextParam << std::endl;
+							std::cout << "Check if you entered it in twice" << std::endl;
+							throw std::runtime_error { ss.str() };
+						}
+					}else if(dashCount == 2){
+						if (storage.find(nextParam.substr(1)) != storage.end()) {
+							std::stringstream ss;
+							std::cout << "Error, already have " << nextParam << " as " << nextParam.substr(1) << std::endl;
+							std::cout << "Check if you entered it in twice" << std::endl;
+							throw std::runtime_error { ss.str() };
+						}
+					}
 					if (i + 1 >= argc) {
-						storage.insert(std::make_pair(argv[i], ""));
+						storage.insert(std::make_pair(nextParam, ""));
 					} else {
 						if (argv[i + 1][0] == '-') {
-							storage.insert(std::make_pair(argv[i], ""));
+							storage.insert(std::make_pair(nextParam, ""));
 						} else {
-							storage.insert(std::make_pair(argv[i], argv[i + 1]));
+							storage.insert(std::make_pair(nextParam, argv[i + 1]));
 							++i;
 						}
 					}
 				} else {
-					storage.insert(std::make_pair(argv[i], ""));
+					storage.insert(std::make_pair(nextParam, ""));
 				}
 			}
 		}
@@ -486,6 +630,13 @@ public:
 		return arguments_.size();
 	}
 };
+
+// boost::filesystem::path
+template<>
+inline void CmdArgs::convertArg(const std::string& option,
+		boost::filesystem::path & outVal) {
+	outVal = option;
+}
 
 // std::string
 template<>

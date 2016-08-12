@@ -55,9 +55,13 @@ class oneRing : public programRunner {
    *current oneRing master runner
    *
    */
-  oneRing(std::map<std::string, std::shared_ptr<programRunner>> rings,
-          std::map<std::string, funcInfo> cmdToFunc, std::string nameOfProgram)
-      : programRunner(cmdToFunc, nameOfProgram), rings_(rings) {}
+	oneRing(std::map<std::string, std::shared_ptr<programRunner>> rings,
+			std::map<std::string, funcInfo> cmdToFunc, std::string nameOfProgram,
+			std::string versionMajor = "1", std::string versionMinor = "0",
+			std::string versionPatchLevel = "0") :
+			programRunner(cmdToFunc, nameOfProgram, versionMajor, versionMinor,
+					versionPatchLevel), rings_(rings) {
+	}
 
   virtual ~oneRing() {};
   /**@brief Run the program by searching sub-runners and all sub-programs
@@ -98,6 +102,8 @@ class oneRing : public programRunner {
   }
 
 
+
+
 	/**@brief List the programs listed in all sub-runner
 	 *
 	 * @param out The std::ostream object to print the info to
@@ -111,9 +117,10 @@ class oneRing : public programRunner {
 	virtual void listPrograms(std::ostream &out, const std::string &command,
 			const std::string &nameOfProgram) const {
 		if (nameOfProgram == nameOfProgram_) {
+			out << "Version " << dumpversion() << std::endl;
 			out << "Programs" << std::endl;
 			out << "Use " << nameOfProgram_
-					<< " [PROGRAM] -help to see more details about each program"
+					<< " [PROGRAM] --help to see more details about each program"
 					<< std::endl;
 			out << "Commands are not case sensitive" << std::endl;
 		}

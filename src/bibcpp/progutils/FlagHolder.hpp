@@ -6,7 +6,6 @@
  *      Author: nick
  */
 
-
 #include "bibcpp/progutils/Flag.hpp"
 #include <map>
 
@@ -29,23 +28,14 @@ public:
 	 *
 	 */
 	std::map<std::string, Flag> flags_;
+
 	/**Add a parameter that was already constructed
 	 *
 	 * @param newParameter A parameter object to add to the holder
 	 */
 	void addFlag(const Flag& newFlag) {
-		for (const auto & flagStr : newFlag.flags_) {
-			for (const auto & flagObj : flags_) {
-				if (in(flagStr, flagObj.second.flags_)) {
-					std::stringstream ss;
-					ss << "Error in : " << __PRETTY_FUNCTION__ << ", adding new flag: "
-							<< flagStr << " which already exists" << std::endl;
-					ss << flagObj.second.toJson() << std::endl;
-					throw std::runtime_error { ss.str() };
-				}
-			}
-		}
-		flags_.emplace(conToStr(newFlag.flags_, ","), newFlag);
+		hasFlagDashCaseInsenThrow(newFlag);
+		flags_.emplace(newFlag.getUIDAutoDash(), newFlag);
 	}
 
 	/**@brief Output the information for all stored parameters
@@ -66,10 +56,22 @@ public:
 	 *
 	 * @return A vector of flags
 	 */
-	std::vector<std::string> getFlags()const{
+	std::vector<std::string> getFlags() const {
 		std::vector<std::string> ret;
-		for(const auto & f : flags_){
+		for (const auto & f : flags_) {
 			addOtherVec(ret, f.second.getFlagsStrs());
+		}
+		return ret;
+	}
+
+	/**@brief Get flags with no dashes
+	 *
+	 * @return A vector of flags with no dashes
+	 */
+	std::vector<std::string> getFlagsNoDash() const {
+		std::vector<std::string> ret;
+		for (const auto & f : flags_) {
+			addOtherVec(ret, f.second.flagsNoDash());
 		}
 		return ret;
 	}
@@ -78,15 +80,58 @@ public:
 	 *
 	 * @return A vector of flags
 	 */
-	std::vector<std::string> getFlagsAutoDash()const{
+	std::vector<std::string> getFlagsAutoDash() const {
 		std::vector<std::string> ret;
-		for(const auto & f : flags_){
+		for (const auto & f : flags_) {
 			addOtherVec(ret, f.second.getFlagsStrsAutoDash());
 		}
 		return ret;
 	}
-};
 
+	/**@brief Check to see if any of the other flags already have any of the flags for this flag option
+	 *
+	 * @param newFlag The flag to be checked
+	 * @return true if a flag already has the flags for the this flag option
+	 */
+	std::pair<bool, std::string> hasFlagDashCaseInsen(const Flag& newFlag) const {
+		auto noDashOpts = newFlag.flagsNoDash();
+		strVecToLower(noDashOpts);
+		for (const auto & f : flags_) {
+			auto otherNoDashOtps = f.second.flagsNoDash();
+			strVecToLower(otherNoDashOtps);
+			for (const auto & ndoPos : iter::range(noDashOpts.size())) {
+				if (in(noDashOpts[ndoPos], otherNoDashOtps)) {
+					return {true, noDashOpts[ndoPos]};
+				}
+			}
+		}
+		return {false, ""};
+	}
+
+	/**@brief Check to see if any of the other flags already have any of the flags for this flag option
+	 *
+	 * @param newFlag The flag to be checked
+	 * @return true if a flag already has the flags for the this flag option
+	 */
+	void hasFlagDashCaseInsenThrow(const Flag& newFlag) const {
+		auto noDashOpts = newFlag.flagsNoDash();
+		strVecToLower(noDashOpts);
+		for (const auto & f : flags_) {
+			auto otherNoDashOtps = f.second.flagsNoDash();
+			strVecToLower(otherNoDashOtps);
+			for (const auto & ndoPos : iter::range(noDashOpts.size())) {
+				if (in(noDashOpts[ndoPos], otherNoDashOtps)) {
+					std::stringstream ss;
+					ss << "Error in : " << __PRETTY_FUNCTION__ << ", adding new flag: "
+							<< noDashOpts[ndoPos] << " which already exists" << "\n";
+					ss << Json::FastWriter().write(f.second.toJson()) << "\n";
+					throw std::runtime_error { ss.str() };
+				}
+			}
+		}
+	}
+
+};
 
 }  // namespace progutils
 }  // namespace bib
