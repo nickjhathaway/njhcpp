@@ -3,16 +3,14 @@
 #include <fstream>
 #include <string>
 #include <cerrno>
+#include <mutex>
 #include <boost/filesystem.hpp>
 #include "bibcpp/utils/stringUtils.hpp"
 #include "bibcpp/files/fileUtilities.hpp" //files::last_write_time
 #include "bibcpp/files/fileStreamUtils.hpp" //files::get_file_contents
 
-
 namespace bib {
 namespace files {
-
-
 
 /**@brief A file object that holds the contents of a file and updates the contents if the file changed since the last time it was read
  *
@@ -22,6 +20,9 @@ private:
 	const bfs::path fnp_; /**< the file path */
 	std::string content_; /**< the file content */
 	sch::time_point<sch::system_clock> time_; /**< time last read */
+
+	std::mutex mut_; /**< mutex to make updating thread safe*/
+
 	/**@brief Load the content of the file and log the time the file was last edited
 	 *
 	 */
@@ -30,13 +31,29 @@ private:
 		time_ = files::last_write_time(fnp_);
 	}
 
-public:
-	/**@brief empty constructor
-	 * @todo should add some safetly to make sure a file path gets set before load is called
+	/**@brief Check to see if the file has changed since
+	 *
+	 * @return whether an update of the contents is needed
 	 */
-	FileCache() :
-			fnp_("") {
+	bool needsUpdate() const {
+		return time_ != files::last_write_time(fnp_);
 	}
+
+	/**@brief Update file and return whether the file had to be
+	 *
+	 * @return Whether the file needed to be updated
+	 */
+	bool update() {
+		std::lock_guard<std::mutex> lock(mut_);
+		if (needsUpdate()) {
+			load();
+			return true;
+		}
+		return false;
+	}
+
+public:
+
 	/**@brief constructor with the content of the file
 	 *
 	 * @param fnp The file path of the file to be stored
@@ -45,14 +62,26 @@ public:
 			fnp_(fnp) {
 		load();
 	}
+
 	/**@brief Copy constructor
 	 *
-	 * @param other
+	 * @param other FileCache
 	 */
 	FileCache(const FileCache& other) :
-			fnp_(other.fnp_) {
-		load();
+			fnp_(other.fnp_), content_(other.content_), time_(other.time_) {
+		update();
 	}
+
+	/**@brief Move constructor
+	 *
+	 * @param other FileCache
+	 */
+	FileCache(const FileCache&& other) :
+			fnp_(std::move(other.fnp_)), content_(std::move(other.content_)), time_(
+					std::move(other.time_)) {
+		update();
+	}
+
 	/**@brief Get the content of the file and update as needed
 	 *
 	 * @return the current content of the file
@@ -61,58 +90,8 @@ public:
 		update();
 		return content_;
 	}
-	/**@brief Get the content of the file and update as needed and make a replacement of parts of the file
-	 *
-	 * @param replace The string to replace in the file
-	 * @param replacement The replacement for the file
-	 * @return The curent content of the file with the replacement done
-	 */
-	const std::string& get(const std::string & replace,
-			const std::string & replacement) {
-		update(replace, replacement);
-		return content_;
-	}
-	/**@brief Check to see if the file has changed since
-	 *
-	 * @return
-	 */
-	bool needsUpdate() const {
-		return time_ != files::last_write_time(fnp_);
-	}
-	/**@brief For replacing the parts of the file content with a replacement str
-	 *
-	 * @param replace The string to replace in the file
-	 * @param replacement The replacement for the file
-	 */
-	void replaceStr(const std::string & replace, const std::string & replacement){
-		content_ = replaceString(content_, replace, replacement);
-	}
-	/**@brief Update file and return whether the file had to be
-	 *
-	 * @return Whether the file needed to be updated
-	 */
-	bool update(){
-		if (needsUpdate()) {
-			load();
-			return true;
-		}
-		return false;
-	}
-	/**@brief Update file and return whether the file had to be, also do a string replacement on the file
-	 *
-	 * @param replace The string to replace in the file
-	 * @param replacement The replacement for the file
-	 * @return Whether the file needed to be updated
-	 */
-	bool update(const std::string & replace,
-			const std::string & replacement){
-		if (needsUpdate()) {
-			load();
-			replaceStr(replace, replacement);
-			return true;
-		}
-		return false;
-	}
+
+	friend class FilesCache;
 
 };
 
@@ -123,6 +102,8 @@ class FilesCache {
 private:
 	std::vector<FileCache> files_; /**< The multiple caches */
 	std::string content_; /**< The content */
+	std::mutex mut_; /**< mutex to make updating thread safe*/
+
 	/**@brief Load any of the files that need to be reloaded
 	 *
 	 */
@@ -133,6 +114,34 @@ private:
 		}
 		content_ = ss.str();
 	}
+
+	/**@brief Check to see if the file has changed since
+	 *
+	 * @return whether an update of the contents is needed
+	 */
+	bool needsUpdate() const {
+		bool needsUpdate = false;
+		for (auto& f : files_) {
+			if (f.needsUpdate()) {
+				needsUpdate = true;
+			}
+		}
+		return needsUpdate;
+	}
+
+	/**@brief Update file and return whether the file had to be
+	 *
+	 * @return Whether the file needed to be updated
+	 */
+	bool update() {
+		std::lock_guard<std::mutex> lock(mut_);
+		if (needsUpdate()) {
+			load();
+			return true;
+		}
+		return false;
+	}
+
 public:
 	/**@brief Constructor with all the files given
 	 *
@@ -140,45 +149,38 @@ public:
 	 */
 	FilesCache(std::vector<bfs::path> fnps) {
 		for (const auto& p : fnps) {
-			files_.emplace_back(FileCache(p));
+			files_.emplace_back(p);
 		}
 		load();
 	}
+
+	/**@brief Copy constructor
+	 *
+	 * @param other FilesCache
+	 */
+	FilesCache(const FilesCache& other) :
+			files_(other.files_), content_(other.content_) {
+		update();
+	}
+
+	/**@brief Move constructor
+	 *
+	 * @param other FilesCache
+	 */
+	FilesCache(const FilesCache&& other) :
+			files_(std::move(other.files_)), content_(std::move(other.content_)) {
+		update();
+	}
+
 	/**@brief Get the cache and check to see if any of the files needed to be updated
 	 *
 	 * @return The cache of all the files
 	 */
 	const std::string& get() {
-		bool needsUpdate = false;
-		for (auto& f : files_) {
-			if (f.update()) {
-				needsUpdate = true;
-			}
-		}
-		if(needsUpdate){
-			load();
-		}
+		update();
 		return content_;
 	}
-	/**@brief Get the cache and check to see if any of the files needed to be updated, doing a replacement on files
-	 *
-	 * @param replace The string to replace in the file
-	 * @param replacement The replacement for the file
-	 * @return The cache of all the files with a string replacment done as well
-	 */
-	const std::string& get(const std::string & replace,
-			const std::string & replacement) {
-		bool needsUpdate = false;
-		for (auto& f : files_) {
-			if (f.update(replace, replacement)) {
-				needsUpdate = true;
-			}
-		}
-		if(needsUpdate){
-			load();
-		}
-		return content_;
-	}
+
 };
 } // namespace files
 } // namespace bib

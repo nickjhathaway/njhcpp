@@ -266,7 +266,18 @@ inline std::string writeAsOneLine(const Json::Value & val){
 	return jWriter.write(val);
 }
 
-
+template<typename T>
+std::vector<T> jsonArrayToVec(const Json::Value & jData,
+		const std::function<T(const Json::Value &)> & func) {
+	if (!jData.isArray()) {
+		std::stringstream ss;
+		ss << __PRETTY_FUNCTION__ << " Error, input json data should be an array\n";
+		throw std::runtime_error { ss.str() };
+	}
+	std::vector<T> ret(jData.size());
+	std::transform(jData.begin(), jData.end(), ret.begin(), func);
+	return ret;
+}
 
 
 }//namespace json

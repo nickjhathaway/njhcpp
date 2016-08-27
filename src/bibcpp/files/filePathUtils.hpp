@@ -18,6 +18,12 @@ template <>
 inline std::string to_string(const boost::filesystem::path & path) {
   return path.string();
 }
+
+template <>
+inline std::string to_string(const Json::Value & path) {
+  return path.asString();
+}
+
 }  // namespace estd
 
 namespace bib {
