@@ -7,7 +7,7 @@ from utils import Utils
 from genFuncs import genHelper
 def main():
     name = "bibcpp"
-    libs = "boost:1_60_0,pstreams:RELEASE_0_8_1,jsoncpp:1.7.1,cppitertools:v0.1"
+    libs = "boost:1_60_0,pstreams:RELEASE_0_8_1,jsoncpp:1.7.4,cppitertools:v0.1"
     args = genHelper.parseNjhConfigureArgs()
     if Utils.isMac():
         cmd = genHelper.mkConfigCmd(name, libs, sys.argv, "-lpthread,-lz")
