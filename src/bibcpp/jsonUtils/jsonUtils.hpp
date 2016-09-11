@@ -12,6 +12,7 @@
 #include <map>
 #include <unordered_map>
 #include <vector>
+#include <set>
 #include <deque>
 #include <string>
 #include <cstdint>
@@ -266,6 +267,12 @@ inline std::string writeAsOneLine(const Json::Value & val){
 	return jWriter.write(val);
 }
 
+/**@brief convert a json array to a vector using a function to convert the json to cpp type
+ *
+ * @param jData the data to convert, needs to be an array
+ * @param func the function used to convert
+ * @return a vector of the json array
+ */
 template<typename T>
 std::vector<T> jsonArrayToVec(const Json::Value & jData,
 		const std::function<T(const Json::Value &)> & func) {
@@ -279,6 +286,23 @@ std::vector<T> jsonArrayToVec(const Json::Value & jData,
 	return ret;
 }
 
+/**@brief convert a json array to a vector using a function to convert the json to cpp type
+ *
+ * @param jData the data to convert, needs to be an array
+ * @param func the function used to convert
+ * @return a vector of the json array
+ */
+template<typename T>
+std::set<T> jsonArrayToSet(const Json::Value & jData,
+		const std::function<T(const Json::Value &)> & func) {
+	/**@todo find an more efficient than to convert to vector and then set */
+	auto vec = jsonArrayToVec(jData,func);
+	return {vec.begin(), vec.end()};
+}
 
 }//namespace json
 }//namesapce bib
+
+
+
+
