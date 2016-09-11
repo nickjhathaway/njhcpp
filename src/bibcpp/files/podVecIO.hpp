@@ -69,7 +69,7 @@ std::vector<T> readPODvectorGz(bfs::path fnp) {
 		}
 		uint32_t elements_read = bytes_read/sizeof(T);
 		if(0 != elements_read){
-			ret.insert(ret.begin(), temp.begin(), temp.begin() + elements_read);
+			ret.insert(ret.end(), temp.begin(), temp.begin() + elements_read);
 		}
 	}
 	gzclose(gzInFile);
