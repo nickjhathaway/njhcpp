@@ -21,6 +21,7 @@ private:
 	std::vector<FileCache> files_; /**< The multiple caches */
 	std::string content_; /**< The content */
 	std::mutex mut_; /**< mutex to make updating thread safe*/
+	bool needsUpdate_ = false; /**< indicator for whether the content needs to be update or not*/
 
 	/**@brief Load any of the files that need to be reloaded
 	 *
@@ -31,20 +32,20 @@ private:
 			ss << f.get();
 		}
 		content_ = ss.str();
+		needsUpdate_ = false;
 	}
 
 	/**@brief Check to see if the file has changed since
 	 *
 	 * @return whether an update of the contents is needed
 	 */
-	bool needsUpdate() const {
-		bool needsUpdate = false;
+	bool needsUpdate() {
 		for (auto& f : files_) {
 			if (f.needsUpdate()) {
-				needsUpdate = true;
+				needsUpdate_ = true;
 			}
 		}
-		return needsUpdate;
+		return needsUpdate_;
 	}
 
 	/**@brief Update file and return whether the file had to be
@@ -77,7 +78,9 @@ public:
 	 * @param other FilesCache
 	 */
 	FilesCache(const FilesCache& other) :
-			files_(other.files_), content_(other.content_) {
+			files_(other.files_),
+			content_(other.content_),
+			needsUpdate_(other.needsUpdate_){
 		update();
 	}
 
@@ -86,7 +89,9 @@ public:
 	 * @param other FilesCache
 	 */
 	FilesCache(const FilesCache&& other) :
-			files_(std::move(other.files_)), content_(std::move(other.content_)) {
+			files_(std::move(other.files_)),
+			content_(std::move(other.content_)),
+			needsUpdate_(other.needsUpdate_){
 		update();
 	}
 
@@ -105,6 +110,7 @@ public:
 	 */
 	void addFile(const bfs::path & file){
 		files_.emplace_back(file);
+		needsUpdate_ = true;
 	}
 
 	/**@brief add files to the cache of files
