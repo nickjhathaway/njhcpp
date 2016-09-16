@@ -32,8 +32,17 @@ namespace bfs = boost::filesystem;
 
 template<typename T>
 void addAsPathToPath(std::string& path, const T& e) {
-	bib::appendAsNeeded(path, "/");
-	path.append(estd::to_string(e));
+	std::string eStr = estd::to_string(e);
+	if ("" == path) {
+		path.append(eStr);
+	} else {
+		if (!endsWith(path, "/") && !beginsWith(eStr, "/")) {
+			path.push_back('/');
+		} else if (endsWith(path, "/") && beginsWith(eStr, "/")) {
+			eStr.erase(eStr.begin());
+		}
+		path.append(eStr);
+	}
 }
 
 template<typename T>
@@ -63,7 +72,7 @@ template<typename ... T>
 bfs::path make_path(const T&... items) {
 	std::string ret = "";
 	pasteAsPathAdd(ret, items...);
-	return bfs::path(ret.substr(1));
+	return bfs::path(ret);
 }
 
 
@@ -76,7 +85,7 @@ bfs::path make_path(const T&... items) {
  * @return Return par plus a unix directory separator if neccesary plus child
  */
 inline std::string join(const std::string & par, const std::string & child){
-	return appendAsNeededRet(par, "/") + child;
+	return make_path(par, child).string();
 }
 
 /**@brief Join all strings in vector paths with a unix dir separator if needed
@@ -88,14 +97,10 @@ inline std::string join(const std::vector<std::string> & paths){
 	if(paths.size() == 1){
 		return paths.front();
 	}
-	std::string ret = "";
 	if(paths.size() == 0){
-		return ret;
+		return "";
 	}
-	for(const auto & p : iter::range(paths.size() - 1)){
-		ret += appendAsNeededRet(paths[p], "/");
-	}
-	return ret + paths.back();
+	return make_path(paths).string();
 }
 
 /**@brief Return full path name even if the path doesn't actually exists
