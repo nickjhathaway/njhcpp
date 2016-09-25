@@ -11,3 +11,4 @@
 #include "bibcpp/progutils.h"
 #include "bibcpp/simulation.h"
 #include "bibcpp/system.h"
+#include "bibcpp/md5.h"

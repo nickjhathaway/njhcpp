@@ -29,10 +29,10 @@ inline static std::string get_file_contents(const bfs::path& fnp, bool verbose) 
 	// http://insanecoding.blogspot.com/2011/11/how-to-read-in-file-in-c.html
 	std::ifstream f(fnp.string(), std::ios::in | std::ios::binary);
 	if (!f.is_open()) {
-		throw err::Exception(err::F() << "could not open file" << fnp);
+		throw err::Exception(err::F() << __PRETTY_FUNCTION__ << " error :could not open file " << fnp);
 	}
 	if (verbose) {
-		std::cout << "reading file " << fnp << std::endl;
+		std::cout << "Reading file " << fnp << std::endl;
 	}
 	std::string ret;
 	f.seekg(0, std::ios::end);
