@@ -42,13 +42,15 @@ public:
 	 * @param showTime whether to print the time with an eta as well
 	 */
 	void outputProgAdd(std::ostream & out, uint32_t add, bool showTime = false) {
-		std::lock_guard<std::mutex> lock(mut_);
-		current_ += add;
-		if (progressNoLock()) {
-			out << "\r" << getOutStr(showTime);
-			out.flush();
-			if (current_ == total_) {
-				std::cout << std::endl;
+		current_ = atCur_.fetch_add(add) + add;
+		if ( std::round((current_ / static_cast<double>(total_)) * width_) > oldtProg_ || current_ == total_) {
+			std::lock_guard<std::mutex> lock(mut_);
+			if (progressNoLock()) {
+				out << "\r" << getOutStr(showTime);
+				out.flush();
+				if (current_ == total_) {
+					std::cout << std::endl;
+				}
 			}
 		}
 	}
@@ -74,21 +76,19 @@ private:
 	 */
 	bool progressNoLock() {
 		if (current_ > total_) {
-			std::cerr << std::endl << __PRETTY_FUNCTION__ << ": Error, " << current_
-					<< "would progress further than total: " << total_ << std::endl;
+			std::cerr << std::endl << __PRETTY_FUNCTION__ << ": Error, currently held value: " << current_
+					<< ", has progressed further than total: " << total_ << std::endl;
+			return false;
 		}
 		if (1 == current_) {
 			watch_.reset();
 		}
-
-		currentProgress_ = current_ / static_cast<double>(total_);
 		//set current progress
+		currentProgress_ = current_ / static_cast<double>(total_);
 		tprog_ = std::round(currentProgress_ * width_);
 		if (tprog_ == oldtProg_ && current_ < total_) {
-			oldtProg_ = tprog_;
 			return false;
 		}
-
 		//set new time
 		watch_.startNewLap();
 		oldtProg_ = tprog_;
@@ -133,9 +133,7 @@ private:
 
 	stopWatch watch_;
 
-	/**@todo figure out how to use atomic instead so there's less locking between threads
-	 * std::atomic<uint32_t> cur_{0};
-	 */
+	std::atomic<uint32_t> atCur_{0};
 	uint32_t current_ = 0;
 	uint32_t total_;
 	uint32_t tprog_ = 0;
