@@ -14,6 +14,8 @@
 #include <algorithm>
 #include <cppitertools/range.hpp> //range
 #include <cmath>
+#include <atomic>
+
 #include "bibcpp/bashUtils/textFormatter.hpp"
 #include "bibcpp/utils/time/stopWatch.hpp"
 
@@ -33,24 +35,24 @@ public:
 		step_ = width_ / 10;
 		progColors_ = RdYlGn_;
 	}
-
-
-	/**@brief output current progress
+	/**@brief output current progress by adding the current value stored
 	 *
-	 * @param out the out stream to print to
-	 * @param current the current number the progress is on, should be less than total
-	 * @param showTime Whether to show duration and ETA
+	 * @param out the stream to output a progress string to
+	 * @param add the amount to add to the current value
+	 * @param showTime whether to print the time with an eta as well
 	 */
-	void outputProg(std::ostream & out, uint32_t current, bool showTime = false) {
-		if (progress(current)) {
+	void outputProgAdd(std::ostream & out, uint32_t add, bool showTime = false) {
+		std::lock_guard<std::mutex> lock(mut_);
+		current_ += add;
+		if (progressNoLock()) {
 			out << "\r" << getOutStr(showTime);
 			out.flush();
-			if(current == total_){
+			if (current_ == total_) {
 				std::cout << std::endl;
 			}
 		}
-
 	}
+
 	std::map<uint32_t, std::string> progColors_;
 	std::map<uint32_t, std::string> readToGreen_ = { { 0, bib::bashCT::addBGColor(
 			196) }, { 1, bib::bashCT::addBGColor(199) }, { 2, bib::bashCT::addBGColor(
@@ -65,24 +67,24 @@ public:
 			{ 6, bib::bashCT::addBGColor(149) }, { 7, bib::bashCT::addBGColor(71) }, {
 					8, bib::bashCT::addBGColor(78) }, { 9, bib::bashCT::addBGColor(29) } };
 private:
-	/**@brief progress and set up the stirngs to the current number
+
+	/**@brief to be called after updated current_
 	 *
-	 * @param current the current progress
-	 * @return whether the progress has changed and needs an update
+	 * @return whether the progress string was updated and needs to be written
 	 */
-	bool progress(uint32_t current) {
-		if (current > total_) {
-			std::cerr << std::endl << __PRETTY_FUNCTION__ << ": Error, " << current
+	bool progressNoLock() {
+		if (current_ > total_) {
+			std::cerr << std::endl << __PRETTY_FUNCTION__ << ": Error, " << current_
 					<< "would progress further than total: " << total_ << std::endl;
 		}
-		if(1 == current){
+		if (1 == current_) {
 			watch_.reset();
 		}
-		current_ = current;
+
 		currentProgress_ = current_ / static_cast<double>(total_);
 		//set current progress
 		tprog_ = std::round(currentProgress_ * width_);
-		if (tprog_ == oldtProg_ && current < total_) {
+		if (tprog_ == oldtProg_ && current_ < total_) {
 			oldtProg_ = tprog_;
 			return false;
 		}
@@ -131,6 +133,9 @@ private:
 
 	stopWatch watch_;
 
+	/**@todo figure out how to use atomic instead so there's less locking between threads
+	 * std::atomic<uint32_t> cur_{0};
+	 */
 	uint32_t current_ = 0;
 	uint32_t total_;
 	uint32_t tprog_ = 0;
@@ -138,6 +143,8 @@ private:
 	uint32_t step_;
 	uint32_t oldtProg_ = 0;
 	double currentProgress_ = 0;
+
+	std::mutex mut_;
 
 	std::string progStr_;
 	std::string padStr_;
