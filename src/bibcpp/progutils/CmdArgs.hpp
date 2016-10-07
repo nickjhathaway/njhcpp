@@ -151,7 +151,7 @@ public:
 	 */
 	Json::Value toJson() const {
 		Json::Value ret;
-		ret["class"] = "bibcpp::progutils::commandLineArguments";
+		ret["class"] = bib::json::toJson(getTypeName(*this));
 		ret["masterProgram_"] = bib::json::toJson(masterProgram_);
 		ret["masterProgramRaw_"] = bib::json::toJson(masterProgramRaw_);
 		ret["subProgram_"] = bib::json::toJson(subProgram_);
