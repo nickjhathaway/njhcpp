@@ -95,15 +95,15 @@ public:
 	static std::multimap<uint64_t, T, std::less<uint64_t>> createLikelihood(
 	    const std::vector<T> &objs, const std::vector<N> &counts){
 	  if (counts.size() != objs.size()) {
-	    std::cerr << "Error in createLikelihood(const std::vector<T> &objs,"
-	                 " const std::vector<uint32_t> & counts)" << std::endl;
-	    std::cerr << "Size of counts differs from size of letters" << std::endl;
-	    std::cerr << "Size of counts: " << counts.size() << std::endl;
-	    std::cerr << "Size of objs: " << objs.size() << std::endl;
-	    throw std::runtime_error{""};
+	  	std::stringstream ss;
+	  	ss << __PRETTY_FUNCTION__ << "Error" << std::endl;
+	  	ss << "Size of counts differs from size of input objects" << std::endl;
+	  	ss << "Size of counts: " << counts.size() << std::endl;
+	  	ss << "Size of objs: " << objs.size() << std::endl;
+	    throw std::runtime_error{ss.str()};
 	  }
 	  long double countsSum = std::accumulate(counts.begin(), counts.end(), 0);
-	  std::multimap<uint64_t, char, std::less<uint64_t>> likelihoods;
+	  std::multimap<uint64_t, T, std::less<uint64_t>> likelihoods;
 	  for (const auto &pos : iter::range(objs.size())) {
 	    likelihoods.emplace((std::numeric_limits<uint64_t>::max() / countsSum) * counts[pos], objs[pos]);
 	  }
