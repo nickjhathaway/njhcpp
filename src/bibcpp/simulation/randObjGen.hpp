@@ -102,7 +102,8 @@ public:
 	  	ss << "Size of objs: " << objs.size() << std::endl;
 	    throw std::runtime_error{ss.str()};
 	  }
-	  long double countsSum = std::accumulate(counts.begin(), counts.end(), 0);
+	  long double countsSum = std::accumulate<decltype(counts.begin()),N>(counts.begin(), counts.end(), 0);
+
 	  std::multimap<uint64_t, T, std::less<uint64_t>> likelihoods;
 	  for (const auto &pos : iter::range(objs.size())) {
 	    likelihoods.emplace((std::numeric_limits<uint64_t>::max() / countsSum) * counts[pos], objs[pos]);
