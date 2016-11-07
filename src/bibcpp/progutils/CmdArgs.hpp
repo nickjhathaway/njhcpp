@@ -40,6 +40,7 @@ public:
 	|| std::is_same<double, typename std::decay<T>::type>::value
 	|| std::is_same<long double, typename std::decay<T>::type>::value
 	|| std::is_same<float, typename std::decay<T>::type>::value
+	|| std::is_same<char, typename std::decay<T>::type>::value
 	> {};
 
 	/**@brief simply aesthetic, to make call to is_cmdArg_supported_type look nicer
