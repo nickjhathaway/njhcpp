@@ -44,51 +44,7 @@ inline static std::string get_file_contents(const bfs::path& fnp, bool verbose) 
 }
 
 
-/**@brief Get the first line of a file, throws if there is an error in opening a file
- *
- * @param filename The name of the file
- * @return The first line of the file
- */
-inline std::string getFirstLine(const std::string &filename) {
-  std::string currentLine;
-  std::ifstream textFile(filename.c_str());
-  if (!textFile) {
-  	throw std::runtime_error{"Error in opening " + filename};
-  }
-  std::getline(textFile, currentLine);
-  return currentLine;
-}
 
-
-/**@brief Get the last line of a file
- *
- * @param filename Name of the file to extract the last line from
- * @return A std::string object containing the last line of the file
- */
-inline std::string getLastLine(const std::string & filename) {
-	/*
-	 Last line from the file, from http://www.programmersbook.com/page/7/Get-last-line-from-a-file-in-C/
-	 */
-	std::ifstream read(filename, std::ios_base::ate); //open file
-	if(!read){
-		throw std::runtime_error{bib::bashCT::boldRed("Error in opening " + filename)};
-	}
-	std::string ret;
-	int length = 0;
-	char c = '\0';
-	if (read) {
-		length = read.tellg(); //Get file size
-		// loop backward over the file
-		for (int i = length - 2; i > 0; i--) {
-			read.seekg(i);
-			c = read.get();
-			if (c == '\r' || c == '\n') //new line?
-				break;
-		}
-		std::getline(read, ret); //read last line
-	}
-	return ret;
-}
 
 /**@brief Get the streambuf of either an opened file or of std::cout if outFile is empty
  *
@@ -164,6 +120,53 @@ crossPlatGetline(std::istream& __is, std::string& __str) {
 		__is.setstate(__err);
 	}
 	return __is;
+}
+
+
+/**@brief Get the first line of a file, throws if there is an error in opening a file
+ *
+ * @param filename The name of the file
+ * @return The first line of the file
+ */
+inline std::string getFirstLine(const std::string &filename) {
+  std::string currentLine;
+  std::ifstream textFile(filename.c_str());
+  if (!textFile) {
+  	throw std::runtime_error{"Error in opening " + filename};
+  }
+  crossPlatGetline(textFile, currentLine);
+  return currentLine;
+}
+
+
+/**@brief Get the last line of a file
+ *
+ * @param filename Name of the file to extract the last line from
+ * @return A std::string object containing the last line of the file
+ */
+inline std::string getLastLine(const std::string & filename) {
+	/*
+	 Last line from the file, from http://www.programmersbook.com/page/7/Get-last-line-from-a-file-in-C/
+	 */
+	std::ifstream read(filename, std::ios_base::ate); //open file
+	if(!read){
+		throw std::runtime_error{bib::bashCT::boldRed("Error in opening " + filename)};
+	}
+	std::string ret;
+	int length = 0;
+	char c = '\0';
+	if (read) {
+		length = read.tellg(); //Get file size
+		// loop backward over the file
+		for (int i = length - 2; i > 0; i--) {
+			read.seekg(i);
+			c = read.get();
+			if (c == '\r' || c == '\n') //new line?
+				break;
+		}
+		std::getline(read, ret); //read last line
+	}
+	return ret;
 }
 
 /**@brief Get the next line ending with common line terminators without changing the stream's location or state
