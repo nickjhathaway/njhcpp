@@ -12,7 +12,7 @@
 #include <algorithm> //std::transform
 
 #include "bibcpp/common.h" //to_string, isArithmetic, isString
-#include <boost/type_index.hpp>
+#include "bibcpp/utils/typeUtils.hpp"
 
 namespace bib {
 inline std::string prettierName(const std::string & prettyName){
@@ -90,11 +90,7 @@ struct lexical_caster {
 				return ret;
 			}
 		}
-		throw bad_lexical_cast(
-				prettierName(
-						boost::typeindex::type_id_with_cvr<Target>().pretty_name()),
-				prettierName(
-						boost::typeindex::type_id_with_cvr<Source>().pretty_name()));
+		throw bad_lexical_cast(typeStr<Target>(), typeStr<Source>());
 	}
 };
 
@@ -108,11 +104,7 @@ struct lexical_caster<std::string, Source> {
 		if (oss << source) {
 			return oss.str();
 		}
-		throw bad_lexical_cast(
-				prettierName(
-						boost::typeindex::type_id_with_cvr<std::string>().pretty_name()),
-				prettierName(
-						boost::typeindex::type_id_with_cvr<Source>().pretty_name()));
+		throw bad_lexical_cast(typeStr<std::string>(), typeStr<Source>());
 	}
 };
 
