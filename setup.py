@@ -1960,16 +1960,16 @@ class Setup:
         gitWhich = Utils.which("git")
         if not ccWhich or not cxxWhich or not cmakeWhich or not gitWhich:
             if not ccWhich:
-                print CT.boldRed("Could not find c compiler " + CT.purple + self.CC)
+                print CT.boldRed("Could not find c compiler " + CT.purple + self.CC[0])
                 if self.args.compfile:
-                    print "Change CC in " + self.args.compfile
+                    print "Change CC in " + self.args.compfile[0]
                 else:
                     print "Can supply another c compiler by using -CC [option] or by defining bash environmental CC "
                 print ""
             if not cxxWhich:
-                print CT.boldRed("Could not find c++ compiler " + CT.purple + self.CXX)
+                print CT.boldRed("Could not find c++ compiler " + CT.purple + self.CXX[0])
                 if self.args.compfile:
-                    print "Change CXX in " + self.args.compfile
+                    print "Change CXX in " + self.args.compfile[0]
                 else:
                     print "Can supply another c++ compiler by using -CXX [option] or by defining bash environmental CXX "
                 print ""
