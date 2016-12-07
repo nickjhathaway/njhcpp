@@ -1982,6 +1982,8 @@ class Setup:
                     print "sudo add-apt-repository ppa:george-edison55/cmake-3.x"
                     print "sudo apt-get update"
                     print "sudo apt-get install cmake"
+                    print "or if you have linuxbrew, brew install cmake"
+                    
             if not gitWhich:
                 print "Can't find git"
             raise Exception("")
@@ -2023,7 +2025,7 @@ def parse_args():
 
 
 
-def main():
+def runSetup():
     args = parse_args()
     s = Setup(args)
     s.externalChecks()
@@ -2072,7 +2074,7 @@ def main():
                 return 0
 
 if __name__ == '__main__':
-    main()
+    runSetup()
     
     
     
