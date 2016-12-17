@@ -12,4 +12,5 @@
 #include "bibcpp/files/fileObjects/FileCache.hpp"
 #include "bibcpp/files/fileObjects/FilesCache.hpp"
 #include "bibcpp/files/fileObjects/gzTextFileCpp.hpp"
+#include "bibcpp/files/fileObjects/gzstream.hpp"
 
