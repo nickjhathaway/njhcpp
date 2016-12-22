@@ -28,7 +28,7 @@ void writePODvectorGz(bfs::path fnp, const std::vector<T> d) {
 	bib::files::touch(fnp);
 	uint64_t numBytes = d.size() * sizeof(T);
 	//bfs::resize_file(fnp, numBytes);
-	auto gzFileOut = gzopen(bib::appendAsNeededRet(fnp.string(), ".gz").c_str(), "bw");
+	auto gzFileOut = gzopen(bib::appendAsNeededRet(fnp.string(), ".gz").c_str(), "w");
 	/** @todo figure way to test if the file opened
 	if (!()) {
 		throw bib::err::Exception(bib::err::F() << "could not open file " << fnp);
@@ -46,7 +46,7 @@ void writePODvectorGz(bfs::path fnp, const std::vector<T> d) {
  */
 template<typename T>
 std::vector<T> readPODvectorGz(bfs::path fnp) {
-	auto gzInFile = gzopen(fnp.string().c_str(), "rb");
+	auto gzInFile = gzopen(fnp.string().c_str(), "r");
 	auto pos = gztell(gzInFile);
 	if (EOF == pos) {
 		throw bib::err::Exception(bib::err::F() << __PRETTY_FUNCTION__ << ": error in opening " << fnp);
