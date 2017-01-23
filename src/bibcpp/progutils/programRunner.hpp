@@ -206,7 +206,7 @@ class programRunner {
    *
    */
   virtual int batchRun(CmdArgs inputCommands) {
-    std::vector<std::string> batchFlags{"-ending", "-pattern", "-run", "batch"};
+    std::vector<std::string> batchFlags{"-ending", "--ending", "-pattern", "--pattern", "-run", "--run", "batch"};
     std::string ending = "", program = "", pattern = "";
     programSetUp setUp(inputCommands);
     bool endFlag = setUp.setOption(ending , "-ending", "A file extension to run batch commands on", false);
@@ -293,7 +293,7 @@ class programRunner {
    *
    */
   virtual int batchRunThreaded(CmdArgs inputCommands) {
-    std::vector<std::string> batchFlags{"-ending", "-pattern", "-run", "batchthreaded", "-batchthreads"};
+    std::vector<std::string> batchFlags{"-ending", "--ending", "-pattern", "--pattern", "-run", "--run", "batchthreaded", "-batchthreads", "--batchthreads"};
     std::string ending = "", program = "", pattern = "";
     programSetUp setUp(inputCommands);
     bool endFlag = setUp.setOption(ending , "-ending", "A file extension to run batch commands on", false);
