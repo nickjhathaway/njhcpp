@@ -390,6 +390,22 @@ inline std::string makeDirP(const std::string &parentDirectory,
 }
 
 
+/**@brief Gather up files recursively with a certain extension
+ *
+ * @param dir the directory to search
+ * @param ext the extension to check for
+ * @return a vector of paths to files in the directory with this extension
+ */
+inline std::vector<bfs::path> gatherFiles(const bfs::path & dir,
+		const std::string & ext) {
+	auto files = listAllFiles(dir.string(), true,
+			{ std::regex {".*" + ext + "$" } });
+	return getVecOfMapKeys(files);
+}
+
+
+
+
 
 }  // namespace files
 }  // namespace bib

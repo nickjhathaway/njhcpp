@@ -11,6 +11,9 @@
 #include <array>
 #include <cstdint>
 
+
+
+
 namespace bib {
 namespace files {
 
@@ -35,13 +38,14 @@ public:
 	gzTextFileCpp(const std::string & filename, const std::string & terminator =
 			"\n") :
 			filename_(filename), terminator_(terminator) {
-		file_ = gzopen(filename.c_str(), "rb");
+		file_ = gzopen(filename.c_str(), "r");
 		//if file isn't opened, throw
 		if (!file_) {
 			throw std::runtime_error { std::string(__PRETTY_FUNCTION__)
 					+ ":error in opening, " + filename };
 		}
-#ifndef NO_GZBUFFER_FUNC
+
+#if ZLIB_VERNUM >= 0x1280
 		//if you couldn't set the buffer, throw
 		if (gzbuffer(file_, 128 * 1024)) {
 			throw std::runtime_error { std::string(__PRETTY_FUNCTION__)

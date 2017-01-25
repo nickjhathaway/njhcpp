@@ -40,6 +40,7 @@ public:
 	|| std::is_same<double, typename std::decay<T>::type>::value
 	|| std::is_same<long double, typename std::decay<T>::type>::value
 	|| std::is_same<float, typename std::decay<T>::type>::value
+	|| std::is_same<char, typename std::decay<T>::type>::value
 	> {};
 
 	/**@brief simply aesthetic, to make call to is_cmdArg_supported_type look nicer
@@ -151,7 +152,7 @@ public:
 	 */
 	Json::Value toJson() const {
 		Json::Value ret;
-		ret["class"] = "bibcpp::progutils::commandLineArguments";
+		ret["class"] = bib::json::toJson(getTypeName(*this));
 		ret["masterProgram_"] = bib::json::toJson(masterProgram_);
 		ret["masterProgramRaw_"] = bib::json::toJson(masterProgramRaw_);
 		ret["subProgram_"] = bib::json::toJson(subProgram_);
