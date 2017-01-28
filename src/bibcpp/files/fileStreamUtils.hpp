@@ -57,7 +57,7 @@ inline static std::string get_file_contents(const bfs::path& fnp, bool verbose) 
  * @return A std::streambuf* or either an opened file or of std::cout
  */
 inline std::streambuf* determineOutBuf(std::ofstream & outFile,
-		const std::string & outFilename, const std::string outFileExt,
+		const bfs::path & outFilename, const std::string outFileExt,
 		bool overWrite, bool append, bool exitOnFailure) {
 	if (outFilename != "") {
 		openTextFile(outFile, outFilename, outFileExt, overWrite,
@@ -128,11 +128,11 @@ crossPlatGetline(std::istream& __is, std::string& __str) {
  * @param filename The name of the file
  * @return The first line of the file
  */
-inline std::string getFirstLine(const std::string &filename) {
+inline std::string getFirstLine(const bfs::path &filename) {
   std::string currentLine;
   std::ifstream textFile(filename.c_str());
   if (!textFile) {
-  	throw std::runtime_error{"Error in opening " + filename};
+  	throw std::runtime_error{"Error in opening " + filename.string()};
   }
   crossPlatGetline(textFile, currentLine);
   return currentLine;
@@ -144,27 +144,27 @@ inline std::string getFirstLine(const std::string &filename) {
  * @param filename Name of the file to extract the last line from
  * @return A std::string object containing the last line of the file
  */
-inline std::string getLastLine(const std::string & filename) {
+inline std::string getLastLine(const bfs::path & filename) {
 	/*
 	 Last line from the file, from http://www.programmersbook.com/page/7/Get-last-line-from-a-file-in-C/
 	 */
-	std::ifstream read(filename, std::ios_base::ate); //open file
-	if(!read){
-		throw std::runtime_error{bib::bashCT::boldRed("Error in opening " + filename)};
+	std::ifstream inputFile(filename.string(), std::ios_base::ate); //open file
+	if(!inputFile){
+		throw std::runtime_error{bib::bashCT::boldRed("Error in opening " + filename.string())};
 	}
 	std::string ret;
 	int length = 0;
 	char c = '\0';
-	if (read) {
-		length = read.tellg(); //Get file size
+	if (inputFile) {
+		length = inputFile.tellg(); //Get file size
 		// loop backward over the file
-		for (int i = length - 2; i > 0; i--) {
-			read.seekg(i);
-			c = read.get();
+		for (int i = length - 2; i > 0; --i) {
+			inputFile.seekg(i);
+			c = inputFile.get();
 			if (c == '\r' || c == '\n') //new line?
 				break;
 		}
-		std::getline(read, ret); //read last line
+		std::getline(inputFile, ret); //read last line
 	}
 	return ret;
 }
@@ -222,8 +222,8 @@ inline bool nextLineBeginsWith(std::istream & is, char c){
  * @param filename The filename to count
  * @return The number of lines in filename
  */
-inline uint32_t countLines(const std::string & filename) {
-	std::ifstream inFile(filename);
+inline uint32_t countLines(const bfs::path & filename) {
+	std::ifstream inFile(filename.string());
 	if (!inFile) {
 		std::stringstream ss;
 		ss << "Error in opening " << filename << std::endl;

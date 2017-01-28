@@ -186,12 +186,12 @@ inline std::map<bfs::path, bool> listAllFiles(const bfs::path & dirName,
  * @param exitOnFailure whether program should exit on failure to open the file
  * @todo probably should just remove exitOnFailure and throw an exception instead
  */
-inline void openTextFile(std::ofstream& file, const std::string & filename,
+inline void openTextFile(std::ofstream& file, const bfs::path & filename,
 		bool overWrite, bool append, bool exitOnFailure) {
 
 	if (bfs::exists(filename) && !overWrite) {
 		if (append) {
-			file.open(filename.data(), std::ios::app);
+			file.open(filename.string().data(), std::ios::app);
 		} else {
 			std::stringstream ss;
 			ss << filename << " already exists";
@@ -202,7 +202,7 @@ inline void openTextFile(std::ofstream& file, const std::string & filename,
 			}
 		}
 	} else {
-		file.open(filename.data());
+		file.open(filename.string().data());
 		if (!file) {
 			std::stringstream ss;
 			ss << "Error in opening " << filename;
@@ -227,11 +227,10 @@ inline void openTextFile(std::ofstream& file, const std::string & filename,
  * @param exitOnFailure whether program should exit on failure to open the file
  * @todo probably should just remove exitOnFailure and throw an exception instead
  */
-inline void openTextFile(std::ofstream& file, std::string filename,
+inline void openTextFile(std::ofstream& file, const bfs::path &filename,
 		const std::string & extention, bool overWrite, bool append,
 		bool exitOnFailure) {
-	appendAsNeeded(filename, extention);
-	openTextFile(file, filename, overWrite, append, exitOnFailure);
+	openTextFile(file, appendAsNeededRet(filename.string(), extention), overWrite, append, exitOnFailure);
 }
 
 /**@brief remove a non empty directory forcibly

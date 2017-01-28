@@ -84,8 +84,8 @@ bfs::path make_path(const T&... items) {
  * @param child A file under parent path
  * @return Return par plus a unix directory separator if neccesary plus child
  */
-inline std::string join(const std::string & par, const std::string & child){
-	return make_path(par, child).string();
+inline bfs::path join(const std::string & par, const std::string & child){
+	return make_path(par, child);
 }
 
 /**@brief Join all strings in vector paths with a unix dir separator if needed
@@ -93,14 +93,14 @@ inline std::string join(const std::string & par, const std::string & child){
  * @param paths Paths to join
  * @return The contents of paths concatenated with a unix dir separator if needed
  */
-inline std::string join(const std::vector<std::string> & paths){
+inline bfs::path join(const std::vector<std::string> & paths){
 	if(paths.size() == 1){
 		return paths.front();
 	}
 	if(paths.size() == 0){
 		return "";
 	}
-	return make_path(paths).string();
+	return make_path(paths);
 }
 
 /**@brief Return full path name even if the path doesn't actually exists
@@ -164,16 +164,16 @@ inline std::string getHomeStr(){
  * @param filename The filename to remove the extension
  * @return The filename with the extension removed
  */
-inline std::string removeExtension(const std::string& filename) {
+inline std::string removeExtension(const bfs::path& filename) {
 	return bfs::path(filename).replace_extension("").string();
 }
 
-/**@brief Wrapper boost filesystem to get the a string of the extension for a given filename
+/**@brief Wrapper boost filesystem to get the a string of the extension for a given filename without the .
  *
  * @param filename Filename to get the extension for
  * @return The filename's extension
  */
-inline std::string getExtension(const std::string& filename) {
+inline std::string getExtension(const bfs::path& filename) {
 	auto ret = bfs::path(filename).extension().string();
 	if(ret.length() > 1){
 		if(ret[0] == '.'){
@@ -183,21 +183,13 @@ inline std::string getExtension(const std::string& filename) {
 	return ret;
 }
 
-/**@brief Wrapper boost filesystem to get the a string of the filename without extension for a given filename
- *
- * @param filename The filename to get the filename for
- * @return The filename (without extention)
- */
-inline std::string getFileName(const std::string& filename) {
-	return bfs::basename(filename);
-}
 
 /**@brief Wrapper boost filesystem to get the a string of the parent path for a given filename
  *
  * @param filename A the filename to look for a parent path
  * @return The parent path
  */
-inline std::string getPathName(const std::string& filename) {
+inline std::string getParentPath(const bfs::path& filename) {
 	return bfs::path(filename).parent_path().string();
 }
 
@@ -206,7 +198,7 @@ inline std::string getPathName(const std::string& filename) {
  * @param outFilename Filename to check for existance
  * @return A filename for a file that doesn't exist
  */
-inline std::string findNonexitantFile(const std::string & outFilename){
+inline bfs::path findNonexitantFile(const bfs::path & outFilename){
 	if(bfs::exists(outFilename)){
 		std::string fileStub = removeExtension(outFilename);
 		std::string extention = getExtension(outFilename);
@@ -220,6 +212,27 @@ inline std::string findNonexitantFile(const std::string & outFilename){
 	}else{
 		return outFilename;
 	}
+}
+
+/**@brief To simply append to the end of the file path name to further extend the name with something but not a new directory
+ *
+ * @param fnp The file name path to append to
+ * @param app what to append
+ * @return a boost::filesystem::path with the fnp append with app
+ */
+inline bfs::path nameAppend(const bfs::path & fnp, const std::string & app){
+	return bfs::path(fnp.string() + app);
+}
+
+
+/**@brief To append to the filename taking into account if it's a full path, so prepend just the file name not the whole file
+ *
+ * @param fnp The file name path to prepend to
+ * @param app what to prepend
+ * @return a boost::filesystem::path with just the last filename in the filename path prepended with pre
+ */
+inline bfs::path prependFilename(const bfs::path & fnp, const std::string & pre){
+	return bib::files::make_path(fnp.parent_path(), pre + fnp.filename().string());
 }
 
 }  // namespace files
