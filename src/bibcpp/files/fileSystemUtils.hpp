@@ -107,7 +107,7 @@ inline void listAllFilesHelper(const bfs::path & dirName, bool recursive,
  * @param levels The maximum number of levels to search
  * @return A map of the directory paths with key being the file path and the value being a bool indicating if it is a directory or not
  */
-inline std::map<bfs::path, bool> listAllFiles(const std::string & dirName,
+inline std::map<bfs::path, bool> listAllFiles(const bfs::path & dirName,
 		bool recursive, const std::vector<std::string>& contains, uint32_t levels =
 				std::numeric_limits<uint32_t>::max()) {
 	std::map<bfs::path, bool> files;
@@ -132,7 +132,7 @@ inline std::map<bfs::path, bool> listAllFiles(const std::string & dirName,
  * @param levels The maximum number of levels to search (1 being the first directory)
  * @return A map of boost::filesystem paths with the value being a bool with true indicating it's a directory
  */
-inline std::map<bfs::path, bool> listAllFiles(const std::string & dirName,
+inline std::map<bfs::path, bool> listAllFiles(const bfs::path & dirName,
 		bool recursive, const std::vector<std::regex>& contains, uint32_t levels =
 				std::numeric_limits<uint32_t>::max()) {
 	std::map<bfs::path, bool> files;
@@ -158,7 +158,7 @@ inline std::map<bfs::path, bool> listAllFiles(const std::string & dirName,
  * @param levels The maximum number of levels to search (1 being the first directory)
  * @return A map of boost::filesystem paths with the value being a bool with true indicating it's a directory
  */
-inline std::map<bfs::path, bool> listAllFiles(const std::string & dirName,
+inline std::map<bfs::path, bool> listAllFiles(const bfs::path & dirName,
 		bool recursive, const std::vector<std::regex>& contains,
 		const std::vector<std::regex>& excludes, uint32_t levels =
 				std::numeric_limits<uint32_t>::max()) {
@@ -239,7 +239,7 @@ inline void openTextFile(std::ofstream& file, std::string filename,
  * @param dirName name of directory to remove
  * @return whether or not the removal of the directry was successful
  */
-inline bool rmDirForce(const std::string & dirName) {
+inline bool rmDirForce(const bfs::path & dirName) {
 	if (bfs::is_directory(dirName)) {
 		auto files = filesInFolder(dirName);
 		for (const auto & f : files) {
@@ -259,7 +259,7 @@ public:
 	 *
 	 * @param dirName The directory to construct
 	 */
-	explicit MkdirPar(const std::string & dirName) :
+	explicit MkdirPar(const bfs::path & dirName) :
 			dirName_(dirName) {
 	}
 	/**@brief Constructor with directory to make and whether to overwrite it if it exists
@@ -267,7 +267,7 @@ public:
 	 * @param dirName The directory to construct
 	 * @param overWriteDir To overwrite the directory
 	 */
-	explicit MkdirPar(const std::string & dirName, bool overWriteDir) :
+	explicit MkdirPar(const bfs::path & dirName, bool overWriteDir) :
 			dirName_(dirName), overWriteDir_(overWriteDir) {
 	}
 
@@ -277,11 +277,11 @@ public:
 	 * @param overWriteDir To overwrite the directory
 	 * @param perms The permissions to give to the directory
 	 */
-	explicit MkdirPar(const std::string & dirName, bool overWriteDir, mode_t perms) :
+	explicit MkdirPar(const bfs::path & dirName, bool overWriteDir, mode_t perms) :
 			dirName_(dirName), overWriteDir_(overWriteDir), perms_(perms) {
 	}
 
-	std::string dirName_; /**< the directory to make*/
+	bfs::path dirName_; /**< the directory to make*/
 	bool overWriteDir_ = false; /**< whether or not to overwrite directory */
 	mode_t perms_ = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH; /**< the permissions to set on directory*/
 };
@@ -327,10 +327,10 @@ inline int32_t makeDir(const MkdirPar & pars) {
  * @param overWrite Whether to overwrite the directory if it already exists
  * @return The name of the created directory
  */
-inline std::string makeDir(const std::string & parentDirectory,
+inline bfs::path makeDir(const bfs::path & parentDirectory,
 		const MkdirPar & newDirectory) {
-	std::string ret = bib::files::join(parentDirectory,
-			replaceString(newDirectory.dirName_, "TODAY", getCurrentDate()) + "/");
+	bfs::path ret = bib::files::make_path(parentDirectory,
+			replaceString(newDirectory.dirName_.string(), "TODAY", getCurrentDate()) + "/");
 	MkdirPar params = newDirectory;
 	params.dirName_ = ret;
 	makeDir(params);
@@ -345,9 +345,9 @@ inline std::string makeDir(const std::string & parentDirectory,
  * @return The names of the created directories
  */
 
-inline std::vector<std::string> makeDir(std::string parentDirectory,
+inline std::vector<bfs::path> makeDir(std::string parentDirectory,
 		std::vector<MkdirPar> newDirectories) {
-	std::vector<std::string> ret;
+	std::vector<bfs::path> ret;
 	for (const auto & d : newDirectories) {
 		ret.emplace_back(makeDir(parentDirectory, d));
 	}
@@ -361,7 +361,7 @@ inline std::vector<std::string> makeDir(std::string parentDirectory,
  * @param pars a bib::files::MkdirPar that will have directory name, whether to overwrite, and permissions
  */
 inline void makeDirP(const MkdirPar & newDirectory) {
-	auto toks = tokenizeString(newDirectory.dirName_, "/");
+	auto toks = tokenizeString(newDirectory.dirName_.string(), "/");
 	std::string growingDir = "";
 	for (const auto & tok : toks) {
 		growingDir += tok + "/";
@@ -379,10 +379,10 @@ inline void makeDirP(const MkdirPar & newDirectory) {
  * @param newDirectory The new directory to make in parentDirectory
  * @return The name of the created directory or the name of the already created directory
  */
-inline std::string makeDirP(const std::string &parentDirectory,
+inline bfs::path makeDirP(const bfs::path &parentDirectory,
 		const MkdirPar & newDirectory) {
-	std::string ret = bib::files::join(parentDirectory,
-			replaceString(newDirectory.dirName_, "TODAY", getCurrentDate()) + "/");
+	bfs::path ret = bib::files::make_path(parentDirectory,
+			replaceString(newDirectory.dirName_.string(), "TODAY", getCurrentDate()) + "/");
 	MkdirPar params = newDirectory;
 	params.dirName_ = ret;
 	makeDirP(params);
@@ -394,13 +394,21 @@ inline std::string makeDirP(const std::string &parentDirectory,
  *
  * @param dir the directory to search
  * @param ext the extension to check for
+ * @param recursive whether to search in sub directories as well
  * @return a vector of paths to files in the directory with this extension
  */
 inline std::vector<bfs::path> gatherFiles(const bfs::path & dir,
-		const std::string & ext) {
-	auto files = listAllFiles(dir.string(), true,
-			{ std::regex {".*" + ext + "$" } });
-	return getVecOfMapKeys(files);
+		const std::string & ext, bool recursive = false) {
+	auto files = listAllFiles(dir.string(), recursive,
+			{ std::regex { ".*" + ext + "$" } });
+	std::vector<bfs::path> ret;
+	for (const auto & f : files) {
+		//add only files
+		if (!f.second) {
+			ret.emplace_back(f.first);
+		}
+	}
+	return ret;
 }
 
 

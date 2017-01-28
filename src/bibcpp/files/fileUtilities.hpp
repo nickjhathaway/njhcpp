@@ -24,6 +24,18 @@ inline sch::time_point<sch::system_clock> last_write_time(
 	return sch::system_clock::from_time_t(bfs::last_write_time(fnp));
 }
 
+/**@brief A test to see which file was modified last, will return true if file2 was modified last
+ *
+ * @param file1 The first file
+ * @param file2 The second file
+ * @return true if file2 was modified last
+ */
+inline bool firstFileIsOlder(
+		const bfs::path & file1,
+		const bfs::path & file2) {
+	return bib::files::last_write_time(file1) < bib::files::last_write_time(file2);
+}
+
 
 /**@brief A check that will throw if a file doesn't exist
  *
