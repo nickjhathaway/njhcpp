@@ -7,7 +7,7 @@
  */
 
 
-#include <time.h> //time_t
+#include <ctime> //time_t
 #include <chrono>
 
 #include "bibcpp/common.h" //to_string
@@ -18,7 +18,7 @@
 
 
 namespace bib{
-/**@brief get the current date formated as year.month.day.hours.minutes
+/**@brief get the current date formated as year-month-day_hours.minutes, a little more file name friendly than the full version below
  *
  * @return A string of the current date formated
  */
@@ -32,6 +32,21 @@ inline std::string getCurrentDate() {
              << leftPadNumStr(now->tm_min);
   return timeStream.str();
 }
+
+
+/**@brief get the current date formated as year-month-day_hours:minutes:seconds
+ *
+ * @return A string of the current date formated
+ */
+inline std::string getCurrentDateFull() {
+	std::time_t now_c = std::chrono::system_clock::to_time_t(
+			std::chrono::system_clock::now());
+	std::stringstream ss;
+	ss << std::put_time(std::localtime(&now_c), "%F_%T");
+	return ss.str();
+}
+
+
 
 /**@brief convert string in seconds to a formated time
  *
