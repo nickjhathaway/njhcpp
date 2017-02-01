@@ -8,7 +8,7 @@
 
 
 #include "bibcpp/utils/stringUtils.hpp"
-#include "bibcpp/utils/time/timeUtils.hpp"
+#include "bibcpp/utils/time.h"
 #include "bibcpp/system/CmdPool.hpp"
 #include "bibcpp/system/RunOutput.hpp"
 #include <pstreams/pstream.h>
