@@ -183,6 +183,26 @@ inline bool stdinTerminal(){
 	return isatty(STDIN_FILENO);
 }
 
+
+inline bool requireExternalProgramThrow(const std::string & program) {
+	auto hasProgram = bib::sys::hasSysCommand(program);
+	if (!hasProgram) {
+		std::stringstream ss;
+		if (stdoutTerminal()) {
+			ss << bib::bashCT::boldBlack(program)
+					<< bib::bashCT::boldRed(
+							" is not in path or may not be executable, cannot be used")
+					<< std::endl;
+		} else {
+			ss << program
+					<< " is not in path or may not be executable, cannot be used"
+					<< std::endl;
+		}
+		throw std::runtime_error { ss.str() };
+	}
+	return hasProgram;
+}
+
 } // namespace sys
 } // namespace bib
 

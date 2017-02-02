@@ -11,7 +11,7 @@
 #include <boost/filesystem.hpp>
 #include "bibcpp/utils/stringUtils.hpp" //appendAsNeededRet()
 #include "bibcpp/files/fileUtilities.hpp"
-
+#include <sys/stat.h>
 
 namespace estd {
 template <>
@@ -234,6 +234,46 @@ inline bfs::path nameAppend(const bfs::path & fnp, const std::string & app){
 inline bfs::path prependFilename(const bfs::path & fnp, const std::string & pre){
 	return bib::files::make_path(fnp.parent_path(), pre + fnp.filename().string());
 }
+
+/**@brief check for the existence of a file and throw an exception if it doesn't exits
+ *
+ * @param fnp the file to check for
+ * @param funcName the name of the function that the check is done from
+ */
+inline void checkExistenceThrow(const bfs::path & fnp, const std::string & funcName) {
+	if (!bfs::exists(fnp)) {
+		std::stringstream ss;
+		ss << "Error in : " << funcName << std::endl;
+		ss << fnp << " needs to exist" << std::endl;
+		throw std::runtime_error { ss.str() };
+	}
+}
+/**@brief check for the existence of a file and throw an exception if it doesn't exits
+ *
+ * @param fnp the file to check for
+ *
+ */
+inline void checkExistenceThrow(const bfs::path & fnp) {
+	if (!bfs::exists(fnp)) {
+		std::stringstream ss;
+		ss << "Error, " << fnp << " needs to exist" << std::endl;
+		throw std::runtime_error { ss.str() };
+	}
+}
+
+/**@brief make a file executable plus read and write for user and group and read for everyone, will throw if fnp doesn't exist
+ *
+ * @param fnp the path the file
+ */
+inline void chmod775(const bfs::path & fnp){
+	checkExistenceThrow(fnp, __PRETTY_FUNCTION__);
+	//make file executable
+	chmod(fnp.string().c_str(),
+			S_IWUSR | S_IRUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IEXEC | S_IXGRP);
+
+}
+
+
 
 }  // namespace files
 }  // namespace bib

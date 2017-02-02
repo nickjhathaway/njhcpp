@@ -122,7 +122,7 @@ public:
 		rLog_.setFilenameAndOpen(
 				dirName + "runLog_"
 						+ replaceString(replaceString(commands_.getProgramName(), "./", ""),
-								" ", "-") + ".txt", timer_.start_);
+								" ", "-")+ "_" + getCurrentDate() + ".txt", timer_.start_);
 		rLog_.startRunLog(commands_);
 	}
 
