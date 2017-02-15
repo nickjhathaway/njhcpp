@@ -51,6 +51,27 @@ public:
 		}
 		return false;
 	}
+
+	/**@brief Get a chunk of values, less locking
+	 *
+	 * @param vals the vector to fill with several values from the queue
+	 * @param num the number of vals to get
+	 * @return whether any values were gotten
+	 */
+	bool getVals(std::vector<T> & vals, uint32_t num) {
+		vals.clear();
+		std::lock_guard<std::mutex> lock(mut_);
+		if (!vals_.empty()) {
+			uint32_t count = 0;
+			while(!vals_.empty() && count < num){
+				vals.emplace_back(vals_.front());
+				vals_.pop();
+				++count;
+			}
+			return true;
+		}
+		return false;
+	}
 };
 
 }  // namespace concurrent
