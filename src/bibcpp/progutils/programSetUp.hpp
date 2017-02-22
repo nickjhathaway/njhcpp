@@ -120,9 +120,9 @@ public:
 	 */
 	void startARunLog(const std::string &dirName) {
 		rLog_.setFilenameAndOpen(
-				dirName + "runLog_"
+				files::make_path(dirName,"runLog_"
 						+ replaceString(replaceString(commands_.getProgramName(), "./", ""),
-								" ", "-")+ "_" + getCurrentDate() + ".txt", timer_.start_);
+								" ", "-")+ "_" + getCurrentDate() + ".txt").string(), timer_.start_);
 		rLog_.startRunLog(commands_);
 	}
 
