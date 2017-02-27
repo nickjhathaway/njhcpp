@@ -199,6 +199,22 @@ public:
 		}
 		return sum/lapTimes_.size();
 	}
+
+	/**@brief get json of lap times
+	 *
+	 * @return a Json::Value with lap times
+	 */
+	Json::Value toJson() const {
+		Json::Value ret;
+		auto & laps = ret["laps"];
+		for (const auto & lt : lapTimes_) {
+			laps[lt.first] = getTimeFormat(lt.second, true, 6);
+		}
+		std::time_t start_c = std::chrono::system_clock::to_time_t(
+					std::chrono::system_clock::now());
+		ret["start"] = bib::json::toJson(estd::to_string(std::put_time(std::localtime(&start_c), "%F_%T")));
+		return ret;
+	}
 };
 
 /**@brief stopWatch class that prints time information on destruction
