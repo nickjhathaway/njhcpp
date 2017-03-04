@@ -99,5 +99,9 @@ inline std::unordered_map <uint32_t, color> createAnsiColorCodeToColor() {
 }
 
 
+static const std::vector<std::string> colorBindPalete{"#006E82","#AA0A3C","#8214A0","#FA7850","#005AC8","#0AB45A","#00A0FA","#F0F032","#FA78FA","#A0FA82","#14D2DC","#FAE6BE"};
+
+
+
 } //namespace colorspace
 } //namespace bib
