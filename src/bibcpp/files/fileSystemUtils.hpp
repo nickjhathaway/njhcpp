@@ -18,6 +18,8 @@
 #include "bibcpp/files/filePathUtils.hpp" //join()
 #include "bibcpp/files/fileUtilities.hpp"
 
+#include "bibcpp/files/fileObjects/gzstream.hpp" //ogzstream
+
 namespace bib {
 namespace files {
 
@@ -411,6 +413,31 @@ inline std::vector<bfs::path> gatherFiles(const bfs::path & dir,
 }
 
 
+/**@brief Open a gz file
+ *
+ * @param file a reference to a ogzstream to write to
+ * @param filename the file to write to
+ * @param overWrite whether to overwrite the file if it already exists
+ */
+inline void openGzFile(GZSTREAM::ogzstream& file,
+		const bfs::path & filename,
+		bool overWrite) {
+	if (bfs::exists(filename) && !overWrite) {
+		std::stringstream ss;
+		ss << filename << " already exists";
+		throw std::runtime_error { ss.str() };
+	} else {
+		file.open(filename);
+		if (!file) {
+			std::stringstream ss;
+			ss << "Error in opening " << filename;
+			throw std::runtime_error { ss.str() };
+		} else {
+			chmod(filename.c_str(),
+			S_IWUSR | S_IRUSR | S_IRGRP | S_IWGRP | S_IROTH);
+		}
+	}
+}
 
 
 
