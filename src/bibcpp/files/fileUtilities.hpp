@@ -90,6 +90,22 @@ inline void preallocate(bfs::path fnp, const uint64_t numBytes) {
 	out.close();
 }
 
+/**@brief is to see if a file is empty, will throw if file is empty
+ *
+ * @param fnp the file path
+ * @return true if file is empty
+ */
+inline bool isFileEmpty(const bfs::path & fnp){
+	if(!bfs::exists(fnp)){
+		std::stringstream ss;
+		ss << __PRETTY_FUNCTION__ << ", error file: " << fnp << " doesn't exist" << std::endl;
+	}
+	if (0 == bfs::file_size(fnp)) {
+		return true;
+	}
+	return false;
+}
+
 } // namespace files
 } // namespace bib
 

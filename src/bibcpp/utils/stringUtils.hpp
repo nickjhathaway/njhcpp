@@ -565,4 +565,40 @@ T && removeAllWhitespace(T && s) {
 	return std::forward<T>(s);
 }
 
+/**@brief backslash escape special characters \ /:*?"<>|;[]
+ *
+ * @param input the input with special characters to be replaced
+ */
+inline void escapeSpecialChars(std::string & input) {
+	std::regex specialCharsPat {
+			R"(([\ /:*?"<>|;\[\]]))"};
+	std::string format{"\\$1"};
+	input = std::regex_replace(input, specialCharsPat, format);
+}
+
+/**@brief backslash escape special characters \ /:*?"<>|;[]
+ *
+ * @param input the input with special characters to be replaced
+ * @return the input string but with the special character replaced
+ */
+inline std::string escapeSpecialCharsRet(const std::string & input) {
+	std::regex specialCharsPat {
+		R"(([\ /:*?"<>|;\[\]]))"};
+	std::string format{"\\$1"};
+	return std::regex_replace(input, specialCharsPat, format);
+}
+
+/**@brief test if a string contains special characters \ /:*?"<>|;[]
+ *
+ * @param input
+ * @return
+ */
+inline bool containsSpecialChars(const std::string & input){
+	std::regex specialCharsPat {
+		R"(([\ /:*?"<>|;\[\]]))"};
+	std::smatch match;
+	return std::regex_search(input, match, specialCharsPat);
+}
+
+
 } // namesapce bib
