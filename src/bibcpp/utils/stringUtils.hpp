@@ -310,6 +310,10 @@ inline void strVecToLower(std::vector<std::string>& vec) {
 inline std::string replaceString(std::string theString,
                                  const std::string& toBeReplaced,
                                  const std::string& replacement) {
+	if("" == toBeReplaced){
+		//maybe throw? warn?
+		return theString;
+	}
   size_t spaceSize = toBeReplaced.size();
   size_t currPos = theString.find(toBeReplaced);
   while (currPos != std::string::npos) {
