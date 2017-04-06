@@ -224,14 +224,23 @@ inline bfs::path nameAppend(const bfs::path & fnp, const std::string & app){
 	return bfs::path(fnp.string() + app);
 }
 
+/**@brief To append to the end of the file path name but before the file extension
+ *
+ * @param fnp The file name path to append to
+ * @param app what to append
+ * @return a boost::filesystem::path with the fnp append with app before the extension on fnp
+ */
+inline bfs::path nameAppendBeforeExt(const bfs::path & fnp, const std::string & app){
+	return bfs::path(bfs::path(fnp).replace_extension("").string() + app + fnp.extension().string());
+}
 
-/**@brief To append to the filename taking into account if it's a full path, so prepend just the file name not the whole file
+/**@brief To append to the filename taking into account if it's a full path, so prepend just the file basename not the whole file
  *
  * @param fnp The file name path to prepend to
  * @param app what to prepend
  * @return a boost::filesystem::path with just the last filename in the filename path prepended with pre
  */
-inline bfs::path prependFilename(const bfs::path & fnp, const std::string & pre){
+inline bfs::path prependFileBasename(const bfs::path & fnp, const std::string & pre){
 	return bib::files::make_path(fnp.parent_path(), pre + fnp.filename().string());
 }
 
