@@ -70,6 +70,24 @@ bool in(const T& t, const std::vector<T>& c) {
   return contains(c, t);
 }
 
+
+/**@brief Convert a vector into another vector of same length via converter function
+ *
+ * @param input the input vector to convert
+ * @param func the function used to convert
+ * @return the converted vector
+ */
+template<typename IN, typename OUT>
+std::vector<OUT> convert(const std::vector<IN> & input, std::function<OUT(const IN &)> func){
+	std::vector<OUT> ret;
+	ret.reserve(input.size());
+	for(const auto & inputElement : input){
+		ret.emplace_back(func(inputElement));
+	}
+	return ret;
+}
+
+
 /**@brief Get a range of numbers of num long in [start,stop]
  *
  * @param start The start of the range
