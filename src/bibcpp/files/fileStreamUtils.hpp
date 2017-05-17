@@ -169,6 +169,27 @@ inline std::string getLastLine(const bfs::path & filename) {
 	return ret;
 }
 
+/**@brief Get all the lines in a file into a vector of strings
+ *
+ * @param fnp the file to read
+ * @return a vector of all lines
+ */
+inline std::vector<std::string> getAllLines(const bfs::path & fnp){
+	std::vector<std::string> ret;
+  std::string currentLine;
+  std::ifstream textFile(fnp.c_str());
+  if (!bfs::exists(fnp)){
+  	throw std::runtime_error{"Error " + fnp.string() + " doesn't exist"};
+  }
+  if (!textFile) {
+  	throw std::runtime_error{"Error in opening " + fnp.string()};
+  }
+  while(crossPlatGetline(textFile, currentLine)){
+  	ret.emplace_back(currentLine);
+  }
+  return ret;
+}
+
 /**@brief Get the next line ending with common line terminators without changing the stream's location or state
  *
  * @param is The stream to read from
