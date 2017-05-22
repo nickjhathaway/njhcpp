@@ -190,6 +190,29 @@ inline std::vector<std::string> getAllLines(const bfs::path & fnp){
   return ret;
 }
 
+
+/**@brief Get files by pattern in the current directory or but reading a file or input
+ *
+ * @param patReg regex pattern
+ * @param bams either a file name where each line is a file or is comma separated filenames
+ * @return a vector of paths
+ */
+inline std::vector<bfs::path> gatherFilesByPatOrNames(const std::regex & patReg,
+		const std::string & fileNames = "") {
+	std::vector<bfs::path> ret;
+	if ("" != fileNames) {
+		if (bfs::basename(fileNames).length() < 255 && bfs::exists(fileNames)) {
+			ret = vecStrToPaths(getAllLines(fileNames));
+		} else {
+			ret = vecStrToPaths(tokenizeString(fileNames, ","));
+		}
+	} else {
+		auto inFiles = listAllFiles("./", false, { patReg });
+		ret = getVecOfMapKeys(inFiles);
+	}
+	return ret;
+}
+
 /**@brief Get the next line ending with common line terminators without changing the stream's location or state
  *
  * @param is The stream to read from

@@ -11,6 +11,7 @@
 #include <boost/filesystem.hpp>
 #include "bibcpp/utils/stringUtils.hpp" //appendAsNeededRet()
 #include "bibcpp/files/fileUtilities.hpp"
+#include "bibcpp/utils/utils.hpp"
 #include <sys/stat.h>
 
 namespace estd {
@@ -29,6 +30,21 @@ inline std::string to_string(const Json::Value & path) {
 namespace bib {
 namespace files {
 namespace bfs = boost::filesystem;
+
+
+/**@brief convert a vector of strings to a vector of boost::filesystem::path
+ *
+ *
+ * @param strs a vector of strings
+ * @return a vector of boost::filesystem::path
+ */
+inline std::vector<bfs::path> vecStrToPaths(const std::vector<std::string> & strs){
+	return convert<std::string, bfs::path>(strs,
+						[](const std::string & str) {return bfs::path(str);});
+}
+
+
+
 
 template<typename T>
 void addAsPathToPath(std::string& path, const T& e) {
