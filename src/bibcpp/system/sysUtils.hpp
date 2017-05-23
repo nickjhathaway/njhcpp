@@ -184,6 +184,11 @@ inline bool stdinTerminal(){
 }
 
 
+/**@brief Throw if an external program isn't available
+ *
+ * @param program the program to check for
+ * @return true if has program ... which i guess is kind of pointless since it would have thrown anyways
+ */
 inline bool requireExternalProgramThrow(const std::string & program) {
 	auto hasProgram = bib::sys::hasSysCommand(program);
 	if (!hasProgram) {
@@ -201,6 +206,39 @@ inline bool requireExternalProgramThrow(const std::string & program) {
 		throw std::runtime_error { ss.str() };
 	}
 	return hasProgram;
+}
+
+
+/**@brief Throw if any of the external programs aren't available
+ *
+ * @param programs the programs to check for
+ * @return true if has program ... which i guess is kind of pointless since it would have thrown anyways
+ */
+inline bool requireExternalProgramsThrow(
+		const std::vector<std::string> & programs) {
+	bool failed = false;
+	std::stringstream ss;
+	for (const auto & program : programs) {
+		auto hasProgram = bib::sys::hasSysCommand(program);
+		if (!hasProgram) {
+			failed = true;
+			if (stdoutTerminal()) {
+				ss << bib::bashCT::boldBlack(program)
+						<< bib::bashCT::boldRed(
+								" is not in path or may not be executable, cannot be used")
+						<< std::endl;
+			} else {
+				ss << program
+						<< " is not in path or may not be executable, cannot be used"
+						<< std::endl;
+			}
+		}
+	}
+
+	if (failed) {
+		throw std::runtime_error { ss.str() };
+	}
+	return !failed;
 }
 
 } // namespace sys
