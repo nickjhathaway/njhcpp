@@ -281,6 +281,95 @@ inline uint32_t countLines(const bfs::path & filename) {
 	return ret;
 }
 
+/**@brief Check to see if a mtraix file has rowname
+ *
+ * @param fnp the file to check
+ * @param delim the delimiter of the file
+ * @param maxCheck the max number of lines to check, to cut down on time to not check all the whole file
+ * @return ture if file might have rownames
+ */
+inline bool hasPossibleRowNames(const bfs::path & fnp, const std::string & delim =
+		"whitespace", uint32_t maxCheck = 100) {
+	std::ifstream inFile(fnp.string());
+	if (!inFile) {
+		std::stringstream ss;
+		ss << __PRETTY_FUNCTION__ << ": error in opening " << fnp << "\n";
+		throw std::runtime_error { ss.str() };
+	}
+	auto firstLine = tokenizeString(bib::files::getFirstLine(fnp), delim);
+	std::vector<std::string> fistLine;
+	std::string line = "";
+	uint32_t lineCount = 0;
+
+	std::vector<uint32_t> columnLengths;
+	while(bib::files::crossPlatGetline(inFile, line)){
+		if(firstLine.empty()){
+			firstLine = tokenizeString(line, delim);
+		}else{
+			auto nextLine = tokenizeString(line, delim);
+			columnLengths.push_back(nextLine.size());
+		}
+		++lineCount;
+		if(lineCount> maxCheck){
+			break;
+		}
+	}
+	bool hasRowNames = false;
+	if(!columnLengths.empty()){
+		//check to see if all the lines are the same length
+		for(const auto & line : columnLengths){
+			if (line != columnLengths.front()) {
+				std::stringstream ss;
+				ss << __PRETTY_FUNCTION__ << ": error in " << fnp
+						<< " found different column lengths in input data in the first "
+						<< (columnLengths.size() < maxCheck ? columnLengths.size() : maxCheck) << " lines" << "\n";
+				std::map<uint32_t, uint32_t> counts;
+				for(const auto & length : columnLengths){
+					++counts[length];
+				}
+				for(const auto & count : counts){
+					ss << count.first << "\t" << count.second << "\n";
+				}
+				throw std::runtime_error { ss.str() };
+			}
+		}
+		if(columnLengths.front() + 1 == firstLine.size()){
+			hasRowNames = true;
+		}
+	}
+	return hasRowNames;
+}
+
+inline uint32_t getExpectedNumCol(const bfs::path & fnp,
+		const std::string & delim = "whitespace",
+		uint32_t maxCheck = 100){
+	std::ifstream inFile(fnp.string());
+	if(!inFile){
+		std::stringstream ss;
+		ss << __PRETTY_FUNCTION__ << ": error in opening " << fnp << "\n";
+		throw std::runtime_error{ss.str()};
+	}
+	auto firstLine = tokenizeString(bib::files::getFirstLine(fnp), delim);
+	std::vector<std::string> fistLine;
+	std::string line = "";
+	uint32_t lineCount = 0;
+
+	std::vector<uint32_t> columnLengths;
+	while(bib::files::crossPlatGetline(inFile, line)){
+		if(firstLine.empty()){
+			firstLine = tokenizeString(line, delim);
+		}else{
+			auto nextLine = tokenizeString(line, delim);
+			columnLengths.push_back(nextLine.size());
+		}
+		++lineCount;
+		if(lineCount> maxCheck){
+			break;
+		}
+	}
+	return columnLengths.front();
+}
+
 
 }  //namespace files
 }  //namespace bib
