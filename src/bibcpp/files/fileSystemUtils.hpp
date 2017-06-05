@@ -220,6 +220,47 @@ inline void openTextFile(std::ofstream& file, const bfs::path & filename,
 	}
 }
 
+/**@brief open a file in binary mode
+
+ * @param file the ofstream object to open
+ * @param filename The name of the file to open
+ * @param overWrite Whether the file should be overwritten if it already exists
+ * @param append Whether the file should be appended if it already exists
+ * @param exitOnFailure whether program should exit on failure to open the file
+ * @todo probably should just remove exitOnFailure and throw an exception instead
+ */
+inline void openBinaryFile(std::ofstream& file, const bfs::path & filename,
+		bool overWrite, bool append, bool exitOnFailure) {
+
+	if (bfs::exists(filename) && !overWrite) {
+		if (append) {
+			file.open(filename.string().data(), std::ios::binary | std::ios::app);
+		} else {
+			std::stringstream ss;
+			ss << filename << " already exists";
+			if (exitOnFailure) {
+				throw std::runtime_error { ss.str() };
+			} else {
+				std::cerr << ss.str() << std::endl;
+			}
+		}
+	} else {
+		file.open(filename.string().data(), std::ios::binary);
+		if (!file) {
+			std::stringstream ss;
+			ss << "Error in opening " << filename;
+			if (exitOnFailure) {
+				throw std::runtime_error { ss.str() };
+			} else {
+				std::cerr << ss.str() << std::endl;
+			}
+		} else {
+			chmod(filename.c_str(),
+			S_IWUSR | S_IRUSR | S_IRGRP | S_IWGRP | S_IROTH);
+		}
+	}
+}
+
 /**@brief Open a ofstream with filename and checking for file existence
  *
  * @param file the ofstream object to open
