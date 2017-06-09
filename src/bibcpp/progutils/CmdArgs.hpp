@@ -48,12 +48,12 @@ public:
 	 * @return Returns true if T is of type arithmetic
 	 */
 	template<typename T>
-	constexpr bool isSupportedType(){
+	static constexpr bool isSupportedType(){
 		return is_cmdArg_supported_type<T>::value;
 	}
 
 	template<typename T>
-	void convertArg(const std::string & arg, T & outVal) {
+	static void convertArg(const std::string & arg, T & outVal) {
 		static_assert(isSupportedType<T>(), "Type not supported in bib::progutils::CmdArgs::convertArg");
 	}
 
@@ -645,6 +645,16 @@ inline void CmdArgs::convertArg(const std::string& option,
 		std::string & outVal) {
 	outVal = option;
 }
+
+
+// char
+template<>
+inline void CmdArgs::convertArg(const std::string& option,
+		char & outVal) {
+	outVal = option.empty() ? ' ' : option.front();
+}
+
+
 // bool
 template<>
 inline void CmdArgs::convertArg(const std::string& option, bool & outVal) {
