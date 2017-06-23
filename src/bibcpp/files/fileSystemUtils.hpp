@@ -326,6 +326,20 @@ public:
 	bfs::path dirName_; /**< the directory to make*/
 	bool overWriteDir_ = false; /**< whether or not to overwrite directory */
 	mode_t perms_ = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH; /**< the permissions to set on directory*/
+
+	/**@brief Convert info into json
+	 *
+	 * @return a json object
+	 */
+	Json::Value toJson() const{
+		Json::Value ret;
+		ret["class"] = getTypeName(*this);
+		ret["dirName_"] = json::toJson(dirName_);
+		ret["overWriteDir_"] = json::toJson(overWriteDir_);
+		ret["perms_"] = json::toJson(perms_);
+		return ret;
+	}
+
 };
 
 
