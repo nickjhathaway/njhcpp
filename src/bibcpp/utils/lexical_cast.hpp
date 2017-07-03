@@ -22,6 +22,9 @@ inline std::string prettierName(const std::string & prettyName){
 			" >", ">");
 }
 
+
+
+
 /*Lexical cast adapted from zi_lib lexical cast implementation but adapted for
  * conversion of strings in scientific to arithmetic type -nick
  *
@@ -109,6 +112,8 @@ struct lexical_caster<std::string, Source> {
 };
 
 
+
+
 /**@brief The actual function to call to cast
  *
  * @param source What's to be cast
@@ -134,5 +139,56 @@ OutCon lexical_cast_con(const SourceCon & con){
 		return lexical_cast<typename OutCon::value_type,typename SourceCon::value_type>(e);});
 	return ret;
 }
+
+namespace StrToNumConverter {
+
+	template<typename T>
+	T stoToNum(const std::string & str){
+		return bib::lexical_cast<T>(str);
+	}
+
+	template<unsigned short>
+	unsigned short stoToNum(const std::string & str){
+		return estd::stous(str);
+	}
+
+	template<unsigned>
+	unsigned stoToNum(const std::string & str){
+		return estd::stou(str);
+	}
+
+	template<unsigned long>
+	unsigned long stoToNum(const std::string & str){
+		return std::stoul(str);
+	}
+
+	template<unsigned long long>
+	unsigned long stoToNum(const std::string & str){
+		return std::stoull(str);
+	}
+
+	template<short>
+	short stoToNum(const std::string & str){
+		return estd::stos(str);
+	}
+
+	template<int>
+	int stoToNum(const std::string & str){
+		return std::stoi(str);
+	}
+
+	template<long int>
+	long int stoToNum(const std::string & str){
+		return std::stol(str);
+	}
+
+	template<long long int>
+	long long int stoToNum(const std::string & str){
+		return std::stoll(str);
+	}
+
+}  // namespace StrToNumConverter
+
+
 
 }  // namespace bib
