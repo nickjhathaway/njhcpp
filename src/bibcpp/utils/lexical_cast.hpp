@@ -142,6 +142,11 @@ OutCon lexical_cast_con(const SourceCon & con){
 
 namespace StrToNumConverter {
 
+/**@brief Function for converting a string to a number, which is just bib::lexical_cast by default and then several specific int conversions are defined for faster converting
+ *
+ * @param str the string to convert
+ * @return the string convert to a number
+ */
 	template<typename T>
 	T stoToNum(const std::string & str){
 		return bib::lexical_cast<T>(str);

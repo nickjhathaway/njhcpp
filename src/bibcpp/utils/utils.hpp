@@ -466,5 +466,28 @@ inline int32_t needleScore(const std::string& objA, const std::string& objB) {
   return score;
 }
 
+/**@brief Convert a oct number to the decimal representation string
+ *
+ * @param octInt the oct int
+ * @return decimal format int string
+ */
+inline std::string octToDecStr(int32_t octInt) {
+  std::stringstream stream;
+  stream << std::oct << octInt;
+  std::string ans;
+  stream >> ans;
+  return ans;
+}
+
+/**@brief Convert a oct number to the decimal representation
+ *
+ * @param octInt the oct int
+ * @return decimal format int
+ */
+inline int32_t octToDec(int32_t octInt) {
+	 return std::stoi(octToDecStr(octInt));
+}
+
+
 
 } // namespace bib
