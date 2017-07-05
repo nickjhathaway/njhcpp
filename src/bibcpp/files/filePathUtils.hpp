@@ -268,8 +268,8 @@ inline bfs::path prependFileBasename(const bfs::path & fnp, const std::string & 
 inline void checkExistenceThrow(const bfs::path & fnp, const std::string & funcName) {
 	if (!bfs::exists(fnp)) {
 		std::stringstream ss;
-		ss << "Error in : " << funcName << std::endl;
-		ss << fnp << " needs to exist" << std::endl;
+		ss << "Error in : " << funcName << "\n";
+		ss << fnp << " needs to exist" << "\n";
 		throw std::runtime_error { ss.str() };
 	}
 }
@@ -281,7 +281,7 @@ inline void checkExistenceThrow(const bfs::path & fnp, const std::string & funcN
 inline void checkExistenceThrow(const bfs::path & fnp) {
 	if (!bfs::exists(fnp)) {
 		std::stringstream ss;
-		ss << "Error, " << fnp << " needs to exist" << std::endl;
+		ss << "Error, " << fnp << " needs to exist" << "\n";
 		throw std::runtime_error { ss.str() };
 	}
 }
@@ -293,12 +293,22 @@ inline void checkExistenceThrow(const bfs::path & fnp) {
 inline void chmod775(const bfs::path & fnp){
 	checkExistenceThrow(fnp, __PRETTY_FUNCTION__);
 	//make file executable
-	chmod(fnp.string().c_str(),
-			S_IWUSR | S_IRUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IEXEC | S_IXGRP);
-
+	auto stats = bfs::status(fnp);
+	bfs::permissions(fnp, stats.permissions() | bfs::owner_exe | bfs::group_exe | bfs::others_exe);
 }
 
-
+/**@brief A function that behaves a bit differently than bfs::replace_extension which always puts a period infront of new extention which might not be desireable
+ *
+ * @param fnp the file name path to change the extension on
+ * @param newExt the new extension, should contain . in it if it needs it
+ * @return the new path with the old extension replaced
+ */
+inline bfs::path replaceExtension(const bfs::path & fnp, const std::string & newExt){
+	if(std::string::npos == fnp.filename().string().find(".")){
+		return bfs::path(fnp.string() + newExt);
+	}
+	return bfs::path(fnp.string().substr(0, fnp.string().rfind('.')) + newExt);
+}
 
 }  // namespace files
 }  // namespace bib
