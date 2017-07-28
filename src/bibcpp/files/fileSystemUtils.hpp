@@ -88,6 +88,19 @@ inline void listAllFilesHelper(const bfs::path & dirName, bool recursive,
 	if (bfs::exists(dirName) && bfs::is_directory(dirName)) {
 		for (const auto & dir_iter : dir(dirName)) {
 			bfs::path current = dir_iter.path();
+			//first check to see if this might be a symlink
+			//to another file that's the same to avoid adding the same exact file twice
+			//might want to warn or something here about this
+			bool alreadyHave = false;
+			for(const auto & f : files){
+				if(bfs::canonical(f.first) == bfs::canonical(current)){
+					alreadyHave = true;
+					break;
+				}
+			}
+			if(alreadyHave){
+				continue;
+			}
 			if (bfs::is_directory(dir_iter.path())) {
 				files[bfs::canonical(current)] = true;
 				if (recursive && currentLevel <= levels) {
