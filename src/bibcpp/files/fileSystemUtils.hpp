@@ -102,13 +102,13 @@ inline void listAllFilesHelper(const bfs::path & dirName, bool recursive,
 				continue;
 			}
 			if (bfs::is_directory(dir_iter.path())) {
-				files[bfs::canonical(current)] = true;
+				files[current] = true;
 				if (recursive && currentLevel <= levels) {
 					listAllFilesHelper(current, recursive, files, currentLevel + 1,
 							levels);
 				}
 			} else {
-				files[bfs::canonical(current)] = false;
+				files[current] = false;
 			}
 		}
 	}
