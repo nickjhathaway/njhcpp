@@ -93,7 +93,9 @@ inline void listAllFilesHelper(const bfs::path & dirName, bool recursive,
 			//might want to warn or something here about this
 			bool alreadyHave = false;
 			for(const auto & f : files){
-				if(bfs::canonical(f.first) == bfs::canonical(current)){
+
+				//if(bfs::canonical(f.first) == bfs::canonical(current)){
+				if(normalize(f.first) == normalize(current)){
 					alreadyHave = true;
 					break;
 				}
