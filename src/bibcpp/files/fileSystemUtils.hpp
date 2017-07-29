@@ -77,12 +77,12 @@ inline std::vector<bfs::path> filesInFolder(bfs::path d) {
  *
  * @param dirName The name of directory to search
  * @param recursive Whether the search should be recursive
- * @param files The map container in which to store results
+ * @param files The map container in which to store results, key is full abs path, val is found path
  * @param currentLevel The current level of the search if recursive
  * @param levels The max level to search to, level 1 be just the current directory, 2 being the contents of directories of the current dir, etc.
  */
 inline void listAllFilesHelper(const bfs::path & dirName, bool recursive,
-		std::map<bfs::path, bool> & files, uint32_t currentLevel, uint32_t levels) {
+		std::map<bfs::path, bfs::path> & files, uint32_t currentLevel, uint32_t levels) {
 
 	bfs::directory_iterator end_iter;
 	if (bfs::exists(dirName) && bfs::is_directory(dirName)) {
@@ -91,29 +91,41 @@ inline void listAllFilesHelper(const bfs::path & dirName, bool recursive,
 			//first check to see if this might be a symlink
 			//to another file that's the same to avoid adding the same exact file twice
 			//might want to warn or something here about this
-			bool alreadyHave = false;
-			for(const auto & f : files){
-
-				//if(bfs::canonical(f.first) == bfs::canonical(current)){
-				if(normalize(f.first) == normalize(current)){
-					alreadyHave = true;
-					break;
-				}
-			}
-			if(alreadyHave){
-				continue;
-			}
+//			bool alreadyHave = false;
+//			for(const auto & f : files){
+//				//if(bfs::canonical(f.first) == bfs::canonical(current)){
+//				if(normalize(f.first) == normalize(current)){
+//					alreadyHave = true;
+//					break;
+//				}
+//			}
+//			if(alreadyHave){
+//				continue;
+//			}
 			if (bfs::is_directory(dir_iter.path())) {
-				files[current] = true;
+				files[normalize(current)] = current;
 				if (recursive && currentLevel <= levels) {
 					listAllFilesHelper(current, recursive, files, currentLevel + 1,
 							levels);
 				}
 			} else {
-				files[current] = false;
+				files[normalize(current)] = current;
 			}
 		}
 	}
+}
+
+/**@brief convert a map of key full abs path, val current path to current path is dir
+ *
+ * @param files the map to convert
+ * @return a map current path, val is dir
+ */
+inline std::map<bfs::path, bool> convertMapFnpFnpToFnpIsDir(const std::map<bfs::path, bfs::path> & files){
+	std::map<bfs::path, bool> ret;
+	for(const auto & f : files){
+		ret[f.second] = bfs::is_directory(f.second);
+	}
+	return ret;
 }
 
 /**@brief Function to list all the files of a directory with the option to search recursively and name filtering
@@ -127,8 +139,9 @@ inline void listAllFilesHelper(const bfs::path & dirName, bool recursive,
 inline std::map<bfs::path, bool> listAllFiles(const bfs::path & dirName,
 		bool recursive, const std::vector<std::string>& contains, uint32_t levels =
 				std::numeric_limits<uint32_t>::max()) {
-	std::map<bfs::path, bool> files;
-	listAllFilesHelper(dirName, recursive, files, 1, levels);
+	std::map<bfs::path, bfs::path> filesGathering;
+	listAllFilesHelper(dirName, recursive, filesGathering, 1, levels);
+	std::map<bfs::path, bool> files = convertMapFnpFnpToFnpIsDir(filesGathering);
 	if (!contains.empty()) {
 		std::map<bfs::path, bool> specificFiles;
 		for (const auto & f : files) {
@@ -152,8 +165,10 @@ inline std::map<bfs::path, bool> listAllFiles(const bfs::path & dirName,
 inline std::map<bfs::path, bool> listAllFiles(const bfs::path & dirName,
 		bool recursive, const std::vector<std::regex>& contains, uint32_t levels =
 				std::numeric_limits<uint32_t>::max()) {
-	std::map<bfs::path, bool> files;
-	listAllFilesHelper(dirName, recursive, files, 1, levels);
+	std::map<bfs::path, bfs::path> filesGathering;
+	listAllFilesHelper(dirName, recursive, filesGathering, 1, levels);
+	std::map<bfs::path, bool> files = convertMapFnpFnpToFnpIsDir(filesGathering);
+
 	if (!contains.empty()) {
 		std::map<bfs::path, bool> specificFiles;
 		for (const auto & f : files) {
@@ -179,8 +194,9 @@ inline std::map<bfs::path, bool> listAllFiles(const bfs::path & dirName,
 		bool recursive, const std::vector<std::regex>& contains,
 		const std::vector<std::regex>& excludes, uint32_t levels =
 				std::numeric_limits<uint32_t>::max()) {
-	std::map<bfs::path, bool> files;
-	listAllFilesHelper(dirName, recursive, files, 1, levels);
+	std::map<bfs::path, bfs::path> filesGathering;
+	listAllFilesHelper(dirName, recursive, filesGathering, 1, levels);
+	std::map<bfs::path, bool> files = convertMapFnpFnpToFnpIsDir(filesGathering);
 	if (!contains.empty() || !excludes.empty()) {
 		std::map<bfs::path, bool> specificFiles;
 		for (const auto & f : files) {
