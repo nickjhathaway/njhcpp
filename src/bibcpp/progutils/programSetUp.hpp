@@ -76,6 +76,10 @@ public:
 	 */
 	stopWatch timer_;
 
+	std::string description_;/**< A short description of the program, gets printed with --getFlags*/
+
+	std::vector<std::string> examples_;/**< A few examples of running, gets printed with --getFlags*/
+
 protected:
 
 	/**@brief A vector of strings of warnings to be printed at the end of setUp
@@ -199,6 +203,7 @@ public:
 	 * @param out The std::ostream out object to print to
 	 */
 	void printFlags(std::ostream &out) {
+
 		std::map<std::string, std::string> infoOutRequried;
 		std::map<std::string, std::string> infoOutNotRequried;
 		for (const auto & f : flags_.flags_) {
@@ -225,6 +230,10 @@ public:
 			compareColPaddings(infoOutHelp, paddings, keyFunc, valFunc);
 		}
 		const std::string middleSep = "\t";
+		out << commands_.masterProgram_ << " " << commands_.subProgramRaw_ << std::endl;
+		if("" != description_){
+			out << description_ << std::endl;
+		}
 		//assuming tab is len of 4
 		std::string requiredOptsTitle = bashCT::bold + "Required Options"
 				+ bashCT::reset;
@@ -257,6 +266,19 @@ public:
 					<< helpOptsTitle << std::endl;
 			mapOutColAdjust(infoOutHelp, out, middleSep, paddings.first,
 					paddings.second);
+		}
+		if (!examples_.empty()) {
+			out << std::string(
+					paddings.first + 2
+							- round(bashCT::getPrintLen(helpOptsTitle) / 2.0), ' ')
+			<< bashCT::boldGreen("Examples") << std::endl;
+			for (const auto & example : examples_) {
+				out
+						<< bib::replaceString(
+								bib::replaceString(example, "MASTERPROGRAM",
+										commands_.masterProgram_), "SUBPROGRAM",
+								commands_.subProgramRaw_) << std::endl;
+			}
 		}
 	}
 
