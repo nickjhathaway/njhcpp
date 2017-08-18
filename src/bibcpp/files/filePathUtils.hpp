@@ -273,6 +273,27 @@ inline void checkExistenceThrow(const bfs::path & fnp, const std::string & funcN
 		throw std::runtime_error { ss.str() };
 	}
 }
+
+/**@brief Check for the existence of several file paths, throw if any don't exist
+ *
+ * @param fnps the vector of paths to check
+ * @param funcName the function name from which the check is being done for better logging
+ */
+inline void checkExistenceThrow(const std::vector<bfs::path> & fnps, const std::string & funcName) {
+	bool fail = false;
+	std::stringstream ss;
+	ss << "Error in : " << funcName << "\n";
+	for(const auto & fnp : fnps){
+		if (!bfs::exists(fnp)) {
+			fail = true;
+			ss << fnp << " needs to exist" << "\n";
+		}
+	}
+	if(fail){
+		throw std::runtime_error { ss.str() };
+	}
+}
+
 /**@brief check for the existence of a file and throw an exception if it doesn't exits
  *
  * @param fnp the file to check for
