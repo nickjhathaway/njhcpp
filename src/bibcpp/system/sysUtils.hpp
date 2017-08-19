@@ -23,7 +23,7 @@ namespace sys{
  * @return A RunOutPut object holding status and outputs of the externally ran cmd
  * @todo add run time duration
  */
-inline RunOutput run(std::vector<std::string> cmds) {
+inline RunOutput runOld(std::vector<std::string> cmds) {
 	//cat cmds
 	std::string cmd = conToStr(cmds, " ");
 	//start a stopwatch to clock how long it took
@@ -47,6 +47,60 @@ inline RunOutput run(std::vector<std::string> cmds) {
 	}
 	return {false, errCode, std::move(out), std::move(err), cmd, rTime};
 }
+
+inline RunOutput run(std::vector<std::string> cmds) {
+	//cat cmds
+	std::string cmd = conToStr(cmds, " ");
+	//start a stopwatch to clock how long it took
+	bib::stopWatch watch;
+	redi::ipstream s(cmd, redi::ipstream::pstdout | redi::ipstream::pstderr);
+	//read stdout
+	std::stringstream outSS;
+	//read stderr
+	std::stringstream errSS;
+	char buf[1024];
+	std::streamsize n;
+	bool finished[2] = { false, false };
+	while (!finished[0] || !finished[1]) {
+		if (!finished[0]) {
+			while ((n = s.err().readsome(buf, sizeof(buf))) > 0) {
+				errSS.write(buf, n);
+			}
+			if (s.eof()) {
+				finished[0] = true;
+				if (!finished[1]) {
+					s.clear();
+				}
+			}
+		}
+		if (!finished[1]) {
+			while ((n = s.out().readsome(buf, sizeof(buf))) > 0) {
+				outSS.write(buf, n).flush();
+			}
+			if (s.eof()) {
+				finished[1] = true;
+				if (!finished[0]) {
+					s.clear();
+				}
+			}
+		}
+	}
+	auto out = outSS.str();
+	trim(out);
+
+	auto err = errSS.str();
+	trim(err);
+	s.close();
+
+	double rTime = watch.totalTime();
+	const int32_t errCode = s.rdbuf()->status();
+	if (s.rdbuf()->exited() && !errCode) {
+		return {true, 0, std::move(out), std::move(err), cmd, rTime};
+	}
+	return {false, errCode, std::move(out), std::move(err), cmd, rTime};
+}
+
+
 
 
 
