@@ -23,7 +23,7 @@ namespace sys{
  * @return A RunOutPut object holding status and outputs of the externally ran cmd
  * @todo add run time duration
  */
-inline RunOutput runOld(std::vector<std::string> cmds) {
+inline RunOutput run(std::vector<std::string> cmds) {
 	//cat cmds
 	std::string cmd = conToStr(cmds, " ");
 	//start a stopwatch to clock how long it took
@@ -48,7 +48,7 @@ inline RunOutput runOld(std::vector<std::string> cmds) {
 	return {false, errCode, std::move(out), std::move(err), cmd, rTime};
 }
 
-inline RunOutput run(std::vector<std::string> cmds) {
+inline RunOutput runTest(std::vector<std::string> cmds) {
 	//cat cmds
 	std::string cmd = conToStr(cmds, " ");
 	//start a stopwatch to clock how long it took
