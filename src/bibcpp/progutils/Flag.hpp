@@ -31,6 +31,31 @@ public:
 			 shortDescription_(shortDescription), required_(
 					required), set_(false), setValue_(estd::to_string(opt)), defaultValue_(
 					estd::to_string(opt)), type_(getTypeName(opt)) {
+		initialize(flags);
+	}
+	/**@brief construct with templated option, so any value can be given that can be converted to a string
+	 *
+	 * @param opt The option value associated with the flag
+	 * @param flags The command line flags that can set the option value
+	 * @param shortDescription A short description of the flag/value
+	 * @param required Whether the flag is required or not
+	 * @param flagGrouping a grouping for the flag
+	 */
+	template<typename T>
+	Flag(const T & opt, const std::string & flags,
+			const std::string & shortDescription, bool required,
+			const std::string flagGrouping) :
+			shortDescription_(shortDescription), required_(required), set_(false), setValue_(
+					estd::to_string(opt)), defaultValue_(estd::to_string(opt)), type_(
+					getTypeName(opt)), flagGrouping_(flagGrouping) {
+		initialize(flags);
+	}
+
+	/**@brief initialize the flag objects with the input flags
+	 *
+	 * @param flags a string of comma separated flags
+	 */
+	void initialize(const std::string & flags){
 		auto flagToks = tokenizeString(flags, ",");
 		for(const auto & flagTok : flagToks){
 			if(flagTok.empty()){
@@ -63,13 +88,14 @@ public:
 		}
 	}
 
-	std::vector<std::string> flags_; /**<The flags associated with this option */
-	std::string shortDescription_; /**<A short description for this option */
-	bool required_; /**<Whether option is required or not */
-	bool set_; /**<Whether the option was set by commandline or default value*/
-	std::string setValue_; /**<If set by commandline what it was set to */
-	std::string defaultValue_; /**<The default value associated with this otpion */
-	std::string type_; /**<The type that the option, ex. int32_t,bool,etc */
+	std::vector<std::string> flags_; /**< The flags associated with this option */
+	std::string shortDescription_; /**< A short description for this option */
+	bool required_; /**< Whether option is required or not */
+	bool set_; /**< Whether the option was set by commandline or default value*/
+	std::string setValue_; /**< If set by commandline what it was set to */
+	std::string defaultValue_; /**< The default value associated with this option */
+	std::string type_; /**< The type that the option, ex. int32_t, bool, etc */
+	std::string flagGrouping_ = "Misc"; /**< a grouping for the flag for when printing help messages*/
 
 	/**@brief convert to json representation
 	 *
@@ -85,6 +111,8 @@ public:
 		ret["setValue_"] = bib::json::toJson(setValue_);
 		ret["defaultValue_"] = bib::json::toJson(defaultValue_);
 		ret["type_"] = bib::json::toJson(type_);
+		ret["flagGrouping_"] = bib::json::toJson(flagGrouping_);
+
 		return ret;
 	}
 
