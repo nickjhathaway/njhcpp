@@ -68,7 +68,7 @@ public:
 		if (argc > 1) {
 			secondArg = strToLowerRet(argv[1]);
 		}
-		if (!beginsWith(secondArg, "-")) {
+		if ("" != secondArg && !beginsWith(secondArg, "-")) {
 			subProgram_ = secondArg;
 			subProgramRaw_ = argv[1];
 			removeArgumentCaseInsen(subProgram_);

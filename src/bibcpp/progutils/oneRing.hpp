@@ -20,12 +20,12 @@ namespace progutils {
  *
  *
  */
-class oneRing : public programRunner {
+class OneRing : public ProgramRunner {
 
   /**@brief A map of key sub of sub-runner and value sub-runner
    *
    */
-  const std::map<std::string, std::shared_ptr<programRunner>> rings_;
+  const std::map<std::string, std::shared_ptr<ProgramRunner>> rings_;
 
  protected:
 	/**@brief Function to added a sub-runner, used in construtor
@@ -39,13 +39,13 @@ class oneRing : public programRunner {
 	 *
 	 *
 	 */
-	static std::pair<std::string, std::shared_ptr<programRunner>> addRing(
-			const std::shared_ptr<programRunner> & runner) {
+	static std::pair<std::string, std::shared_ptr<ProgramRunner>> addRing(
+			const std::shared_ptr<ProgramRunner> & runner) {
 		auto name = strToLowerRet(runner->nameOfProgram_);
 		return {name, runner};
 	}
 	template<typename T>
-	static std::pair<std::string, std::shared_ptr<programRunner>> addRing() {
+	static std::pair<std::string, std::shared_ptr<ProgramRunner>> addRing() {
 		auto runner = std::make_shared<T>();
 		return addRing(runner);
 	}
@@ -55,15 +55,15 @@ class oneRing : public programRunner {
    *current oneRing master runner
    *
    */
-	oneRing(std::map<std::string, std::shared_ptr<programRunner>> rings,
+	OneRing(std::map<std::string, std::shared_ptr<ProgramRunner>> rings,
 			std::map<std::string, funcInfo> cmdToFunc, std::string nameOfProgram,
 			std::string versionMajor = "1", std::string versionMinor = "0",
 			std::string versionPatchLevel = "0") :
-			programRunner(cmdToFunc, nameOfProgram, versionMajor, versionMinor,
+			ProgramRunner(cmdToFunc, nameOfProgram, versionMajor, versionMinor,
 					versionPatchLevel), rings_(rings) {
 	}
 
-  virtual ~oneRing() {};
+  virtual ~OneRing() {};
   /**@brief Run the program by searching sub-runners and all sub-programs
    *defined in current oneRing program
    *

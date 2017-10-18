@@ -5,7 +5,6 @@ using namespace bib;
 
 int main(int argc, char* argv[]){
 	try {
-	  std::cout << bashCT::bold << "Hello bibcpp!" << bashCT::reset << std::endl;
 		uint16_t ui16t = 16;
 		uint32_t ui32t = 32;
 		uint64_t ui64t = 64;
@@ -20,7 +19,7 @@ int main(int argc, char* argv[]){
 		float ft = 1.01;
 		char cVal = 'A';
 		bib::files::bfs::path testPath = "/home/hathawan";
-	  bib::progutils::programSetUp setUp(argc, argv);
+	  bib::progutils::ProgramSetUp setUp(argc, argv);
 	  setUp.setOption(cVal, "--cVal", "cVal");
 	  setUp.setOption(testPath, "--testPath", "testPath");
 	  setUp.setOption(ui16t, "--ui16t", "ui16t");

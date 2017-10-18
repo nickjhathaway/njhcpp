@@ -25,7 +25,7 @@ namespace progutils {
  *times, getting help messages
  *
  */
-class programSetUp {
+class ProgramSetUp {
 
 public:
 	/**@brief Construct the setUp with the generic argc and argv
@@ -34,7 +34,7 @@ public:
 	 * @param argv The array of char pointers of the arguments
 	 *
 	 */
-	programSetUp(int argc, char *argv[]) :
+	ProgramSetUp(int argc, char *argv[]) :
 			commands_(CmdArgs(argc, argv)) {
 		init();
 	}
@@ -46,7 +46,7 @@ public:
 	 *argc and argv
 	 *
 	 */
-	programSetUp(const CmdArgs &inputCommands) :
+	ProgramSetUp(const CmdArgs &inputCommands) :
 			commands_(inputCommands) {
 		init();
 	}
@@ -109,13 +109,13 @@ public:
 	 *for more details
 	 *
 	 */
-	flagHolder flags_;
+	FlagHolder flags_;
 
 	/**@brief A runLog object for optional logging of run time info, won't be
 	 *started unless programSetUp::startARunLog is called
 	 *
 	 */
-	runLog rLog_;
+	RunLog rLog_;
 
 	/**@brief A function to start a runLog in the named directory
 	 * @param dirName The name of the directory to start the runLog, runLog name

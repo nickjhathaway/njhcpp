@@ -218,14 +218,17 @@ Json::Value toJson(const T & t) {
  * @return A Json::Value object
  */
 inline Json::Value parse(const std::string & jsonStr) {
-	Json::Reader reader;
+	Json::CharReaderBuilder readerBuilder;
+	std::unique_ptr<Json::CharReader> const reader(readerBuilder.newCharReader());
 	Json::Value root;
-	auto stats = reader.parse(jsonStr, root);
+	std::string errs;
+	auto stats = reader->parse(jsonStr.c_str(), jsonStr.c_str() + jsonStr.size(), &root, &errs);
 	if (!stats) {
 		std::stringstream ss;
-		ss << "Error in parsing jsonStr in " << __PRETTY_FUNCTION__ << std::endl;
-		ss << jsonStr << std::endl;
-		throw bib::err::Exception(ss.str());
+		ss << "Error in parsing jsonStr in " << __PRETTY_FUNCTION__ << "\n";
+		ss << jsonStr << "\n";
+		ss << errs << "\n";
+		throw std::runtime_error{ss.str()};
 	}
 	return root;
 }
@@ -236,20 +239,35 @@ inline Json::Value parse(const std::string & jsonStr) {
  * @return a Json::Value object with the contents of filename
  */
 inline Json::Value parseFile(const std::string & filename) {
-	Json::Reader reader;
+	Json::CharReaderBuilder readerBuilder;
 	Json::Value root;
-	std::ifstream inFile(filename);
-	if (!inFile) {
-		std::stringstream ss;
-		ss << __PRETTY_FUNCTION__ << " error in opening: " << filename << std::endl;
-		throw std::runtime_error { ss.str() };
-	}
-	auto stats = reader.parse(inFile, root);
+	std::string errs;
+	std::ifstream inFile{filename};
+	auto stats = Json::parseFromStream(readerBuilder, inFile, &root, &errs);
 	if (!stats) {
 		std::stringstream ss;
-		ss << "Error in parsing file" << filename << " in " << __PRETTY_FUNCTION__
-				<< std::endl;
-		throw bib::err::Exception(ss.str());
+		ss << "Error in parsing from file: " << filename << " in " << __PRETTY_FUNCTION__ << "\n";
+		ss << errs << "\n";
+		throw std::runtime_error{ss.str()};
+	}
+	return root;
+}
+
+/**@brief Parse a stream for json and return a Json::Value, throw on faiure
+ *
+ * @param is the stream to read from
+ * @return the Json in the input stream
+ */
+inline Json::Value parseStream(std::istream & is){
+	Json::CharReaderBuilder readerBuilder;
+	Json::Value root;
+	std::string errs;
+	auto stats = Json::parseFromStream(readerBuilder, is, &root, &errs);
+	if (!stats) {
+		std::stringstream ss;
+		ss << "Error in parsing from stream in " << __PRETTY_FUNCTION__ << "\n";
+		ss << errs << "\n";
+		throw std::runtime_error{ss.str()};
 	}
 	return root;
 }
@@ -260,8 +278,22 @@ inline Json::Value parseFile(const std::string & filename) {
  * @return A string with only one line with values in val written in json format
  */
 inline std::string writeAsOneLine(const Json::Value & val) {
-	Json::FastWriter jWriter;
-	return jWriter.write(val);
+	Json::StreamWriterBuilder writerBuilder;
+	writerBuilder["indentation"] = "";
+	return Json::writeString(writerBuilder,val);
+}
+
+
+/**@brief Write as one line (no indentation) to stream
+ *
+ * @param val the value to write
+ * @param out the stream to write to
+ */
+inline void writeAsOneLine(const Json::Value & val, std::ostream & out) {
+	Json::StreamWriterBuilder writerBuilder;
+	writerBuilder.settings_["indentation"] = "";
+	std::unique_ptr<Json::StreamWriter> writer(writerBuilder.newStreamWriter());
+	writer->write(val, &out);
 }
 
 /**@brief convert a json array to a vector using a function to convert the json to cpp type
@@ -283,10 +315,20 @@ std::vector<T> jsonArrayToVec(const Json::Value & jData,
 	return ret;
 }
 
+/**@brief Convert a json array to a vector of strings, will throw if not an array
+ *
+ * @param jData the input array
+ * @return a vector of the json array converted into strings
+ */
+inline std::vector<std::string> jsonArrayToStrVec(const Json::Value & jData) {
+	return jsonArrayToVec<std::string>(jData, [](const Json::Value & jd){
+		return jd.asString();
+	});
+}
+
 /**@brief convert a json array to a vector using a function to convert the json to cpp type
  *
  * @param jData the data to convert, needs to be an array
- * @param func the function used to convert
  * @return a vector of the json array
  */
 template<typename T>
@@ -295,6 +337,17 @@ std::set<T> jsonArrayToSet(const Json::Value & jData,
 	/**@todo find an more efficient than to convert to vector and then set */
 	auto vec = jsonArrayToVec(jData, func);
 	return {vec.begin(), vec.end()};
+}
+
+/**@brief convert a json array to a set using a function to convert the json to cpp type
+ *
+ * @param jData the data to convert, needs to be an array
+ * @return a set of the json array
+ */
+inline std::set<std::string> jsonArrayToStrSet(const Json::Value & jData) {
+	return jsonArrayToSet<std::string>(jData, [](const Json::Value & jd){
+		return jd.asString();
+	});
 }
 
 } //namespace json
