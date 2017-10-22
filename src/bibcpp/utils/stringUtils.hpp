@@ -538,10 +538,11 @@ void pasteAsStrAdd(std::string & str, const T& last) {
 template<typename N, typename ... T>
 void pasteAsStrAdd(std::string& str, const N& next, const T&... rest) {
 	addAsStrToStr(str, next);
+
 	pasteAsStrAdd(str, rest...);
 }
 
-/**@brief Paste all objects as one string
+/**@brief Paste all objects as one string, will also unroll vectors
  *
  * @param items All things to paste together
  * @return A string of all the items pasted together
