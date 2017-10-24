@@ -8,6 +8,8 @@
 
 
 #include <vector>
+#include <set>
+#include <unordered_set>
 #include <string>
 #include <algorithm>
 
@@ -56,6 +58,26 @@ const std::vector<T> catVecs(const std::vector<T>& vec1,
   return ans;
 }
 
+
+/**@brief Add values of a vector to a set
+ *
+ * @param vec the vector to add
+ * @param s the set to add to
+ */
+template<typename T>
+void addVecToSet(const std::vector<T> & vec, std::set<T> & s) {
+	std::copy(vec.begin(), vec.end(), std::inserter(s, s.end()));
+}
+
+/**@brief Add values of a vector to a unordered_set;
+ *
+ * @param vec the vector to add
+ * @param s the unordered_set to add to
+ */
+template<typename T>
+void addVecToUOSet(const std::vector<T> & vec, std::unordered_set<T> & s) {
+	std::copy(vec.begin(), vec.end(), std::inserter(s, s.end()));
+}
 
 } //namespace bib
 

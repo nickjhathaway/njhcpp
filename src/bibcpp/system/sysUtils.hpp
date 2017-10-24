@@ -8,7 +8,7 @@
 
 
 #include "bibcpp/utils/stringUtils.hpp"
-#include "bibcpp/utils/time/timeUtils.hpp"
+#include "bibcpp/utils/time.h"
 #include "bibcpp/system/CmdPool.hpp"
 #include "bibcpp/system/RunOutput.hpp"
 #include <pstreams/pstream.h>
@@ -47,6 +47,60 @@ inline RunOutput run(std::vector<std::string> cmds) {
 	}
 	return {false, errCode, std::move(out), std::move(err), cmd, rTime};
 }
+
+inline RunOutput runTest(std::vector<std::string> cmds) {
+	//cat cmds
+	std::string cmd = conToStr(cmds, " ");
+	//start a stopwatch to clock how long it took
+	bib::stopWatch watch;
+	redi::ipstream s(cmd, redi::ipstream::pstdout | redi::ipstream::pstderr);
+	//read stdout
+	std::stringstream outSS;
+	//read stderr
+	std::stringstream errSS;
+	char buf[1024];
+	std::streamsize n;
+	bool finished[2] = { false, false };
+	while (!finished[0] || !finished[1]) {
+		if (!finished[0]) {
+			while ((n = s.err().readsome(buf, sizeof(buf))) > 0) {
+				errSS.write(buf, n);
+			}
+			if (s.eof()) {
+				finished[0] = true;
+				if (!finished[1]) {
+					s.clear();
+				}
+			}
+		}
+		if (!finished[1]) {
+			while ((n = s.out().readsome(buf, sizeof(buf))) > 0) {
+				outSS.write(buf, n).flush();
+			}
+			if (s.eof()) {
+				finished[1] = true;
+				if (!finished[0]) {
+					s.clear();
+				}
+			}
+		}
+	}
+	auto out = outSS.str();
+	trim(out);
+
+	auto err = errSS.str();
+	trim(err);
+	s.close();
+
+	double rTime = watch.totalTime();
+	const int32_t errCode = s.rdbuf()->status();
+	if (s.rdbuf()->exited() && !errCode) {
+		return {true, 0, std::move(out), std::move(err), cmd, rTime};
+	}
+	return {false, errCode, std::move(out), std::move(err), cmd, rTime};
+}
+
+
 
 
 
@@ -181,6 +235,64 @@ inline bool stdoutTerminal(){
  */
 inline bool stdinTerminal(){
 	return isatty(STDIN_FILENO);
+}
+
+
+/**@brief Throw if an external program isn't available
+ *
+ * @param program the program to check for
+ * @return true if has program ... which i guess is kind of pointless since it would have thrown anyways
+ */
+inline bool requireExternalProgramThrow(const std::string & program) {
+	auto hasProgram = bib::sys::hasSysCommand(program);
+	if (!hasProgram) {
+		std::stringstream ss;
+		if (stdoutTerminal()) {
+			ss << bib::bashCT::boldBlack(program)
+					<< bib::bashCT::boldRed(
+							" is not in path or may not be executable, cannot be used")
+					<< std::endl;
+		} else {
+			ss << program
+					<< " is not in path or may not be executable, cannot be used"
+					<< std::endl;
+		}
+		throw std::runtime_error { ss.str() };
+	}
+	return hasProgram;
+}
+
+
+/**@brief Throw if any of the external programs aren't available
+ *
+ * @param programs the programs to check for
+ * @return true if has program ... which i guess is kind of pointless since it would have thrown anyways
+ */
+inline bool requireExternalProgramsThrow(
+		const std::vector<std::string> & programs) {
+	bool failed = false;
+	std::stringstream ss;
+	for (const auto & program : programs) {
+		auto hasProgram = bib::sys::hasSysCommand(program);
+		if (!hasProgram) {
+			failed = true;
+			if (stdoutTerminal()) {
+				ss << bib::bashCT::boldBlack(program)
+						<< bib::bashCT::boldRed(
+								" is not in path or may not be executable, cannot be used")
+						<< std::endl;
+			} else {
+				ss << program
+						<< " is not in path or may not be executable, cannot be used"
+						<< std::endl;
+			}
+		}
+	}
+
+	if (failed) {
+		throw std::runtime_error { ss.str() };
+	}
+	return !failed;
 }
 
 } // namespace sys

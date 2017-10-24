@@ -16,14 +16,14 @@ namespace progutils {
 /**@brief runLog class to help log run info
  *
  */
-class runLog {
+class RunLog {
  public:
   /**@brief Constructor with the runLog filename and start time as now
    *
    * @param fileName The name of the runLog file to log the information to
    *
    */
-  runLog(const std::string& fileName)
+  RunLog(const std::string& fileName)
       : fileName_(fileName) {
     files::openTextFile(runLogFile_, fileName_, ".txt", true, false);
   }
@@ -34,7 +34,7 @@ class runLog {
    * @param start Use the given start time for time start
    *
    */
-  runLog(const std::string& fileName,
+  RunLog(const std::string& fileName,
          std::chrono::time_point<std::chrono::high_resolution_clock> start)
       : fileName_(fileName), timer_(start) {
     files::openTextFile(runLogFile_, fileName_, ".txt", true, false);
@@ -44,7 +44,7 @@ class runLog {
    *called
    *
    */
-  runLog() {}
+  RunLog() {}
 
  private:
   // Members
@@ -173,7 +173,7 @@ class runLog {
   /**@brief Destructor, log the the total time if a runLog is open
    *
    */
-  ~runLog() {
+  ~RunLog() {
   	if(runLogFile_.is_open()){
   		if(!timer_.containsLapTimes()){
   			logTotalTime(6);
@@ -190,7 +190,7 @@ class runLog {
  *
  */
 template <typename T>
-runLog& operator<<(runLog& rLog, const T& obj) {
+RunLog& operator<<(RunLog& rLog, const T& obj) {
   if (rLog.runLogFile_.is_open()) {
     rLog.runLogFile_ << obj;
   } else {

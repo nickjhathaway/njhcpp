@@ -48,12 +48,12 @@ public:
 	 * @return Returns true if T is of type arithmetic
 	 */
 	template<typename T>
-	constexpr bool isSupportedType(){
+	static constexpr bool isSupportedType(){
 		return is_cmdArg_supported_type<T>::value;
 	}
 
 	template<typename T>
-	void convertArg(const std::string & arg, T & outVal) {
+	static void convertArg(const std::string & arg, T & outVal) {
 		static_assert(isSupportedType<T>(), "Type not supported in bib::progutils::CmdArgs::convertArg");
 	}
 
@@ -68,8 +68,9 @@ public:
 		if (argc > 1) {
 			secondArg = strToLowerRet(argv[1]);
 		}
-		if (!beginsWith(secondArg, "-")) {
+		if ("" != secondArg && !beginsWith(secondArg, "-")) {
 			subProgram_ = secondArg;
+			subProgramRaw_ = argv[1];
 			removeArgumentCaseInsen(subProgram_);
 		}
 		workingDir_ = files::get_cwd();
@@ -83,7 +84,8 @@ public:
 			const std::map<std::string, std::string>& inputCommands,
 			const std::string & commandLine, const std::string & workingDir) :
 			masterProgram_(masterProgram), masterProgramRaw_(masterProgram), subProgram_(
-					subProgram), arguments_(inputCommands), commandLine_(commandLine), workingDir_(
+					subProgram), subProgramRaw_(
+							subProgram), arguments_(inputCommands), commandLine_(commandLine), workingDir_(
 					workingDir) {
 		if ("" != subProgram_) {
 			removeArgumentCaseInsen(subProgram_);
@@ -102,6 +104,8 @@ public:
 	 *
 	 */
 	std::string subProgram_;
+
+	std::string subProgramRaw_;
 	/**@brief A map of the commandline arguments, key is flag and value is flag
 	 *associated value
 	 *
@@ -156,6 +160,7 @@ public:
 		ret["masterProgram_"] = bib::json::toJson(masterProgram_);
 		ret["masterProgramRaw_"] = bib::json::toJson(masterProgramRaw_);
 		ret["subProgram_"] = bib::json::toJson(subProgram_);
+		ret["subProgramRaw_"] = bib::json::toJson(subProgramRaw_);
 		ret["arguments_"] = bib::json::toJson(arguments_);
 		ret["commandLine_"] = bib::json::toJson(commandLine_);
 		ret["workingDir_"] = bib::json::toJson(workingDir_);
@@ -645,6 +650,16 @@ inline void CmdArgs::convertArg(const std::string& option,
 		std::string & outVal) {
 	outVal = option;
 }
+
+
+// char
+template<>
+inline void CmdArgs::convertArg(const std::string& option,
+		char & outVal) {
+	outVal = option.empty() ? ' ' : option.front();
+}
+
+
 // bool
 template<>
 inline void CmdArgs::convertArg(const std::string& option, bool & outVal) {

@@ -25,7 +25,7 @@ namespace progutils {
  *times, getting help messages
  *
  */
-class programSetUp {
+class ProgramSetUp {
 
 public:
 	/**@brief Construct the setUp with the generic argc and argv
@@ -34,7 +34,7 @@ public:
 	 * @param argv The array of char pointers of the arguments
 	 *
 	 */
-	programSetUp(int argc, char *argv[]) :
+	ProgramSetUp(int argc, char *argv[]) :
 			commands_(CmdArgs(argc, argv)) {
 		init();
 	}
@@ -46,7 +46,7 @@ public:
 	 *argc and argv
 	 *
 	 */
-	programSetUp(const CmdArgs &inputCommands) :
+	ProgramSetUp(const CmdArgs &inputCommands) :
 			commands_(inputCommands) {
 		init();
 	}
@@ -75,6 +75,10 @@ public:
 	 *
 	 */
 	stopWatch timer_;
+
+	std::string description_;/**< A short description of the program, gets printed with --getFlags*/
+
+	std::vector<std::string> examples_;/**< A few examples of running, gets printed with --getFlags*/
 
 protected:
 
@@ -105,13 +109,13 @@ public:
 	 *for more details
 	 *
 	 */
-	flagHolder flags_;
+	FlagHolder flags_;
 
 	/**@brief A runLog object for optional logging of run time info, won't be
 	 *started unless programSetUp::startARunLog is called
 	 *
 	 */
-	runLog rLog_;
+	RunLog rLog_;
 
 	/**@brief A function to start a runLog in the named directory
 	 * @param dirName The name of the directory to start the runLog, runLog name
@@ -120,9 +124,9 @@ public:
 	 */
 	void startARunLog(const std::string &dirName) {
 		rLog_.setFilenameAndOpen(
-				dirName + "runLog_"
+				files::make_path(dirName,"runLog_"
 						+ replaceString(replaceString(commands_.getProgramName(), "./", ""),
-								" ", "-") + ".txt", timer_.start_);
+								" ", "-")+ "_" + getCurrentDate() + ".txt").string(), timer_.start_);
 		rLog_.startRunLog(commands_);
 	}
 
@@ -199,13 +203,14 @@ public:
 	 * @param out The std::ostream out object to print to
 	 */
 	void printFlags(std::ostream &out) {
-		std::map<std::string, std::string> infoOutRequried;
-		std::map<std::string, std::string> infoOutNotRequried;
+
+		std::map<std::string, std::map<std::string, std::string>> infoOutRequried;
+		std::map<std::string, std::map<std::string, std::string>> infoOutNotRequried;
 		for (const auto & f : flags_.flags_) {
 			if (f.second.required_) {
-				infoOutRequried[f.second.getFlagsStrAutoDash()] = f.second.helpInfo();
+				infoOutRequried[f.second.flagGrouping_][f.second.getFlagsStrAutoDash()] = f.second.helpInfo();
 			} else {
-				infoOutNotRequried[f.second.getFlagsStrAutoDash()] = f.second.helpInfo();
+				infoOutNotRequried[f.second.flagGrouping_][f.second.getFlagsStrAutoDash()] = f.second.helpInfo();
 			}
 		}
 		std::map<std::string, std::string> infoOutHelp;
@@ -216,19 +221,27 @@ public:
 		auto valFunc =
 				[](const auto & kv) {return bashCT::trimForNonTerminalOut(kv.second);};
 		if (!infoOutRequried.empty()) {
-			compareColPaddings(infoOutRequried, paddings, keyFunc, valFunc);
+			for(const auto & requiredFlagGroup : infoOutRequried){
+				compareColPaddings(requiredFlagGroup.second, paddings, keyFunc, valFunc);
+			}
 		}
 		if (!infoOutNotRequried.empty()) {
-			compareColPaddings(infoOutNotRequried, paddings, keyFunc, valFunc);
+			for(const auto & optionalFlagGroup : infoOutNotRequried){
+				compareColPaddings(optionalFlagGroup.second, paddings, keyFunc, valFunc);
+			}
 		}
 		if (!infoOutHelp.empty()) {
 			compareColPaddings(infoOutHelp, paddings, keyFunc, valFunc);
 		}
 		const std::string middleSep = "\t";
+		out << commands_.masterProgram_ << " " << commands_.subProgramRaw_ << std::endl;
+		if("" != description_){
+			out << description_ << std::endl;
+		}
 		//assuming tab is len of 4
-		std::string requiredOptsTitle = bashCT::bold + "Required Options"
+		std::string requiredOptsTitle = bashCT::bold + bashCT::green + "Required Options"
 				+ bashCT::reset;
-		std::string optionalOptsTitle = bashCT::bold + "Optional Options"
+		std::string optionalOptsTitle = bashCT::bold + bashCT::blue + "Optional Options"
 				+ bashCT::reset;
 		std::string helpOptsTitle = bashCT::bold + "Help Options" + bashCT::reset;
 		if (!infoOutRequried.empty()) {
@@ -237,8 +250,31 @@ public:
 							paddings.first + 2
 									- round(bashCT::getPrintLen(requiredOptsTitle) / 2.0), ' ')
 					<< requiredOptsTitle << std::endl;
-			mapOutColAdjust(infoOutRequried, out, middleSep, paddings.first,
-					paddings.second);
+			for (const auto & requiredFlagGroup : infoOutRequried) {
+				if ("Misc" == requiredFlagGroup.first) {
+					continue;
+				}
+				std::string currentTitle = bashCT::bold + bashCT::purple
+						+ requiredFlagGroup.first + bashCT::reset;
+				;
+				out
+						<< std::string(
+								paddings.first + 2
+										- round(bashCT::getPrintLen(currentTitle) / 2.0), ' ')
+						<< currentTitle << std::endl;
+				mapOutColAdjust(requiredFlagGroup.second, out, middleSep,
+						paddings.first, paddings.second);
+			}
+			if(in(std::string("Misc"), infoOutRequried)){
+				std::string miscTitle = bashCT::bold + bashCT::purple  + "Miscellaneous" + bashCT::reset;;
+				out
+						<< std::string(
+								paddings.first + 2
+										- round(bashCT::getPrintLen(miscTitle) / 2.0), ' ')
+						<< miscTitle << std::endl;
+				mapOutColAdjust(infoOutRequried.at("Misc"), out, middleSep, paddings.first,
+						paddings.second);
+			}
 		}
 		if (!infoOutNotRequried.empty()) {
 			out
@@ -246,8 +282,29 @@ public:
 							paddings.first + 2
 									- round(bashCT::getPrintLen(optionalOptsTitle) / 2.0), ' ')
 					<< optionalOptsTitle << std::endl;
-			mapOutColAdjust(infoOutNotRequried, out, middleSep, paddings.first,
-					paddings.second);
+			for(const auto & optionalFlagGroup : infoOutNotRequried){
+				if("Misc" == optionalFlagGroup.first){
+					continue;
+				}
+				std::string currentTitle = bashCT::bold + bashCT::purple  + optionalFlagGroup.first + bashCT::reset;;
+				out
+						<< std::string(
+								paddings.first + 2
+										- round(bashCT::getPrintLen(currentTitle) / 2.0), ' ')
+						<< currentTitle << std::endl;
+				mapOutColAdjust(optionalFlagGroup.second, out, middleSep, paddings.first,
+						paddings.second);
+			}
+			if(in(std::string("Misc"), infoOutNotRequried)){
+				std::string miscTitle = bashCT::bold + bashCT::purple  + "Miscellaneous" + bashCT::reset;;
+				out
+						<< std::string(
+								paddings.first + 2
+										- round(bashCT::getPrintLen(miscTitle) / 2.0), ' ')
+						<< miscTitle << std::endl;
+				mapOutColAdjust(infoOutNotRequried.at("Misc"), out, middleSep, paddings.first,
+						paddings.second);
+			}
 		}
 		if (!infoOutHelp.empty()) {
 			out
@@ -257,6 +314,19 @@ public:
 					<< helpOptsTitle << std::endl;
 			mapOutColAdjust(infoOutHelp, out, middleSep, paddings.first,
 					paddings.second);
+		}
+		if (!examples_.empty()) {
+			out << std::string(
+					paddings.first + 2
+							- round(bashCT::getPrintLen(helpOptsTitle) / 2.0), ' ')
+			<< bashCT::boldGreen("Examples") << std::endl;
+			for (const auto & example : examples_) {
+				out
+						<< bib::replaceString(
+								bib::replaceString(example, "MASTERPROGRAM",
+										commands_.masterProgram_), "SUBPROGRAM",
+								commands_.subProgramRaw_) << std::endl;
+			}
 		}
 	}
 
@@ -295,6 +365,55 @@ public:
 			const std::string &shortDescription, bool required = false) {
 
 		Flag currentFlag(option, flagStr, shortDescription, required);
+		bool found = false;
+		std::vector<std::string> flagsFound;
+		for (const auto &fTok : currentFlag.flags_) {
+			if (commands_.lookForOptionDashCaseInsen(option, fTok)) {
+				currentFlag.setValue(option);
+				found = true;
+				flagsFound.emplace_back(fTok);
+			}
+		}
+
+		if (required && !found) {
+			std::stringstream tempStream;
+			tempStream << bashCT::bold + bashCT::black << "Need to have "
+					<< bashCT::red << conToStr(tokenizeString(flagStr, ","), " or ")
+					<< bashCT::black << " see " << bashCT::red
+					<< commands_.getProgramName() + " --help " << bashCT::black
+					<< "for more details" << bashCT::reset;
+			warnings_.emplace_back(tempStream.str());
+			failed_ = true;
+		}
+		if (found && flagsFound.size() > 1) {
+			std::stringstream tempStream;
+			tempStream << "Found multiple flags for the same option, found "
+					<< conToStr(flagsFound, ", ") << " but should only have one";
+			warnings_.emplace_back(tempStream.str());
+			failed_ = true;
+		}
+		flags_.addFlag(currentFlag);
+		return found;
+	}
+
+	/**@brief A templated function to look for options and implementation for
+	 *setting the option is handled by commandLineArguments so look there for more
+	 *details
+	 * @param option The option to set
+	 * @param flag The flag to be searched for
+	 * @param parName The name under which to store the option being searched for
+	 * @param required A bool indicating if the option is required and set up should be stopped if not found, default is false
+	 * @param flagGrouping A grouping for the flag
+	 *
+	 * @return Returns true if option is found or false if option is not found
+	 *
+	 */
+	template<typename T>
+	bool setOption(T &option, std::string flagStr,
+			const std::string & shortDescription, bool required,
+			const std::string & flagGrouping) {
+
+		Flag currentFlag(option, flagStr, shortDescription, required, flagGrouping);
 		bool found = false;
 		std::vector<std::string> flagsFound;
 		for (const auto &fTok : currentFlag.flags_) {

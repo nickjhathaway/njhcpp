@@ -11,7 +11,8 @@
 #include <boost/filesystem.hpp>
 #include "bibcpp/utils/stringUtils.hpp" //appendAsNeededRet()
 #include "bibcpp/files/fileUtilities.hpp"
-
+#include "bibcpp/utils/utils.hpp"
+#include <sys/stat.h>
 
 namespace estd {
 template <>
@@ -29,6 +30,21 @@ inline std::string to_string(const Json::Value & path) {
 namespace bib {
 namespace files {
 namespace bfs = boost::filesystem;
+
+
+/**@brief convert a vector of strings to a vector of boost::filesystem::path
+ *
+ *
+ * @param strs a vector of strings
+ * @return a vector of boost::filesystem::path
+ */
+inline std::vector<bfs::path> vecStrToPaths(const std::vector<std::string> & strs){
+	return convert<std::string, bfs::path>(strs,
+						[](const std::string & str) {return bfs::path(str);});
+}
+
+
+
 
 template<typename T>
 void addAsPathToPath(std::string& path, const T& e) {
@@ -84,8 +100,8 @@ bfs::path make_path(const T&... items) {
  * @param child A file under parent path
  * @return Return par plus a unix directory separator if neccesary plus child
  */
-inline std::string join(const std::string & par, const std::string & child){
-	return make_path(par, child).string();
+inline bfs::path join(const std::string & par, const std::string & child){
+	return make_path(par, child);
 }
 
 /**@brief Join all strings in vector paths with a unix dir separator if needed
@@ -93,14 +109,14 @@ inline std::string join(const std::string & par, const std::string & child){
  * @param paths Paths to join
  * @return The contents of paths concatenated with a unix dir separator if needed
  */
-inline std::string join(const std::vector<std::string> & paths){
+inline bfs::path join(const std::vector<std::string> & paths){
 	if(paths.size() == 1){
 		return paths.front();
 	}
 	if(paths.size() == 0){
 		return "";
 	}
-	return make_path(paths).string();
+	return make_path(paths);
 }
 
 /**@brief Return full path name even if the path doesn't actually exists
@@ -164,16 +180,16 @@ inline std::string getHomeStr(){
  * @param filename The filename to remove the extension
  * @return The filename with the extension removed
  */
-inline std::string removeExtension(const std::string& filename) {
+inline std::string removeExtension(const bfs::path& filename) {
 	return bfs::path(filename).replace_extension("").string();
 }
 
-/**@brief Wrapper boost filesystem to get the a string of the extension for a given filename
+/**@brief Wrapper boost filesystem to get the a string of the extension for a given filename without the .
  *
  * @param filename Filename to get the extension for
  * @return The filename's extension
  */
-inline std::string getExtension(const std::string& filename) {
+inline std::string getExtension(const bfs::path& filename) {
 	auto ret = bfs::path(filename).extension().string();
 	if(ret.length() > 1){
 		if(ret[0] == '.'){
@@ -183,21 +199,13 @@ inline std::string getExtension(const std::string& filename) {
 	return ret;
 }
 
-/**@brief Wrapper boost filesystem to get the a string of the filename without extension for a given filename
- *
- * @param filename The filename to get the filename for
- * @return The filename (without extention)
- */
-inline std::string getFileName(const std::string& filename) {
-	return bfs::basename(filename);
-}
 
 /**@brief Wrapper boost filesystem to get the a string of the parent path for a given filename
  *
  * @param filename A the filename to look for a parent path
  * @return The parent path
  */
-inline std::string getPathName(const std::string& filename) {
+inline std::string getParentPath(const bfs::path& filename) {
 	return bfs::path(filename).parent_path().string();
 }
 
@@ -206,7 +214,7 @@ inline std::string getPathName(const std::string& filename) {
  * @param outFilename Filename to check for existance
  * @return A filename for a file that doesn't exist
  */
-inline std::string findNonexitantFile(const std::string & outFilename){
+inline bfs::path findNonexitantFile(const bfs::path & outFilename){
 	if(bfs::exists(outFilename)){
 		std::string fileStub = removeExtension(outFilename);
 		std::string extention = getExtension(outFilename);
@@ -220,6 +228,107 @@ inline std::string findNonexitantFile(const std::string & outFilename){
 	}else{
 		return outFilename;
 	}
+}
+
+/**@brief To simply append to the end of the file path name to further extend the name with something but not a new directory
+ *
+ * @param fnp The file name path to append to
+ * @param app what to append
+ * @return a boost::filesystem::path with the fnp append with app
+ */
+inline bfs::path nameAppend(const bfs::path & fnp, const std::string & app){
+	return bfs::path(fnp.string() + app);
+}
+
+/**@brief To append to the end of the file path name but before the file extension
+ *
+ * @param fnp The file name path to append to
+ * @param app what to append
+ * @return a boost::filesystem::path with the fnp append with app before the extension on fnp
+ */
+inline bfs::path nameAppendBeforeExt(const bfs::path & fnp, const std::string & app){
+	return bfs::path(bfs::path(fnp).replace_extension("").string() + app + fnp.extension().string());
+}
+
+/**@brief To append to the filename taking into account if it's a full path, so prepend just the file basename not the whole file
+ *
+ * @param fnp The file name path to prepend to
+ * @param app what to prepend
+ * @return a boost::filesystem::path with just the last filename in the filename path prepended with pre
+ */
+inline bfs::path prependFileBasename(const bfs::path & fnp, const std::string & pre){
+	return bib::files::make_path(fnp.parent_path(), pre + fnp.filename().string());
+}
+
+/**@brief check for the existence of a file and throw an exception if it doesn't exits
+ *
+ * @param fnp the file to check for
+ * @param funcName the name of the function that the check is done from
+ */
+inline void checkExistenceThrow(const bfs::path & fnp, const std::string & funcName) {
+	if (!bfs::exists(fnp)) {
+		std::stringstream ss;
+		ss << "Error in : " << funcName << "\n";
+		ss << fnp << " needs to exist" << "\n";
+		throw std::runtime_error { ss.str() };
+	}
+}
+
+/**@brief Check for the existence of several file paths, throw if any don't exist
+ *
+ * @param fnps the vector of paths to check
+ * @param funcName the function name from which the check is being done for better logging
+ */
+inline void checkExistenceThrow(const std::vector<bfs::path> & fnps, const std::string & funcName) {
+	bool fail = false;
+	std::stringstream ss;
+	ss << "Error in : " << funcName << "\n";
+	for(const auto & fnp : fnps){
+		if (!bfs::exists(fnp)) {
+			fail = true;
+			ss << fnp << " needs to exist" << "\n";
+		}
+	}
+	if(fail){
+		throw std::runtime_error { ss.str() };
+	}
+}
+
+/**@brief check for the existence of a file and throw an exception if it doesn't exits
+ *
+ * @param fnp the file to check for
+ *
+ */
+inline void checkExistenceThrow(const bfs::path & fnp) {
+	if (!bfs::exists(fnp)) {
+		std::stringstream ss;
+		ss << "Error, " << fnp << " needs to exist" << "\n";
+		throw std::runtime_error { ss.str() };
+	}
+}
+
+/**@brief make a file executable plus read and write for user and group and read for everyone, will throw if fnp doesn't exist
+ *
+ * @param fnp the path the file
+ */
+inline void chmod775(const bfs::path & fnp){
+	checkExistenceThrow(fnp, __PRETTY_FUNCTION__);
+	//make file executable
+	auto stats = bfs::status(fnp);
+	bfs::permissions(fnp, stats.permissions() | bfs::owner_exe | bfs::group_exe | bfs::others_exe);
+}
+
+/**@brief A function that behaves a bit differently than bfs::replace_extension which always puts a period infront of new extention which might not be desireable
+ *
+ * @param fnp the file name path to change the extension on
+ * @param newExt the new extension, should contain . in it if it needs it
+ * @return the new path with the old extension replaced
+ */
+inline bfs::path replaceExtension(const bfs::path & fnp, const std::string & newExt){
+	if(std::string::npos == fnp.filename().string().find(".")){
+		return bfs::path(fnp.string() + newExt);
+	}
+	return bfs::path(fnp.string().substr(0, fnp.string().rfind('.')) + newExt);
 }
 
 }  // namespace files

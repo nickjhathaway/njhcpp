@@ -18,6 +18,8 @@
 #include "bibcpp/files/filePathUtils.hpp" //join()
 #include "bibcpp/files/fileUtilities.hpp"
 
+#include "bibcpp/files/fileObjects/gzstream.hpp" //ogzstream
+
 namespace bib {
 namespace files {
 
@@ -75,28 +77,55 @@ inline std::vector<bfs::path> filesInFolder(bfs::path d) {
  *
  * @param dirName The name of directory to search
  * @param recursive Whether the search should be recursive
- * @param files The map container in which to store results
+ * @param files The map container in which to store results, key is full abs path, val is found path
  * @param currentLevel The current level of the search if recursive
  * @param levels The max level to search to, level 1 be just the current directory, 2 being the contents of directories of the current dir, etc.
  */
 inline void listAllFilesHelper(const bfs::path & dirName, bool recursive,
-		std::map<bfs::path, bool> & files, uint32_t currentLevel, uint32_t levels) {
+		std::map<bfs::path, bfs::path> & files, uint32_t currentLevel, uint32_t levels) {
 
 	bfs::directory_iterator end_iter;
 	if (bfs::exists(dirName) && bfs::is_directory(dirName)) {
 		for (const auto & dir_iter : dir(dirName)) {
 			bfs::path current = dir_iter.path();
+			//first check to see if this might be a symlink
+			//to another file that's the same to avoid adding the same exact file twice
+			//might want to warn or something here about this
+//			bool alreadyHave = false;
+//			for(const auto & f : files){
+//				//if(bfs::canonical(f.first) == bfs::canonical(current)){
+//				if(normalize(f.first) == normalize(current)){
+//					alreadyHave = true;
+//					break;
+//				}
+//			}
+//			if(alreadyHave){
+//				continue;
+//			}
 			if (bfs::is_directory(dir_iter.path())) {
-				files[bfs::canonical(current)] = true;
+				files[normalize(current)] = current;
 				if (recursive && currentLevel <= levels) {
 					listAllFilesHelper(current, recursive, files, currentLevel + 1,
 							levels);
 				}
 			} else {
-				files[bfs::canonical(current)] = false;
+				files[normalize(current)] = current;
 			}
 		}
 	}
+}
+
+/**@brief convert a map of key full abs path, val current path to current path is dir
+ *
+ * @param files the map to convert
+ * @return a map current path, val is dir
+ */
+inline std::map<bfs::path, bool> convertMapFnpFnpToFnpIsDir(const std::map<bfs::path, bfs::path> & files){
+	std::map<bfs::path, bool> ret;
+	for(const auto & f : files){
+		ret[f.second] = bfs::is_directory(f.second);
+	}
+	return ret;
 }
 
 /**@brief Function to list all the files of a directory with the option to search recursively and name filtering
@@ -107,11 +136,12 @@ inline void listAllFilesHelper(const bfs::path & dirName, bool recursive,
  * @param levels The maximum number of levels to search
  * @return A map of the directory paths with key being the file path and the value being a bool indicating if it is a directory or not
  */
-inline std::map<bfs::path, bool> listAllFiles(const std::string & dirName,
+inline std::map<bfs::path, bool> listAllFiles(const bfs::path & dirName,
 		bool recursive, const std::vector<std::string>& contains, uint32_t levels =
 				std::numeric_limits<uint32_t>::max()) {
-	std::map<bfs::path, bool> files;
-	listAllFilesHelper(dirName, recursive, files, 1, levels);
+	std::map<bfs::path, bfs::path> filesGathering;
+	listAllFilesHelper(dirName, recursive, filesGathering, 1, levels);
+	std::map<bfs::path, bool> files = convertMapFnpFnpToFnpIsDir(filesGathering);
 	if (!contains.empty()) {
 		std::map<bfs::path, bool> specificFiles;
 		for (const auto & f : files) {
@@ -132,11 +162,13 @@ inline std::map<bfs::path, bool> listAllFiles(const std::string & dirName,
  * @param levels The maximum number of levels to search (1 being the first directory)
  * @return A map of boost::filesystem paths with the value being a bool with true indicating it's a directory
  */
-inline std::map<bfs::path, bool> listAllFiles(const std::string & dirName,
+inline std::map<bfs::path, bool> listAllFiles(const bfs::path & dirName,
 		bool recursive, const std::vector<std::regex>& contains, uint32_t levels =
 				std::numeric_limits<uint32_t>::max()) {
-	std::map<bfs::path, bool> files;
-	listAllFilesHelper(dirName, recursive, files, 1, levels);
+	std::map<bfs::path, bfs::path> filesGathering;
+	listAllFilesHelper(dirName, recursive, filesGathering, 1, levels);
+	std::map<bfs::path, bool> files = convertMapFnpFnpToFnpIsDir(filesGathering);
+
 	if (!contains.empty()) {
 		std::map<bfs::path, bool> specificFiles;
 		for (const auto & f : files) {
@@ -158,12 +190,13 @@ inline std::map<bfs::path, bool> listAllFiles(const std::string & dirName,
  * @param levels The maximum number of levels to search (1 being the first directory)
  * @return A map of boost::filesystem paths with the value being a bool with true indicating it's a directory
  */
-inline std::map<bfs::path, bool> listAllFiles(const std::string & dirName,
+inline std::map<bfs::path, bool> listAllFiles(const bfs::path & dirName,
 		bool recursive, const std::vector<std::regex>& contains,
 		const std::vector<std::regex>& excludes, uint32_t levels =
 				std::numeric_limits<uint32_t>::max()) {
-	std::map<bfs::path, bool> files;
-	listAllFilesHelper(dirName, recursive, files, 1, levels);
+	std::map<bfs::path, bfs::path> filesGathering;
+	listAllFilesHelper(dirName, recursive, filesGathering, 1, levels);
+	std::map<bfs::path, bool> files = convertMapFnpFnpToFnpIsDir(filesGathering);
 	if (!contains.empty() || !excludes.empty()) {
 		std::map<bfs::path, bool> specificFiles;
 		for (const auto & f : files) {
@@ -186,12 +219,12 @@ inline std::map<bfs::path, bool> listAllFiles(const std::string & dirName,
  * @param exitOnFailure whether program should exit on failure to open the file
  * @todo probably should just remove exitOnFailure and throw an exception instead
  */
-inline void openTextFile(std::ofstream& file, const std::string & filename,
+inline void openTextFile(std::ofstream& file, const bfs::path & filename,
 		bool overWrite, bool append, bool exitOnFailure) {
 
 	if (bfs::exists(filename) && !overWrite) {
 		if (append) {
-			file.open(filename.data(), std::ios::app);
+			file.open(filename.string().data(), std::ios::app);
 		} else {
 			std::stringstream ss;
 			ss << filename << " already exists";
@@ -202,7 +235,48 @@ inline void openTextFile(std::ofstream& file, const std::string & filename,
 			}
 		}
 	} else {
-		file.open(filename.data());
+		file.open(filename.string().data());
+		if (!file) {
+			std::stringstream ss;
+			ss << "Error in opening " << filename;
+			if (exitOnFailure) {
+				throw std::runtime_error { ss.str() };
+			} else {
+				std::cerr << ss.str() << std::endl;
+			}
+		} else {
+			chmod(filename.c_str(),
+			S_IWUSR | S_IRUSR | S_IRGRP | S_IWGRP | S_IROTH);
+		}
+	}
+}
+
+/**@brief open a file in binary mode
+
+ * @param file the ofstream object to open
+ * @param filename The name of the file to open
+ * @param overWrite Whether the file should be overwritten if it already exists
+ * @param append Whether the file should be appended if it already exists
+ * @param exitOnFailure whether program should exit on failure to open the file
+ * @todo probably should just remove exitOnFailure and throw an exception instead
+ */
+inline void openBinaryFile(std::ofstream& file, const bfs::path & filename,
+		bool overWrite, bool append, bool exitOnFailure) {
+
+	if (bfs::exists(filename) && !overWrite) {
+		if (append) {
+			file.open(filename.string().data(), std::ios::binary | std::ios::app);
+		} else {
+			std::stringstream ss;
+			ss << filename << " already exists";
+			if (exitOnFailure) {
+				throw std::runtime_error { ss.str() };
+			} else {
+				std::cerr << ss.str() << std::endl;
+			}
+		}
+	} else {
+		file.open(filename.string().data(), std::ios::binary);
 		if (!file) {
 			std::stringstream ss;
 			ss << "Error in opening " << filename;
@@ -227,11 +301,10 @@ inline void openTextFile(std::ofstream& file, const std::string & filename,
  * @param exitOnFailure whether program should exit on failure to open the file
  * @todo probably should just remove exitOnFailure and throw an exception instead
  */
-inline void openTextFile(std::ofstream& file, std::string filename,
+inline void openTextFile(std::ofstream& file, const bfs::path &filename,
 		const std::string & extention, bool overWrite, bool append,
 		bool exitOnFailure) {
-	appendAsNeeded(filename, extention);
-	openTextFile(file, filename, overWrite, append, exitOnFailure);
+	openTextFile(file, appendAsNeededRet(filename.string(), extention), overWrite, append, exitOnFailure);
 }
 
 /**@brief remove a non empty directory forcibly
@@ -239,7 +312,7 @@ inline void openTextFile(std::ofstream& file, std::string filename,
  * @param dirName name of directory to remove
  * @return whether or not the removal of the directry was successful
  */
-inline bool rmDirForce(const std::string & dirName) {
+inline bool rmDirForce(const bfs::path & dirName) {
 	if (bfs::is_directory(dirName)) {
 		auto files = filesInFolder(dirName);
 		for (const auto & f : files) {
@@ -259,7 +332,7 @@ public:
 	 *
 	 * @param dirName The directory to construct
 	 */
-	explicit MkdirPar(const std::string & dirName) :
+	explicit MkdirPar(const bfs::path & dirName) :
 			dirName_(dirName) {
 	}
 	/**@brief Constructor with directory to make and whether to overwrite it if it exists
@@ -267,7 +340,7 @@ public:
 	 * @param dirName The directory to construct
 	 * @param overWriteDir To overwrite the directory
 	 */
-	explicit MkdirPar(const std::string & dirName, bool overWriteDir) :
+	explicit MkdirPar(const bfs::path & dirName, bool overWriteDir) :
 			dirName_(dirName), overWriteDir_(overWriteDir) {
 	}
 
@@ -277,13 +350,27 @@ public:
 	 * @param overWriteDir To overwrite the directory
 	 * @param perms The permissions to give to the directory
 	 */
-	explicit MkdirPar(const std::string & dirName, bool overWriteDir, mode_t perms) :
+	explicit MkdirPar(const bfs::path & dirName, bool overWriteDir, mode_t perms) :
 			dirName_(dirName), overWriteDir_(overWriteDir), perms_(perms) {
 	}
 
-	std::string dirName_; /**< the directory to make*/
+	bfs::path dirName_; /**< the directory to make*/
 	bool overWriteDir_ = false; /**< whether or not to overwrite directory */
 	mode_t perms_ = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH; /**< the permissions to set on directory*/
+
+	/**@brief Convert info into json
+	 *
+	 * @return a json object
+	 */
+	Json::Value toJson() const{
+		Json::Value ret;
+		ret["class"] = getTypeName(*this);
+		ret["dirName_"] = json::toJson(dirName_);
+		ret["overWriteDir_"] = json::toJson(overWriteDir_);
+		ret["perms_"] = json::toJson(perms_);
+		return ret;
+	}
+
 };
 
 
@@ -327,10 +414,10 @@ inline int32_t makeDir(const MkdirPar & pars) {
  * @param overWrite Whether to overwrite the directory if it already exists
  * @return The name of the created directory
  */
-inline std::string makeDir(const std::string & parentDirectory,
+inline bfs::path makeDir(const bfs::path & parentDirectory,
 		const MkdirPar & newDirectory) {
-	std::string ret = bib::files::join(parentDirectory,
-			replaceString(newDirectory.dirName_, "TODAY", getCurrentDate()) + "/");
+	bfs::path ret = bib::files::make_path(parentDirectory,
+			replaceString(newDirectory.dirName_.string(), "TODAY", getCurrentDate()) + "/");
 	MkdirPar params = newDirectory;
 	params.dirName_ = ret;
 	makeDir(params);
@@ -345,9 +432,9 @@ inline std::string makeDir(const std::string & parentDirectory,
  * @return The names of the created directories
  */
 
-inline std::vector<std::string> makeDir(std::string parentDirectory,
+inline std::vector<bfs::path> makeDir(std::string parentDirectory,
 		std::vector<MkdirPar> newDirectories) {
-	std::vector<std::string> ret;
+	std::vector<bfs::path> ret;
 	for (const auto & d : newDirectories) {
 		ret.emplace_back(makeDir(parentDirectory, d));
 	}
@@ -361,7 +448,7 @@ inline std::vector<std::string> makeDir(std::string parentDirectory,
  * @param pars a bib::files::MkdirPar that will have directory name, whether to overwrite, and permissions
  */
 inline void makeDirP(const MkdirPar & newDirectory) {
-	auto toks = tokenizeString(newDirectory.dirName_, "/");
+	auto toks = tokenizeString(newDirectory.dirName_.string(), "/");
 	std::string growingDir = "";
 	for (const auto & tok : toks) {
 		growingDir += tok + "/";
@@ -379,10 +466,10 @@ inline void makeDirP(const MkdirPar & newDirectory) {
  * @param newDirectory The new directory to make in parentDirectory
  * @return The name of the created directory or the name of the already created directory
  */
-inline std::string makeDirP(const std::string &parentDirectory,
+inline bfs::path makeDirP(const bfs::path &parentDirectory,
 		const MkdirPar & newDirectory) {
-	std::string ret = bib::files::join(parentDirectory,
-			replaceString(newDirectory.dirName_, "TODAY", getCurrentDate()) + "/");
+	bfs::path ret = bib::files::make_path(parentDirectory,
+			replaceString(newDirectory.dirName_.string(), "TODAY", getCurrentDate()) + "/");
 	MkdirPar params = newDirectory;
 	params.dirName_ = ret;
 	makeDirP(params);
@@ -394,16 +481,49 @@ inline std::string makeDirP(const std::string &parentDirectory,
  *
  * @param dir the directory to search
  * @param ext the extension to check for
+ * @param recursive whether to search in sub directories as well
  * @return a vector of paths to files in the directory with this extension
  */
 inline std::vector<bfs::path> gatherFiles(const bfs::path & dir,
-		const std::string & ext) {
-	auto files = listAllFiles(dir.string(), true,
-			{ std::regex {".*" + ext + "$" } });
-	return getVecOfMapKeys(files);
+		const std::string & ext, bool recursive = false) {
+	auto files = listAllFiles(dir.string(), recursive,
+			{ std::regex { ".*" + ext + "$" } });
+	std::vector<bfs::path> ret;
+	for (const auto & f : files) {
+		//add only files
+		if (!f.second) {
+			ret.emplace_back(f.first);
+		}
+	}
+	return ret;
 }
 
 
+/**@brief Open a gz file
+ *
+ * @param file a reference to a ogzstream to write to
+ * @param filename the file to write to
+ * @param overWrite whether to overwrite the file if it already exists
+ */
+inline void openGzFile(GZSTREAM::ogzstream& file,
+		const bfs::path & filename,
+		bool overWrite) {
+	if (bfs::exists(filename) && !overWrite) {
+		std::stringstream ss;
+		ss << filename << " already exists";
+		throw std::runtime_error { ss.str() };
+	} else {
+		file.open(filename);
+		if (!file) {
+			std::stringstream ss;
+			ss << "Error in opening " << filename;
+			throw std::runtime_error { ss.str() };
+		} else {
+			chmod(filename.c_str(),
+			S_IWUSR | S_IRUSR | S_IRGRP | S_IWGRP | S_IROTH);
+		}
+	}
+}
 
 
 

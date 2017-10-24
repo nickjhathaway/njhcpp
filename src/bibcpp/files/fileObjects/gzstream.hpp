@@ -48,16 +48,16 @@ private:
 	static const int bufferSize = 47 + 256;    // size of data buff
 	// totals 512 bytes under g++ for igzstream at the end.
 
-	gzFile file = nullptr;               // file handle for compressed file
-	char buffer[bufferSize]; // data buffer
-	char opened;             // open/close state of stream
-	int mode = -1;               // I/O mode
+	gzFile file_ = nullptr;               // file handle for compressed file
+	char buffer_[bufferSize]; // data buffer
+	char opened_;             // open/close state of stream
+	int mode_ = -1;               // I/O mode
 
 	int flush_buffer() {
 		// Separate the writing of the buffer from overflow() and
 		// sync() operation.
 		int w = pptr() - pbase();
-		if (gzwrite(file, pbase(), w) != w) {
+		if (gzwrite(file_, pbase(), w) != w) {
 			return EOF;
 		}
 		pbump(-w);
@@ -65,15 +65,15 @@ private:
 	}
 public:
 	gzstreambuf() :
-			opened(0) {
-		setp(buffer, buffer + (bufferSize - 1));
-		setg(buffer + 4,     // beginning of putback area
-		buffer + 4,     // read position
-		buffer + 4);    // end position
+			opened_(0) {
+		setp(buffer_, buffer_ + (bufferSize - 1));
+		setg(buffer_ + 4,     // beginning of putback area
+		buffer_ + 4,     // read position
+		buffer_ + 4);    // end position
 		// ASSERT: both input & output capabilities will not be used together
 	}
 	int is_open() {
-		return opened;
+		return opened_;
 	}
 
 	~gzstreambuf() {
@@ -83,35 +83,42 @@ public:
 		if (is_open()) {
 			return (gzstreambuf*) 0;
 		}
-		mode = open_mode;
+		mode_ = open_mode;
 		// no append nor read/write mode
-		if ((mode & std::ios::ate) || (mode & std::ios::app)
-				|| ((mode & std::ios::in) && (mode & std::ios::out))) {
+		if ((mode_ & std::ios::ate) || (mode_ & std::ios::app)
+				|| ((mode_ & std::ios::in) && (mode_ & std::ios::out))) {
 			return (gzstreambuf*) 0;
 		}
 
 		char fmode[10];
 		char* fmodeptr = fmode;
-		if (mode & std::ios::in) {
+		if (mode_ & std::ios::in) {
 			*fmodeptr++ = 'r';
-		} else if (mode & std::ios::out) {
+		} else if (mode_ & std::ios::out) {
 			*fmodeptr++ = 'w';
 		}
 		*fmodeptr++ = 'b';
 		*fmodeptr = '\0';
-		file = gzopen(name, fmode);
-		if (file == 0) {
+		file_ = gzopen(name, fmode);
+#if ZLIB_VERNUM >= 0x1280
+		//if you couldn't set the buffer, throw
+		if (gzbuffer(file_, 128 * 1024)) {
+			throw std::runtime_error { std::string(__PRETTY_FUNCTION__)
+					+ ":couldn't set gz buffer" };
+		}
+#endif
+		if (file_ == 0) {
 			return (gzstreambuf*) 0;
 		}
-		opened = 1;
+		opened_ = 1;
 		return this;
 	}
 
 	gzstreambuf * close() {
 		if (is_open()) {
 			sync();
-			opened = 0;
-			if (gzclose(file) == Z_OK) {
+			opened_ = 0;
+			if (gzclose(file_) == Z_OK) {
 				return this;
 			}
 		}
@@ -122,7 +129,7 @@ public:
 		if (gptr() && (gptr() < egptr())) {
 			return *reinterpret_cast<unsigned char *>(gptr());
 		}
-		if (!(mode & std::ios::in) || !opened) {
+		if (!(mode_ & std::ios::in) || !opened_) {
 			return EOF;
 		}
 		// Josuttis' implementation of inbuf
@@ -130,23 +137,23 @@ public:
 		if (n_putback > 4) {
 			n_putback = 4;
 		}
-		memcpy(buffer + (4 - n_putback), gptr() - n_putback, n_putback);
+		memcpy(buffer_ + (4 - n_putback), gptr() - n_putback, n_putback);
 
-		int num = gzread(file, buffer + 4, bufferSize - 4);
+		int num = gzread(file_, buffer_ + 4, bufferSize - 4);
 		if (num <= 0) { // ERROR or EOF
 			return EOF;
 		}
 		// reset buffer pointers
-		setg(buffer + (4 - n_putback),   // beginning of putback area
-		buffer + 4,                 // read position
-		buffer + 4 + num);          // end of buffer
+		setg(buffer_ + (4 - n_putback),   // beginning of putback area
+		buffer_ + 4,                 // read position
+		buffer_ + 4 + num);          // end of buffer
 
 		// return next character
 		return *reinterpret_cast<unsigned char *>(gptr());
 	}
 
 	virtual int overflow(int c = EOF) { // used for output buffer only
-		if (!(mode & std::ios::out) || !opened) {
+		if (!(mode_ & std::ios::out) || !opened_) {
 			return EOF;
 		}
 		if (c != EOF) {

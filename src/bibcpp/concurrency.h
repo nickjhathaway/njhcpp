@@ -13,4 +13,5 @@
 
 #include "bibcpp/concurrency/LockableQueue.hpp"
 #include "bibcpp/concurrency/LockableVec.hpp"
+#include "bibcpp/concurrency/concurrencyUtils.hpp"
 

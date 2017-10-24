@@ -15,13 +15,13 @@ namespace progutils {
 /**@brief A class for holding all the parameters
  *
  */
-class flagHolder {
+class FlagHolder {
 
 public:
 	/**@brief Default constructor for an empty holder
 	 *
 	 */
-	flagHolder() {
+	FlagHolder() {
 	}
 
 	/**@brief A vector holding all the parameters
@@ -124,11 +124,22 @@ public:
 					std::stringstream ss;
 					ss << "Error in : " << __PRETTY_FUNCTION__ << ", adding new flag: "
 							<< noDashOpts[ndoPos] << " which already exists" << "\n";
-					ss << Json::FastWriter().write(f.second.toJson()) << "\n";
+					ss << json::writeAsOneLine(f.second.toJson()) << "\n";
 					throw std::runtime_error { ss.str() };
 				}
 			}
 		}
+	}
+
+	/**@brief convert to json representation
+	 *
+	 * @return Json::Value object
+	 */
+	Json::Value toJson() const {
+		Json::Value ret;
+		ret["class"] = getTypeName(*this);
+		ret["flags_"] = bib::json::toJson(flags_);
+		return ret;
 	}
 
 };

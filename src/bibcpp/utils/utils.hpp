@@ -70,6 +70,24 @@ bool in(const T& t, const std::vector<T>& c) {
   return contains(c, t);
 }
 
+
+/**@brief Convert a vector into another vector of same length via converter function
+ *
+ * @param input the input vector to convert
+ * @param func the function used to convert
+ * @return the converted vector
+ */
+template<typename IN, typename OUT>
+std::vector<OUT> convert(const std::vector<IN> & input, std::function<OUT(const IN &)> func){
+	std::vector<OUT> ret;
+	ret.reserve(input.size());
+	for(const auto & inputElement : input){
+		ret.emplace_back(func(inputElement));
+	}
+	return ret;
+}
+
+
 /**@brief Get a range of numbers of num long in [start,stop]
  *
  * @param start The start of the range
@@ -447,6 +465,29 @@ inline int32_t needleScore(const std::string& objA, const std::string& objB) {
                     ScoreMatrix[icursor][jcursor].diagInherit, tracerNext);
   return score;
 }
+
+/**@brief Convert a oct number to the decimal representation string
+ *
+ * @param octInt the oct int
+ * @return decimal format int string
+ */
+inline std::string octToDecStr(int32_t octInt) {
+  std::stringstream stream;
+  stream << std::oct << octInt;
+  std::string ans;
+  stream >> ans;
+  return ans;
+}
+
+/**@brief Convert a oct number to the decimal representation
+ *
+ * @param octInt the oct int
+ * @return decimal format int
+ */
+inline int32_t octToDec(int32_t octInt) {
+	 return std::stoi(octToDecStr(octInt));
+}
+
 
 
 } // namespace bib

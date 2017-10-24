@@ -310,6 +310,10 @@ inline void strVecToLower(std::vector<std::string>& vec) {
 inline std::string replaceString(std::string theString,
                                  const std::string& toBeReplaced,
                                  const std::string& replacement) {
+	if("" == toBeReplaced){
+		//maybe throw? warn?
+		return theString;
+	}
   size_t spaceSize = toBeReplaced.size();
   size_t currPos = theString.find(toBeReplaced);
   while (currPos != std::string::npos) {
@@ -534,10 +538,11 @@ void pasteAsStrAdd(std::string & str, const T& last) {
 template<typename N, typename ... T>
 void pasteAsStrAdd(std::string& str, const N& next, const T&... rest) {
 	addAsStrToStr(str, next);
+
 	pasteAsStrAdd(str, rest...);
 }
 
-/**@brief Paste all objects as one string
+/**@brief Paste all objects as one string, will also unroll vectors
  *
  * @param items All things to paste together
  * @return A string of all the items pasted together
@@ -564,5 +569,41 @@ T && removeAllWhitespace(T && s) {
 			s.end());
 	return std::forward<T>(s);
 }
+
+/**@brief backslash escape special characters \ /:*?"<>|;[]
+ *
+ * @param input the input with special characters to be replaced
+ */
+inline void escapeSpecialChars(std::string & input) {
+	std::regex specialCharsPat {
+			R"(([\ /:*?"<>|;\[\]]))"};
+	std::string format{"\\$1"};
+	input = std::regex_replace(input, specialCharsPat, format);
+}
+
+/**@brief backslash escape special characters \ /:*?"<>|;[]
+ *
+ * @param input the input with special characters to be replaced
+ * @return the input string but with the special character replaced
+ */
+inline std::string escapeSpecialCharsRet(const std::string & input) {
+	std::regex specialCharsPat {
+		R"(([\ /:*?"<>|;\[\]]))"};
+	std::string format{"\\$1"};
+	return std::regex_replace(input, specialCharsPat, format);
+}
+
+/**@brief test if a string contains special characters \ /:*?"<>|;[]
+ *
+ * @param input
+ * @return
+ */
+inline bool containsSpecialChars(const std::string & input){
+	std::regex specialCharsPat {
+		R"(([\ /:*?"<>|;\[\]]))"};
+	std::smatch match;
+	return std::regex_search(input, match, specialCharsPat);
+}
+
 
 } // namesapce bib

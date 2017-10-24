@@ -57,7 +57,7 @@ inline static std::string get_file_contents(const bfs::path& fnp, bool verbose) 
  * @return A std::streambuf* or either an opened file or of std::cout
  */
 inline std::streambuf* determineOutBuf(std::ofstream & outFile,
-		const std::string & outFilename, const std::string outFileExt,
+		const bfs::path & outFilename, const std::string outFileExt,
 		bool overWrite, bool append, bool exitOnFailure) {
 	if (outFilename != "") {
 		openTextFile(outFile, outFilename, outFileExt, overWrite,
@@ -128,11 +128,11 @@ crossPlatGetline(std::istream& __is, std::string& __str) {
  * @param filename The name of the file
  * @return The first line of the file
  */
-inline std::string getFirstLine(const std::string &filename) {
+inline std::string getFirstLine(const bfs::path &filename) {
   std::string currentLine;
   std::ifstream textFile(filename.c_str());
   if (!textFile) {
-  	throw std::runtime_error{"Error in opening " + filename};
+  	throw std::runtime_error{"Error in opening " + filename.string()};
   }
   crossPlatGetline(textFile, currentLine);
   return currentLine;
@@ -144,27 +144,71 @@ inline std::string getFirstLine(const std::string &filename) {
  * @param filename Name of the file to extract the last line from
  * @return A std::string object containing the last line of the file
  */
-inline std::string getLastLine(const std::string & filename) {
+inline std::string getLastLine(const bfs::path & filename) {
 	/*
 	 Last line from the file, from http://www.programmersbook.com/page/7/Get-last-line-from-a-file-in-C/
 	 */
-	std::ifstream read(filename, std::ios_base::ate); //open file
-	if(!read){
-		throw std::runtime_error{bib::bashCT::boldRed("Error in opening " + filename)};
+	std::ifstream inputFile(filename.string(), std::ios_base::ate); //open file
+	if(!inputFile){
+		throw std::runtime_error{bib::bashCT::boldRed("Error in opening " + filename.string())};
 	}
 	std::string ret;
 	int length = 0;
 	char c = '\0';
-	if (read) {
-		length = read.tellg(); //Get file size
+	if (inputFile) {
+		length = inputFile.tellg(); //Get file size
 		// loop backward over the file
-		for (int i = length - 2; i > 0; i--) {
-			read.seekg(i);
-			c = read.get();
+		for (int i = length - 2; i > 0; --i) {
+			inputFile.seekg(i);
+			c = inputFile.get();
 			if (c == '\r' || c == '\n') //new line?
 				break;
 		}
-		std::getline(read, ret); //read last line
+		std::getline(inputFile, ret); //read last line
+	}
+	return ret;
+}
+
+/**@brief Get all the lines in a file into a vector of strings
+ *
+ * @param fnp the file to read
+ * @return a vector of all lines
+ */
+inline std::vector<std::string> getAllLines(const bfs::path & fnp){
+	std::vector<std::string> ret;
+  std::string currentLine;
+  std::ifstream textFile(fnp.c_str());
+  if (!bfs::exists(fnp)){
+  	throw std::runtime_error{"Error " + fnp.string() + " doesn't exist"};
+  }
+  if (!textFile) {
+  	throw std::runtime_error{"Error in opening " + fnp.string()};
+  }
+  while(crossPlatGetline(textFile, currentLine)){
+  	ret.emplace_back(currentLine);
+  }
+  return ret;
+}
+
+
+/**@brief Get files by pattern in the current directory or but reading a file or input
+ *
+ * @param patReg regex pattern
+ * @param bams either a file name where each line is a file or is comma separated filenames
+ * @return a vector of paths
+ */
+inline std::vector<bfs::path> gatherFilesByPatOrNames(const std::regex & patReg,
+		const std::string & fileNames = "") {
+	std::vector<bfs::path> ret;
+	if ("" != fileNames) {
+		if (bfs::basename(fileNames).length() < 255 && bfs::exists(fileNames)) {
+			ret = vecStrToPaths(getAllLines(fileNames));
+		} else {
+			ret = vecStrToPaths(tokenizeString(fileNames, ","));
+		}
+	} else {
+		auto inFiles = listAllFiles("./", false, { patReg });
+		ret = getVecOfMapKeys(inFiles);
 	}
 	return ret;
 }
@@ -222,8 +266,8 @@ inline bool nextLineBeginsWith(std::istream & is, char c){
  * @param filename The filename to count
  * @return The number of lines in filename
  */
-inline uint32_t countLines(const std::string & filename) {
-	std::ifstream inFile(filename);
+inline uint32_t countLines(const bfs::path & filename) {
+	std::ifstream inFile(filename.string());
 	if (!inFile) {
 		std::stringstream ss;
 		ss << "Error in opening " << filename << std::endl;
@@ -235,6 +279,95 @@ inline uint32_t countLines(const std::string & filename) {
 		++ret;
 	}
 	return ret;
+}
+
+/**@brief Check to see if a mtraix file has rowname
+ *
+ * @param fnp the file to check
+ * @param delim the delimiter of the file
+ * @param maxCheck the max number of lines to check, to cut down on time to not check all the whole file
+ * @return ture if file might have rownames
+ */
+inline bool hasPossibleRowNames(const bfs::path & fnp, const std::string & delim =
+		"whitespace", uint32_t maxCheck = 100) {
+	std::ifstream inFile(fnp.string());
+	if (!inFile) {
+		std::stringstream ss;
+		ss << __PRETTY_FUNCTION__ << ": error in opening " << fnp << "\n";
+		throw std::runtime_error { ss.str() };
+	}
+	auto firstLine = tokenizeString(bib::files::getFirstLine(fnp), delim);
+	std::vector<std::string> fistLine;
+	std::string line = "";
+	uint32_t lineCount = 0;
+
+	std::vector<uint32_t> columnLengths;
+	while(bib::files::crossPlatGetline(inFile, line)){
+		if(firstLine.empty()){
+			firstLine = tokenizeString(line, delim);
+		}else{
+			auto nextLine = tokenizeString(line, delim);
+			columnLengths.push_back(nextLine.size());
+		}
+		++lineCount;
+		if(lineCount> maxCheck){
+			break;
+		}
+	}
+	bool hasRowNames = false;
+	if(!columnLengths.empty()){
+		//check to see if all the lines are the same length
+		for(const auto & line : columnLengths){
+			if (line != columnLengths.front()) {
+				std::stringstream ss;
+				ss << __PRETTY_FUNCTION__ << ": error in " << fnp
+						<< " found different column lengths in input data in the first "
+						<< (columnLengths.size() < maxCheck ? columnLengths.size() : maxCheck) << " lines" << "\n";
+				std::map<uint32_t, uint32_t> counts;
+				for(const auto & length : columnLengths){
+					++counts[length];
+				}
+				for(const auto & count : counts){
+					ss << count.first << "\t" << count.second << "\n";
+				}
+				throw std::runtime_error { ss.str() };
+			}
+		}
+		if(columnLengths.front() + 1 == firstLine.size()){
+			hasRowNames = true;
+		}
+	}
+	return hasRowNames;
+}
+
+inline uint32_t getExpectedNumCol(const bfs::path & fnp,
+		const std::string & delim = "whitespace",
+		uint32_t maxCheck = 100){
+	std::ifstream inFile(fnp.string());
+	if(!inFile){
+		std::stringstream ss;
+		ss << __PRETTY_FUNCTION__ << ": error in opening " << fnp << "\n";
+		throw std::runtime_error{ss.str()};
+	}
+	auto firstLine = tokenizeString(bib::files::getFirstLine(fnp), delim);
+	std::vector<std::string> fistLine;
+	std::string line = "";
+	uint32_t lineCount = 0;
+
+	std::vector<uint32_t> columnLengths;
+	while(bib::files::crossPlatGetline(inFile, line)){
+		if(firstLine.empty()){
+			firstLine = tokenizeString(line, delim);
+		}else{
+			auto nextLine = tokenizeString(line, delim);
+			columnLengths.push_back(nextLine.size());
+		}
+		++lineCount;
+		if(lineCount> maxCheck){
+			break;
+		}
+	}
+	return columnLengths.front();
 }
 
 

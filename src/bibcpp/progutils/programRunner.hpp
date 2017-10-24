@@ -18,7 +18,7 @@ namespace progutils {
  *function objects
  *
  */
-class programRunner {
+class ProgramRunner {
  protected:
   /**@brief funcInfo struct that holds
    *
@@ -71,7 +71,7 @@ class programRunner {
    *name of the master program
    *
    */
-  programRunner(std::map<std::string, funcInfo> cmdToFunc,
+  ProgramRunner(std::map<std::string, funcInfo> cmdToFunc,
                 std::string nameOfProgram,
 								std::string versionMajor = "1",
 								std::string versionMinor = "0",
@@ -82,7 +82,7 @@ class programRunner {
 				versionPatchlevel_(versionPatchLevel) {
 	}
 
-  virtual ~programRunner() {}
+  virtual ~ProgramRunner() {}
   /**@brief Run one of the subprogram with given arguments stored in argv if
    *master program contains it
    *
@@ -208,7 +208,7 @@ class programRunner {
   virtual int batchRun(CmdArgs inputCommands) {
     std::vector<std::string> batchFlags{"-ending", "--ending", "-pattern", "--pattern", "-run", "--run", "batch"};
     std::string ending = "", program = "", pattern = "";
-    programSetUp setUp(inputCommands);
+    ProgramSetUp setUp(inputCommands);
     bool endFlag = setUp.setOption(ending , "-ending", "A file extension to run batch commands on", false);
     setUp.setOption(pattern, "-pattern", "File Pattern to run batch command", !endFlag);
     setUp.setOption(program, "-run", "ProgramToRun", true);
@@ -295,7 +295,7 @@ class programRunner {
   virtual int batchRunThreaded(CmdArgs inputCommands) {
     std::vector<std::string> batchFlags{"-ending", "--ending", "-pattern", "--pattern", "-run", "--run", "batchthreaded", "-batchthreads", "--batchthreads"};
     std::string ending = "", program = "", pattern = "";
-    programSetUp setUp(inputCommands);
+    ProgramSetUp setUp(inputCommands);
     bool endFlag = setUp.setOption(ending , "-ending", "A file extension to run batch commands on", false);
     setUp.setOption(pattern, "-pattern", "File Pattern to run batch command", !endFlag);
     setUp.setOption(program, "-run", "Program To Run a Batch of Commands with", true);
