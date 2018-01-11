@@ -500,7 +500,7 @@ const typename MAP::mapped_type & mapAt(const MAP & map, const typename MAP::key
 	if(!bib::in(key, map)){
 		//technically shouldn't call functions that could also throw exceptions but oh well
 		std::stringstream ss;
-		ss << "No key, " << key << ", in map." << " options are " << bib::conToStr(getVectorOfMapKeys(map), ",")<< "\n";
+		ss << "No key, " << key << ", in map." << " options are " << bib::conToStr(getVecOfMapKeys(map), ",")<< "\n";
 		throw std::out_of_range{ss.str()};
 	}
 	return map.at(key);
@@ -517,7 +517,7 @@ typename MAP::mapped_type & mapAt(MAP & map, const typename MAP::key_type & key)
 	if(!bib::in(key, map)){
 		//technically shouldn't call functions that could also throw exceptions but oh well
 		std::stringstream ss;
-		ss << "No key, " << key << ", in map. " << " options are " << bib::conToStr(getVectorOfMapKeys(map), ",")<< "\n";
+		ss << "No key, " << key << ", in map. " << " options are " << bib::conToStr(getVecOfMapKeys(map), ",")<< "\n";
 		throw std::out_of_range{ss.str()};
 	}
 	return map.at(key);
