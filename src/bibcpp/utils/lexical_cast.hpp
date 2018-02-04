@@ -13,6 +13,8 @@
 
 #include "bibcpp/common.h" //to_string, isArithmetic, isString
 #include "bibcpp/utils/typeUtils.hpp"
+#include "bibcpp/utils/stringUtils.hpp"
+
 
 namespace bib {
 inline std::string prettierName(const std::string & prettyName){
@@ -194,6 +196,25 @@ namespace StrToNumConverter {
 
 }  // namespace StrToNumConverter
 
+
+/**@brief convert a delimted string into a std::set
+ *
+ * @param str the string to convert
+ * @param delim the delimiter
+ * @return a std::set of the input delimited string
+ */
+template<typename T>
+std::set<T> strToSet(const std::string & str, const std::string & delim){
+	if("" == str){
+		return std::set<T>{};
+	}
+	auto toks = tokenizeString(str, delim);
+	std::set<T> ret;
+	for(const auto & tok : toks){
+		ret.emplace(lexical_cast<T>(tok));
+	}
+	return ret;
+}
 
 
 }  // namespace bib
