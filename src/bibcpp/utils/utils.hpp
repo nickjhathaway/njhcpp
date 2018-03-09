@@ -16,6 +16,7 @@
 #include <cmath>
 
 #include "bibcpp/jsonUtils/jsonUtils.hpp" //included here so that most files will have json
+#include "bibcpp/utils/stringUtils.hpp" //for conToStr
 
 namespace bib{
 
@@ -488,6 +489,39 @@ inline int32_t octToDec(int32_t octInt) {
 	 return std::stoi(octToDecStr(octInt));
 }
 
+/**@todo a verbose map at, only safe to use to if the keys can be converted to strings, will print the available keys
+ *
+ * @param map the map to use .at() on
+ * @param key the key to get the value of
+ * @return a const ref to the map value for that key
+ */
+template<typename MAP>
+const typename MAP::mapped_type & mapAt(const MAP & map, const typename MAP::key_type & key){
+	if(!bib::in(key, map)){
+		//technically shouldn't call functions that could also throw exceptions but oh well
+		std::stringstream ss;
+		ss << "No key, " << key << ", in map." << " options are " << bib::conToStr(getVecOfMapKeys(map), ",")<< "\n";
+		throw std::out_of_range{ss.str()};
+	}
+	return map.at(key);
+}
+
+/**@todo a verbose map at, only safe to use to if the keys can be converted to strings, will print the available keys
+ *
+ * @param map the map to use .at() on
+ * @param key the key to get the value of
+ * @return a ref to the map value for that key
+ */
+template<typename MAP>
+typename MAP::mapped_type & mapAt(MAP & map, const typename MAP::key_type & key){
+	if(!bib::in(key, map)){
+		//technically shouldn't call functions that could also throw exceptions but oh well
+		std::stringstream ss;
+		ss << "No key, " << key << ", in map. " << " options are " << bib::conToStr(getVecOfMapKeys(map), ",")<< "\n";
+		throw std::out_of_range{ss.str()};
+	}
+	return map.at(key);
+}
 
 
 } // namespace bib

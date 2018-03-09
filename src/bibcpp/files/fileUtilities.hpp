@@ -36,6 +36,36 @@ inline bool firstFileIsOlder(
 	return bib::files::last_write_time(file1) < bib::files::last_write_time(file2);
 }
 
+/**@brief Checks to see if a list of files are all newer than anther file
+ *
+ * @param files the files to check
+ * @param checkFile the check file to check against
+ * @return true if all files are new
+ * @todo consider a check to see if files is empty, also this will throw if any of the files don't exist
+ */
+inline bool allFilesNewerThanCheck(
+		const std::vector<bfs::path> & files,
+		const bfs::path & checkFile) {
+	return std::all_of(files.begin(), files.end(), [&checkFile](const bfs::path & fnp){
+		return bib::files::last_write_time(checkFile) < bib::files::last_write_time(fnp);
+	});
+}
+
+/**@brief Checks to see if a list of files exist are all newer than anther file
+ *
+ * @param files the files to check
+ * @param checkFile the check file to check against
+ * @return true if all files are new
+ * @todo consider a check to see if files is empty and if check file exists
+ */
+inline bool allFilesExistAndNewerThanCheck(
+		const std::vector<bfs::path> & files,
+		const bfs::path & checkFile) {
+	return std::all_of(files.begin(), files.end(), [&checkFile](const bfs::path & fnp){
+		return bfs::exists(fnp) ? bib::files::last_write_time(checkFile) < bib::files::last_write_time(fnp) : false;
+	});
+}
+
 
 /**@brief A check that will throw if a file doesn't exist
  *

@@ -38,7 +38,7 @@ struct RunOutput {
 		Json::Value ret;
 		ret["class"] = "bib::sys::RunOutput";
 		ret["cmd_"] = json::toJson(cmd_);
-		ret["succes_"] = json::toJson(success_);
+		ret["success_"] = json::toJson(success_);
 		ret["returnCode_"] = json::toJson(returnCode_);
 		ret["stdOut_"] = json::toJson(stdOut_);
 		ret["stdErr_"] = json::toJson(stdErr_);

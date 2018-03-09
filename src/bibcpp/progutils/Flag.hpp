@@ -32,6 +32,9 @@ public:
 					required), set_(false), setValue_(estd::to_string(opt)), defaultValue_(
 					estd::to_string(opt)), type_(getTypeName(opt)) {
 		initialize(flags);
+		if(isNumericPrimitive<T>() && std::numeric_limits<T>::max() == opt){
+			defaultValue_ = "None";
+		}
 	}
 	/**@brief construct with templated option, so any value can be given that can be converted to a string
 	 *

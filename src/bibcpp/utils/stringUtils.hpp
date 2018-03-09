@@ -157,7 +157,9 @@ std::string leftPadNumStr(T num, T highestNumber = 10) {
 	//static_assert(std::is_unsigned<T>::value,
 	  //                "Num has to be unsigned");
   std::stringstream ret;
-  if (num == 0) {
+  if(0 == highestNumber){
+  		ret << num << std::endl;
+  } else if (0 == num) {
     ret << std::string(log10(highestNumber), '0');
   } else {
     ret << std::string((static_cast<int32_t>(log10(highestNumber)) - static_cast<int32_t>(log10(num))), '0');
@@ -604,6 +606,9 @@ inline bool containsSpecialChars(const std::string & input){
 	std::smatch match;
 	return std::regex_search(input, match, specialCharsPat);
 }
+
+
+
 
 
 } // namesapce bib
