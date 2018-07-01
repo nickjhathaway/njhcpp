@@ -178,6 +178,9 @@ std::string leftPadNumStr(T num, T highestNumber = 10) {
 inline std::vector<std::string> tokenizeString(const std::string& str,
                                                const std::string& delim,
                                                bool addEmptyToEnd = false) {
+	if("" == str){
+		return std::vector<std::string>{};
+	}
   std::vector<std::string> ret;
   if ("whitespace" == delim) {
     std::stringstream ss(str);
