@@ -611,7 +611,14 @@ inline bool containsSpecialChars(const std::string & input){
 }
 
 
-
+/**@brief Returns true if string is all whitespace characters
+ *
+ * @param str the string to test
+ * @return true if str is all whitespace chracters
+ */
+inline bool allWhiteSpaceStr(const std::string & str){
+	return std::string::npos == str.find_first_not_of(" \f\n\r\t\v");
+}
 
 
 } // namesapce bib

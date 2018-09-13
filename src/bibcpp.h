@@ -6,6 +6,7 @@
 #include "bibcpp/debug.h"
 #include "bibcpp/files.h"
 #include "bibcpp/graphics.h"
+#include "bibcpp/IO.h"
 #include "bibcpp/jsonUtils.h"
 #include "bibcpp/utils.h"
 #include "bibcpp/progutils.h"

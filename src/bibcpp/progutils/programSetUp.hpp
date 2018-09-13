@@ -361,39 +361,11 @@ public:
 	 *
 	 */
 	template<typename T>
-	bool setOption(T &option, std::string flagStr,
-			const std::string &shortDescription, bool required = false) {
-
-		Flag currentFlag(option, flagStr, shortDescription, required);
-		bool found = false;
-		std::vector<std::string> flagsFound;
-		for (const auto &fTok : currentFlag.flags_) {
-			if (commands_.lookForOptionDashCaseInsen(option, fTok)) {
-				currentFlag.setValue(option);
-				found = true;
-				flagsFound.emplace_back(fTok);
-			}
-		}
-
-		if (required && !found) {
-			std::stringstream tempStream;
-			tempStream << bashCT::bold + bashCT::black << "Need to have "
-					<< bashCT::red << conToStr(tokenizeString(flagStr, ","), " or ")
-					<< bashCT::black << " see " << bashCT::red
-					<< commands_.getProgramName() + " --help " << bashCT::black
-					<< "for more details" << bashCT::reset;
-			warnings_.emplace_back(tempStream.str());
-			failed_ = true;
-		}
-		if (found && flagsFound.size() > 1) {
-			std::stringstream tempStream;
-			tempStream << "Found multiple flags for the same option, found "
-					<< conToStr(flagsFound, ", ") << " but should only have one";
-			warnings_.emplace_back(tempStream.str());
-			failed_ = true;
-		}
-		flags_.addFlag(currentFlag);
-		return found;
+	bool setOption(T &option,
+			std::string flagStr,
+			const std::string &shortDescription,
+			bool required = false) {
+		return setOption(option, flagStr, shortDescription, required, "Misc");
 	}
 
 	/**@brief A templated function to look for options and implementation for
@@ -412,36 +384,42 @@ public:
 	bool setOption(T &option, std::string flagStr,
 			const std::string & shortDescription, bool required,
 			const std::string & flagGrouping) {
-
-		Flag currentFlag(option, flagStr, shortDescription, required, flagGrouping);
 		bool found = false;
-		std::vector<std::string> flagsFound;
-		for (const auto &fTok : currentFlag.flags_) {
-			if (commands_.lookForOptionDashCaseInsen(option, fTok)) {
-				currentFlag.setValue(option);
-				found = true;
-				flagsFound.emplace_back(fTok);
-			}
-		}
+		try {
+			Flag currentFlag(option, flagStr, shortDescription, required, flagGrouping);
+					std::vector<std::string> flagsFound;
+					for (const auto &fTok : currentFlag.flags_) {
+						if (commands_.lookForOptionDashCaseInsen(option, fTok)) {
+							currentFlag.setValue(option);
+							found = true;
+							flagsFound.emplace_back(fTok);
+						}
+					}
 
-		if (required && !found) {
-			std::stringstream tempStream;
-			tempStream << bashCT::bold + bashCT::black << "Need to have "
-					<< bashCT::red << conToStr(tokenizeString(flagStr, ","), " or ")
-					<< bashCT::black << " see " << bashCT::red
-					<< commands_.getProgramName() + " --help " << bashCT::black
-					<< "for more details" << bashCT::reset;
-			warnings_.emplace_back(tempStream.str());
-			failed_ = true;
+					if (required && !found) {
+						std::stringstream tempStream;
+						tempStream << bashCT::bold + bashCT::black << "Need to have "
+								<< bashCT::red << conToStr(tokenizeString(flagStr, ","), " or ")
+								<< bashCT::black << " see " << bashCT::red
+								<< commands_.getProgramName() + " --help " << bashCT::black
+								<< "for more details" << bashCT::reset;
+						warnings_.emplace_back(tempStream.str());
+						failed_ = true;
+					}
+					if (found && flagsFound.size() > 1) {
+						std::stringstream tempStream;
+						tempStream << "Found multiple flags for the same option, found "
+								<< conToStr(flagsFound, ", ") << " but should only have one";
+						warnings_.emplace_back(tempStream.str());
+						failed_ = true;
+					}
+					flags_.addFlag(currentFlag);
+		} catch (std::exception & e) {
+			std::stringstream ss;
+			ss << "Error setting option for " << flagStr << "\n";
+			ss << "Exception: " << e.what() << "\n";
+			throw std::runtime_error{ss.str()};
 		}
-		if (found && flagsFound.size() > 1) {
-			std::stringstream tempStream;
-			tempStream << "Found multiple flags for the same option, found "
-					<< conToStr(flagsFound, ", ") << " but should only have one";
-			warnings_.emplace_back(tempStream.str());
-			failed_ = true;
-		}
-		flags_.addFlag(currentFlag);
 		return found;
 	}
 

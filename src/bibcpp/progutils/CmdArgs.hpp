@@ -10,6 +10,7 @@
 #include "bibcpp/utils.h"
 #include "bibcpp/files/filePathUtils.hpp"
 #include "bibcpp/bashUtils.h"
+#include "bibcpp/IO/IOUtils.hpp"
 
 
 namespace bib {
@@ -41,6 +42,36 @@ public:
 	|| std::is_same<long double, typename std::decay<T>::type>::value
 	|| std::is_same<float, typename std::decay<T>::type>::value
 	|| std::is_same<char, typename std::decay<T>::type>::value
+	//vectors
+	|| std::is_same<std::vector<std::string>, typename std::decay<T>::type>::value
+	|| std::is_same<std::vector<boost::filesystem::path>, typename std::decay<T>::type>::value
+	|| std::is_same<std::vector<int>, typename std::decay<T>::type>::value
+	|| std::is_same<std::vector<short>, typename std::decay<T>::type>::value
+	|| std::is_same<std::vector<int>, typename std::decay<T>::type>::value
+	|| std::is_same<std::vector<long>, typename std::decay<T>::type>::value
+	|| std::is_same<std::vector<long long>, typename std::decay<T>::type>::value
+	|| std::is_same<std::vector<unsigned short>, typename std::decay<T>::type>::value
+	|| std::is_same<std::vector<unsigned int>, typename std::decay<T>::type>::value
+	|| std::is_same<std::vector<unsigned long>, typename std::decay<T>::type>::value
+	|| std::is_same<std::vector<double>, typename std::decay<T>::type>::value
+	|| std::is_same<std::vector<long double>, typename std::decay<T>::type>::value
+	|| std::is_same<std::vector<float>, typename std::decay<T>::type>::value
+	|| std::is_same<std::vector<char>, typename std::decay<T>::type>::value
+	//set
+	|| std::is_same<std::set<std::string>, typename std::decay<T>::type>::value
+	|| std::is_same<std::set<boost::filesystem::path>, typename std::decay<T>::type>::value
+	|| std::is_same<std::set<int>, typename std::decay<T>::type>::value
+	|| std::is_same<std::set<short>, typename std::decay<T>::type>::value
+	|| std::is_same<std::set<int>, typename std::decay<T>::type>::value
+	|| std::is_same<std::set<long>, typename std::decay<T>::type>::value
+	|| std::is_same<std::set<long long>, typename std::decay<T>::type>::value
+	|| std::is_same<std::set<unsigned short>, typename std::decay<T>::type>::value
+	|| std::is_same<std::set<unsigned int>, typename std::decay<T>::type>::value
+	|| std::is_same<std::set<unsigned long>, typename std::decay<T>::type>::value
+	|| std::is_same<std::set<double>, typename std::decay<T>::type>::value
+	|| std::is_same<std::set<long double>, typename std::decay<T>::type>::value
+	|| std::is_same<std::set<float>, typename std::decay<T>::type>::value
+	|| std::is_same<std::set<char>, typename std::decay<T>::type>::value
 	> {};
 
 	/**@brief simply aesthetic, to make call to is_cmdArg_supported_type look nicer
@@ -245,7 +276,6 @@ public:
 	template<typename T>
 	bool lookForOptionCaseInsen(T & option, const std::string& flag) {
 		if (hasFlagCaseInsen(flag)) {
-
 			convertArg(getArgCaseInsen(flag, getTypeName(option) == "bool"), option);
 			return true;
 		} else {
@@ -637,28 +667,25 @@ public:
 	}
 };
 
+
 // boost::filesystem::path
 template<>
-inline void CmdArgs::convertArg(const std::string& option,
-		boost::filesystem::path & outVal) {
+inline void CmdArgs::convertArg(const std::string& option, boost::filesystem::path & outVal) {
 	outVal = option;
 }
 
 // std::string
 template<>
-inline void CmdArgs::convertArg(const std::string& option,
-		std::string & outVal) {
+inline void CmdArgs::convertArg(const std::string& option, std::string & outVal) {
 	outVal = option;
 }
 
 
 // char
 template<>
-inline void CmdArgs::convertArg(const std::string& option,
-		char & outVal) {
+inline void CmdArgs::convertArg(const std::string& option, char & outVal) {
 	outVal = option.empty() ? ' ' : option.front();
 }
-
 
 // bool
 template<>
@@ -731,5 +758,198 @@ template<>
 inline void CmdArgs::convertArg(const std::string& option, float& outVal) {
 	outVal = std::stof(option);
 }
+
+
+// vectors
+template<typename T>
+void convertArgVec(const std::string & option, std::vector<T> & outValVec){
+	outValVec.clear();
+	auto opts = getInputValues(option, ",");
+	outValVec = std::vector<T>(opts.size());
+	for(const auto & valPos : iter::range(outValVec.size())){
+		CmdArgs::convertArg(opts[valPos], outValVec[valPos]);
+	}
+}
+
+// boost::filesystem::path
+template<>
+inline void CmdArgs::convertArg(const std::string& option, std::vector<boost::filesystem::path> & outVal) {
+	convertArgVec(option, outVal);
+}
+
+// std::string
+template<>
+inline void CmdArgs::convertArg(const std::string& option, std::vector<std::string> & outVal) {
+	convertArgVec(option, outVal);
+}
+
+// char
+template<>
+inline void CmdArgs::convertArg(const std::string& option, std::vector<char> & outVal) {
+	convertArgVec(option, outVal);
+}
+
+// short (int16_t)
+template<>
+inline void CmdArgs::convertArg(const std::string& option, std::vector<short > & outVal) {
+	convertArgVec(option, outVal);
+}
+// int (int32_t)
+template<>
+inline void CmdArgs::convertArg(const std::string& option, std::vector<int> & outVal) {
+	convertArgVec(option, outVal);
+}
+// long (int64_t depending on system/lib)
+template<>
+inline void CmdArgs::convertArg(const std::string& option, std::vector<long > & outVal) {
+	convertArgVec(option, outVal);
+}
+
+// long long (int64_t depending on system/lib)
+template<>
+inline void CmdArgs::convertArg(const std::string& option, std::vector<long long> & outVal) {
+	convertArgVec(option, outVal);
+}
+// unsigned short (uint16_t)
+template<>
+inline void CmdArgs::convertArg(const std::string& option,
+		std::vector<unsigned short> & outVal) {
+	convertArgVec(option, outVal);
+}
+// unsigned int (uint32_t)
+template<>
+inline void CmdArgs::convertArg(const std::string& option,
+		std::vector<unsigned int> & outVal) {
+	convertArgVec(option, outVal);
+}
+// unsigned long (size_t and on some systems/libs uint64_t)
+template<>
+inline void CmdArgs::convertArg(const std::string& option,
+		std::vector<unsigned long> & outVal) {
+	convertArgVec(option, outVal);
+}
+
+// unsigned long long (uint64_t depending on the system/lib)
+template<>
+inline void CmdArgs::convertArg(const std::string& option,
+		std::vector<unsigned long long> & outVal) {
+	convertArgVec(option, outVal);
+}
+// double
+template<>
+inline void CmdArgs::convertArg(const std::string& option, std::vector<double> & outVal) {
+	convertArgVec(option, outVal);
+}
+// long double
+template<>
+inline void CmdArgs::convertArg(const std::string& option,std::vector<long double> & outVal) {
+	convertArgVec(option, outVal);
+}
+// float
+template<>
+inline void CmdArgs::convertArg(const std::string& option, std::vector<float> & outVal) {
+	convertArgVec(option, outVal);
+}
+
+
+// set
+template<typename T>
+void convertArgSet(const std::string & option, std::set<T> & outValSet){
+	outValSet.clear();
+	auto opts = getInputValues(option, ",");
+	for(const auto & valPos : iter::range(opts.size())){
+		T val;
+		CmdArgs::convertArg(opts[valPos], val);
+		if(in(val, outValSet)){
+			std::stringstream ss;
+			ss << "Error in processing option: " << option << " found " << val << " more than once" << "\n";
+			throw std::runtime_error{ss.str()};
+		}
+		outValSet.emplace(val);
+	}
+}
+
+// boost::filesystem::path
+template<>
+inline void CmdArgs::convertArg(const std::string& option, std::set<boost::filesystem::path> & outVal) {
+	convertArgSet(option, outVal);
+}
+
+// std::string
+template<>
+inline void CmdArgs::convertArg(const std::string& option, std::set<std::string> & outVal) {
+	convertArgSet(option, outVal);
+}
+
+// char
+template<>
+inline void CmdArgs::convertArg(const std::string& option, std::set<char> & outVal) {
+	convertArgSet(option, outVal);
+}
+
+// short (int16_t)
+template<>
+inline void CmdArgs::convertArg(const std::string& option, std::set<short > & outVal) {
+	convertArgSet(option, outVal);
+}
+// int (int32_t)
+template<>
+inline void CmdArgs::convertArg(const std::string& option, std::set<int> & outVal) {
+	convertArgSet(option, outVal);
+}
+// long (int64_t depending on system/lib)
+template<>
+inline void CmdArgs::convertArg(const std::string& option, std::set<long > & outVal) {
+	convertArgSet(option, outVal);
+}
+
+// long long (int64_t depending on system/lib)
+template<>
+inline void CmdArgs::convertArg(const std::string& option, std::set<long long> & outVal) {
+	convertArgSet(option, outVal);
+}
+// unsigned short (uint16_t)
+template<>
+inline void CmdArgs::convertArg(const std::string& option,
+		std::set<unsigned short> & outVal) {
+	convertArgSet(option, outVal);
+}
+// unsigned int (uint32_t)
+template<>
+inline void CmdArgs::convertArg(const std::string& option,
+		std::set<unsigned int> & outVal) {
+	convertArgSet(option, outVal);
+}
+// unsigned long (size_t and on some systems/libs uint64_t)
+template<>
+inline void CmdArgs::convertArg(const std::string& option,
+		std::set<unsigned long> & outVal) {
+	convertArgSet(option, outVal);
+}
+
+// unsigned long long (uint64_t depending on the system/lib)
+template<>
+inline void CmdArgs::convertArg(const std::string& option,
+		std::set<unsigned long long> & outVal) {
+	convertArgSet(option, outVal);
+}
+// double
+template<>
+inline void CmdArgs::convertArg(const std::string& option, std::set<double> & outVal) {
+	convertArgSet(option, outVal);
+}
+// long double
+template<>
+inline void CmdArgs::convertArg(const std::string& option,std::set<long double> & outVal) {
+	convertArgSet(option, outVal);
+}
+// float
+template<>
+inline void CmdArgs::convertArg(const std::string& option, std::set<float> & outVal) {
+	convertArgSet(option, outVal);
+}
+
+
+
 }  // namespace progutils
 }  // namespace bib

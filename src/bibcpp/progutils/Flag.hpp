@@ -13,6 +13,57 @@
 namespace bib {
 namespace progutils {
 
+
+class OptionToStr {
+public:
+
+	template<typename T>
+	struct is_numeric_primitive : public std::integral_constant<bool,
+	   std::is_same<int, typename std::decay<T>::type>::value
+	|| std::is_same<short, typename std::decay<T>::type>::value
+	|| std::is_same<int, typename std::decay<T>::type>::value
+	|| std::is_same<long, typename std::decay<T>::type>::value
+	|| std::is_same<long long, typename std::decay<T>::type>::value
+	|| std::is_same<unsigned short, typename std::decay<T>::type>::value
+	|| std::is_same<unsigned int, typename std::decay<T>::type>::value
+	|| std::is_same<unsigned long, typename std::decay<T>::type>::value
+	|| std::is_same<double, typename std::decay<T>::type>::value
+	|| std::is_same<long double, typename std::decay<T>::type>::value
+	|| std::is_same<float, typename std::decay<T>::type>::value
+	> {};
+
+	template<typename T>
+	static constexpr bool isNumericPrimitive(){
+		return is_numeric_primitive<T>::value;
+	}
+
+	template<typename T>
+	static std::string optionToStr(const T & option){
+		return optionToStr_impl(option);
+	}
+
+	template<typename T>
+	static std::string optionToStr_impl(const T & option){
+		if(isNumericPrimitive<T>() && std::numeric_limits<T>::max() == option){
+			return "None";
+		}else{
+			return estd::to_string(option);
+		}
+	}
+
+	template<typename T>
+	static std::string optionToStr_impl(const std::vector<T> & option){
+		return option.empty() ? "None" : conToStr(option, ",");
+	}
+
+	template<typename T>
+	static std::string optionToStr_impl(const std::set<T> & option){
+		return option.empty() ? "None" : conToStr(option, ",");
+	}
+
+};
+
+
 /**@brief Class hold commandline flag information
  *
  */
@@ -29,12 +80,12 @@ public:
 	Flag(const T & opt, const std::string & flags,
 			const std::string & shortDescription, bool required) :
 			 shortDescription_(shortDescription), required_(
-					required), set_(false), setValue_(estd::to_string(opt)), defaultValue_(
-					estd::to_string(opt)), type_(getTypeName(opt)) {
+					required), set_(false), setValue_(OptionToStr::optionToStr(opt)), defaultValue_(
+							OptionToStr::optionToStr(opt)), type_(getTypeName(opt)) {
 		initialize(flags);
-		if(isNumericPrimitive<T>() && std::numeric_limits<T>::max() == opt){
-			defaultValue_ = "None";
-		}
+//		if(isNumericPrimitive<T>() && std::numeric_limits<T>::max() == opt){
+//			defaultValue_ = "None";
+//		}
 	}
 	/**@brief construct with templated option, so any value can be given that can be converted to a string
 	 *
@@ -49,12 +100,12 @@ public:
 			const std::string & shortDescription, bool required,
 			const std::string flagGrouping) :
 			shortDescription_(shortDescription), required_(required), set_(false), setValue_(
-					estd::to_string(opt)), defaultValue_(estd::to_string(opt)), type_(
+					OptionToStr::optionToStr(opt)), defaultValue_(OptionToStr::optionToStr(opt)), type_(
 					getTypeName(opt)), flagGrouping_(flagGrouping) {
 		initialize(flags);
-		if(isNumericPrimitive<T>() && std::numeric_limits<T>::max() == opt){
-			defaultValue_ = "None";
-		}
+//		if(isNumericPrimitive<T>() && std::numeric_limits<T>::max() == opt){
+//			defaultValue_ = "None";
+//		}
 	}
 
 	/**@brief initialize the flag objects with the input flags
@@ -152,7 +203,8 @@ public:
 					<< getTypeName(option) << "\n";
 			throw std::runtime_error { ss.str() };
 		} else {
-			setValue_ = estd::to_string(option);
+			//setValue_ = estd::to_string(option);
+			setValue_ = OptionToStr::optionToStr(option);
 			set_ = true;
 		}
 	}
@@ -199,25 +251,25 @@ public:
 		return out;
 	}
 
-	template<typename T>
-	struct is_numeric_primitive : public std::integral_constant<bool,
-	   std::is_same<int, typename std::decay<T>::type>::value
-	|| std::is_same<short, typename std::decay<T>::type>::value
-	|| std::is_same<int, typename std::decay<T>::type>::value
-	|| std::is_same<long, typename std::decay<T>::type>::value
-	|| std::is_same<long long, typename std::decay<T>::type>::value
-	|| std::is_same<unsigned short, typename std::decay<T>::type>::value
-	|| std::is_same<unsigned int, typename std::decay<T>::type>::value
-	|| std::is_same<unsigned long, typename std::decay<T>::type>::value
-	|| std::is_same<double, typename std::decay<T>::type>::value
-	|| std::is_same<long double, typename std::decay<T>::type>::value
-	|| std::is_same<float, typename std::decay<T>::type>::value
-	> {};
-
-	template<typename T>
-	static constexpr bool isNumericPrimitive(){
-		return is_numeric_primitive<T>::value;
-	}
+//	template<typename T>
+//	struct is_numeric_primitive : public std::integral_constant<bool,
+//	   std::is_same<int, typename std::decay<T>::type>::value
+//	|| std::is_same<short, typename std::decay<T>::type>::value
+//	|| std::is_same<int, typename std::decay<T>::type>::value
+//	|| std::is_same<long, typename std::decay<T>::type>::value
+//	|| std::is_same<long long, typename std::decay<T>::type>::value
+//	|| std::is_same<unsigned short, typename std::decay<T>::type>::value
+//	|| std::is_same<unsigned int, typename std::decay<T>::type>::value
+//	|| std::is_same<unsigned long, typename std::decay<T>::type>::value
+//	|| std::is_same<double, typename std::decay<T>::type>::value
+//	|| std::is_same<long double, typename std::decay<T>::type>::value
+//	|| std::is_same<float, typename std::decay<T>::type>::value
+//	> {};
+//
+//	template<typename T>
+//	static constexpr bool isNumericPrimitive(){
+//		return is_numeric_primitive<T>::value;
+//	}
 
 	/**@brief Get a comma delimited string of the flags while automating the number of dashes to have bashed on length
 	 *
