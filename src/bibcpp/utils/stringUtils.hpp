@@ -96,6 +96,34 @@ std::string conToStr(const Container& con,
   return ret;
 }
 
+/**@brief Turn a container into a delimited string with the last delimiter being something different
+ *
+ * @param container the container (std::vector, std::set, etc)
+ * @param delim the delimiter for the majority of the string
+ * @param lastDelim the last delimiter
+ * @return a delimited string
+ */
+template<typename CON>
+std::string conToStrEndSpecial(const CON & container,
+		const std::string & delim, const std::string & lastDelim) {
+	std::string ret = "";
+	if (container.size() > 1) {
+		uint32_t count = 0;
+		for (const auto & element : container) {
+			if (count + 1 == container.size()) {
+				ret += lastDelim;
+			} else if (count > 0) {
+				ret += delim;
+			}
+			ret += estd::to_string(element);
+			++count;
+		}
+	} else {
+		ret = bib::conToStr(container, delim);
+	}
+	return ret;
+}
+
 /**@brief Check to see if a string contains substrings of interest
  *
  * @param str The string to search
