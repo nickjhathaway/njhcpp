@@ -60,7 +60,34 @@ private:
 	 *
 	 */
 	std::multimap<uint64_t, T, std::less<uint64_t>> likelihoods_;
+
 public:
+
+	/**@brief get const reference to objs
+	 *
+	 * @return a const reference to objs
+	 */
+	const std::vector<T> & objs() const{
+		return objs_;
+	}
+
+	/**@brief get const reference to object counts
+	 *
+	 * @return a const reference to object counts
+	 */
+	const std::vector<N> & objCounts() const{
+		return objCounts_;
+	}
+
+	/**@brief get const reference to likelihoods
+	 *
+	 * @return a const reference to likelihoods
+	 */
+	const std::multimap<uint64_t, T, std::less<uint64_t>> & likelihoods() const{
+		return likelihoods_;
+	}
+
+
 	/**@brief return a random objects weighting for counts
 	 *
 	 * @return A random object
