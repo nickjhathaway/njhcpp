@@ -1,7 +1,7 @@
 #include <iostream>
 #include "njhcpp.h"
 
-using namespace bib;
+using namespace njh;
 
 int main(int argc, char* argv[]){
 	try {
@@ -18,7 +18,7 @@ int main(int argc, char* argv[]){
 		long double ldt = 100.01;
 		float ft = 1.01;
 		char cVal = 'A';
-		bib::files::bfs::path testPath = "/home/hathawan";
+		njh::files::bfs::path testPath = "/home/hathawan";
 
 		std::vector<uint16_t> ui16t_vec{};
 		std::set<uint16_t> ui16t_set{};
@@ -56,11 +56,11 @@ int main(int argc, char* argv[]){
 		std::vector<char> cVal_vec{};
 		std::set<char> cVal_set{};
 
-		std::vector<bib::files::bfs::path> path_vec{};
-		std::set<bib::files::bfs::path> path_set{};
+		std::vector<njh::files::bfs::path> path_vec{};
+		std::set<njh::files::bfs::path> path_set{};
 
 
-	  bib::progutils::ProgramSetUp setUp(argc, argv);
+	  njh::progutils::ProgramSetUp setUp(argc, argv);
 	  setUp.setOption(cVal, "--cVal", "cVal");
 	  setUp.setOption(testPath, "--testPath", "testPath");
 	  setUp.setOption(ui16t, "--ui16t", "ui16t");
