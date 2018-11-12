@@ -1,5 +1,5 @@
 #include <iostream>
-#include "bibcpp.h"
+#include "njhcpp.h"
 
 using namespace bib;
 
