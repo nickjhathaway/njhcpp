@@ -1,6 +1,8 @@
 #include <iostream>
 #include "njhcpp.h"
 
+
+
 using namespace njh;
 
 int main(int argc, char* argv[]){
@@ -117,6 +119,7 @@ int main(int argc, char* argv[]){
 
 	  setUp.finishSetUp(std::cout);
 	  setUp.writeParametersFile("", false, false);
+
 
 
 	} catch (std::exception & e) {
