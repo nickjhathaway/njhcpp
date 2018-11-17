@@ -6,8 +6,8 @@ sys.path.append("scripts/setUpScripts")
 from utils import Utils
 from genFuncs import genHelper
 def main():
-    name = "bibcpp"
-    libs = "boost_filesystem:1_60_0,pstreams:RELEASE_1_0_1,jsoncpp:1.8.3,cppitertools:v0.2.1,zlib:1.2.11"
+    name = "njhcpp"
+    libs = "boost_filesystem:1_68_0,pstreams:RELEASE_1_0_1,jsoncpp:1.8.3,cppitertools:v0.2.1,zlib:1.2.11"
     args = genHelper.parseNjhConfigureArgs()
     if Utils.isMac():
         cmd = genHelper.mkConfigCmd(name, libs, sys.argv, "-lpthread,-lz")
