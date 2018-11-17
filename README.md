@@ -1,5 +1,5 @@
-bibcpp
+njhcpp
 ======
-Version 2.5.3
+Version 2.6.0
 
-C++ code contributed to by members of bioinformatics and integrative biology at Umass Med
+C++ code by Nicholas John Hathaway (njh)
