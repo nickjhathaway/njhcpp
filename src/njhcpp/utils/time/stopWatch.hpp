@@ -152,8 +152,16 @@ public:
 	 *
 	 * @return return true if lap times were recordered and false if no lap times
 	 */
-	bool containsLapTimes()const{
+	bool containsLapTimes() const {
 		return !lapTimes_.empty();
+	}
+
+	/**@brief Get the number of laps currently logged
+	 *
+	 * @return number of laps
+	 */
+	uint32_t getNumberOfLaps() const {
+		return lapTimes_.size();
 	}
 
 
