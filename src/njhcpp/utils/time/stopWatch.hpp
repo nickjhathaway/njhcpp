@@ -221,6 +221,7 @@ public:
 		std::time_t start_c = std::chrono::system_clock::to_time_t(
 					std::chrono::system_clock::now());
 		ret["start"] = njh::json::toJson(estd::to_string(std::put_time(std::localtime(&start_c), "%F_%T")));
+		ret["totalTime"] = totalTime();
 		return ret;
 	}
 };
