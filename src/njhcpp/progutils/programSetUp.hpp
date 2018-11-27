@@ -336,7 +336,7 @@ public:
 	 * @param out The std::ostream out object to print to
 	 *
 	 */
-	void finishSetUp(std::ostream &out) {
+	void finishSetUp(std::ostream &out = std::cout) {
 		if (commands_.printingHelp() || commands_.gettingFlags() ) {
 			printFlags(out);
 			exit(1);
