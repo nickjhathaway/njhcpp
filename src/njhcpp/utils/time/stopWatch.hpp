@@ -152,8 +152,16 @@ public:
 	 *
 	 * @return return true if lap times were recordered and false if no lap times
 	 */
-	bool containsLapTimes()const{
+	bool containsLapTimes() const {
 		return !lapTimes_.empty();
+	}
+
+	/**@brief Get the number of laps currently logged
+	 *
+	 * @return number of laps
+	 */
+	uint32_t getNumberOfLaps() const {
+		return lapTimes_.size();
 	}
 
 
@@ -213,6 +221,7 @@ public:
 		std::time_t start_c = std::chrono::system_clock::to_time_t(
 					std::chrono::system_clock::now());
 		ret["start"] = njh::json::toJson(estd::to_string(std::put_time(std::localtime(&start_c), "%F_%T")));
+		ret["totalTime"] = totalTime();
 		return ret;
 	}
 };
