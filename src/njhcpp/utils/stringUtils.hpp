@@ -649,4 +649,71 @@ inline bool allWhiteSpaceStr(const std::string & str){
 }
 
 
+
+/**@brief Class for finding the position of certain regex patterns in strings
+ *
+ */
+class PatPosFinder {
+public:
+	/**@brief A sub helper class to store the pattern found and the position at which it was found
+	 *
+	 */
+	struct PatPosSize{
+		/**@brief Construct with pattern and position
+		 *
+		 * @param pat the pattern itself found, not the regex pattern searched with e.g. AAAAA for regex A+ in TTAAAAATG
+		 * @param pos the position at which the pattern can be found
+		 */
+		PatPosSize(const std::string & pat, size_t pos): pat_(pat), pos_(pos){
+
+		}
+		std::string pat_; /**< the pattern found*/
+		size_t pos_; /**< the position at which it was found */
+
+		/**@brief get the end position of the pattern, just pos_ + pat_.size()
+		 *
+		 * @return the end position, not inclusive
+		 */
+		size_t end(){
+			return pos_ + pat_.size();
+		}
+	};
+
+	/**@brief construct with a string that will be made into a regex pattern
+	 *
+	 * @param str the string that has a regex pattern
+	 */
+	PatPosFinder(const std::string & str): pat_(str){
+
+	}
+
+	/**@brief construct with a regex object
+	 *
+	 * @param pat the regex object
+	 */
+	PatPosFinder(const std::regex & pat): pat_(pat){
+
+	}
+
+	std::regex pat_; /**< the pattern to search with */
+
+	/**@brief Get the positions of pat_ in input string, an empty vectory means there was no matching pattern
+	 *
+	 * @param str the string to search in
+	 * @return the results of the search, a vector of objects that contain the matching pattern and the position at which it can be found
+	 */
+	std::vector<PatPosSize> getPatPositions(const std::string & str) const{
+    std::sregex_iterator iter(str.begin(), str.end(), pat_);
+    std::sregex_iterator end;
+  	std::vector<PatPosSize> pats;
+		while (iter != end) {
+			pats.emplace_back((*iter)[0], iter->position());
+			++iter;
+		}
+		return pats;
+	}
+};
+
+
+
 } // namesapce njh
