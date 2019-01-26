@@ -135,13 +135,21 @@ public:
 				ss << "flags:" << flags << std::endl;
 				throw std::runtime_error{ss.str()};
 			}
-			if(has(flags_, flagTok, [](const std::string & conVal, const std::string & inVal){ return strToLowerRet(lstripRet(conVal, '-')) == strToLowerRet(lstripRet(inVal, '-'));})){
+
+			auto finalFlagTok = flagTok;
+			if ("bool" == type_) {
+				if ("true" == defaultValue_) {
+
+				}
+			}
+
+			if(has(flags_, finalFlagTok, [](const std::string & conVal, const std::string & inVal){ return strToLowerRet(lstripRet(conVal, '-')) == strToLowerRet(lstripRet(inVal, '-'));})){
 				std::stringstream ss;
-				ss << "Error in : " << __PRETTY_FUNCTION__ << ", adding a flag that was already added, " << flagTok << std::endl;
+				ss << "Error in : " << __PRETTY_FUNCTION__ << ", adding a flag that was already added, " << finalFlagTok << std::endl;
 				ss << "flags: " << flags << std::endl;
 				throw std::runtime_error{ss.str()};
 			}
-			flags_.emplace_back(flagTok);
+			flags_.emplace_back(finalFlagTok);
 		}
 	}
 

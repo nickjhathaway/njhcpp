@@ -387,33 +387,33 @@ public:
 		bool found = false;
 		try {
 			Flag currentFlag(option, flagStr, shortDescription, required, flagGrouping);
-					std::vector<std::string> flagsFound;
-					for (const auto &fTok : currentFlag.flags_) {
-						if (commands_.lookForOptionDashCaseInsen(option, fTok)) {
-							currentFlag.setValue(option);
-							found = true;
-							flagsFound.emplace_back(fTok);
-						}
-					}
+			std::vector<std::string> flagsFound;
+			for (const auto &fTok : currentFlag.flags_) {
+				if (commands_.lookForOptionDashCaseInsen(option, fTok)) {
+					currentFlag.setValue(option);
+					found = true;
+					flagsFound.emplace_back(fTok);
+				}
+			}
 
-					if (required && !found) {
-						std::stringstream tempStream;
-						tempStream << bashCT::bold + bashCT::black << "Need to have "
-								<< bashCT::red << conToStr(tokenizeString(flagStr, ","), " or ")
-								<< bashCT::black << " see " << bashCT::red
-								<< commands_.getProgramName() + " --help " << bashCT::black
-								<< "for more details" << bashCT::reset;
-						warnings_.emplace_back(tempStream.str());
-						failed_ = true;
-					}
-					if (found && flagsFound.size() > 1) {
-						std::stringstream tempStream;
-						tempStream << "Found multiple flags for the same option, found "
-								<< conToStr(flagsFound, ", ") << " but should only have one";
-						warnings_.emplace_back(tempStream.str());
-						failed_ = true;
-					}
-					flags_.addFlag(currentFlag);
+			if (required && !found) {
+				std::stringstream tempStream;
+				tempStream << bashCT::bold + bashCT::black << "Need to have "
+						<< bashCT::red << conToStr(tokenizeString(flagStr, ","), " or ")
+						<< bashCT::black << " see " << bashCT::red
+						<< commands_.getProgramName() + " --help " << bashCT::black
+						<< "for more details" << bashCT::reset;
+				warnings_.emplace_back(tempStream.str());
+				failed_ = true;
+			}
+			if (found && flagsFound.size() > 1) {
+				std::stringstream tempStream;
+				tempStream << "Found multiple flags for the same option, found "
+						<< conToStr(flagsFound, ", ") << " but should only have one";
+				warnings_.emplace_back(tempStream.str());
+				failed_ = true;
+			}
+			flags_.addFlag(currentFlag);
 		} catch (std::exception & e) {
 			std::stringstream ss;
 			ss << "Error setting option for " << flagStr << "\n";

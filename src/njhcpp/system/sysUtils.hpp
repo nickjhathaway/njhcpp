@@ -8,6 +8,8 @@
 
 
 #include "njhcpp/utils/stringUtils.hpp"
+#include "njhcpp/bashUtils/textFormatter.hpp"
+
 #include "njhcpp/utils/time.h"
 #include "njhcpp/system/CmdPool.hpp"
 #include "njhcpp/system/RunOutput.hpp"
@@ -32,12 +34,12 @@ inline RunOutput run(std::vector<std::string> cmds) {
 	//read stdout
 	std::stringstream outSS;
 	outSS << s.out().rdbuf();
-	auto out = outSS.str();
+	auto out = bashCT::trimForNonTerminalOut(outSS.str());
 	trim(out);
 	//read stderr
 	std::stringstream errSS;
 	errSS << s.err().rdbuf();
-	auto err = errSS.str();
+	auto err = bashCT::trimForNonTerminalOut(errSS.str());
 	trim(err);
 	s.close();
 	double rTime = watch.totalTime();
