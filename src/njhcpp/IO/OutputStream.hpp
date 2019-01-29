@@ -41,6 +41,8 @@ public:
 	std::unique_ptr<njh::GZSTREAM::ogzstream> outFileGz_;
 	std::unique_ptr<std::ofstream> outFile_;
 
+	std::mutex mut_;
+
 	~OutputStream(){
 		//first flush current buffer before closing files, not sure if this is actually needed
 		flush();
