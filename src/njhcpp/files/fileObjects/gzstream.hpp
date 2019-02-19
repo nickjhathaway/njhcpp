@@ -85,7 +85,12 @@ public:
 		}
 		mode_ = open_mode;
 		// no append nor read/write mode
-		if ((mode_ & std::ios::ate) || (mode_ & std::ios::app)
+//		if ((mode_ & std::ios::ate) || (mode_ & std::ios::app)
+//				|| ((mode_ & std::ios::in) && (mode_ & std::ios::out))) {
+//			return (gzstreambuf*) 0;
+//		}
+
+		if ((mode_ & std::ios::app)
 				|| ((mode_ & std::ios::in) && (mode_ & std::ios::out))) {
 			return (gzstreambuf*) 0;
 		}
@@ -96,6 +101,8 @@ public:
 			*fmodeptr++ = 'r';
 		} else if (mode_ & std::ios::out) {
 			*fmodeptr++ = 'w';
+		} else if(mode_ & std::ios::ate){
+			*fmodeptr++ = 'a';
 		}
 		*fmodeptr++ = 'b';
 		*fmodeptr = '\0';
