@@ -160,7 +160,7 @@ public:
 	}
 
 	virtual int overflow(int c = EOF) { // used for output buffer only
-		if (!(mode_ & std::ios::out) || !opened_) {
+		if (!opened_ || (!(mode_ & std::ios::out) && !(mode_ & std::ios::ate)) ) {
 			return EOF;
 		}
 		if (c != EOF) {
