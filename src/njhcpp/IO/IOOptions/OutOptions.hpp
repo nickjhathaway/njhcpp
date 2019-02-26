@@ -101,9 +101,14 @@ public:
 
 	void openGzFile(njh::GZSTREAM::ogzstream & outFileGz) const{
 		if (bfs::exists(outName()) && !overWriteFile_) {
-			std::stringstream ss;
-			ss << __PRETTY_FUNCTION__ << " error, "<< outName() << " already exists";
-			throw std::runtime_error { ss.str() };
+			if (append_) {
+				outFileGz.open(outName(), std::ios::ate);
+			} else {
+				std::stringstream ss;
+				ss << __PRETTY_FUNCTION__ << " error, " << outName()
+						<< " already exists";
+				throw std::runtime_error { ss.str() };
+			}
 		} else {
 			outFileGz.open(outName());
 			if (!outFileGz) {

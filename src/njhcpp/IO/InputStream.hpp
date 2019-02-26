@@ -42,6 +42,8 @@ public:
 	std::unique_ptr<njh::GZSTREAM::igzstream> inFileGz_;
 	std::unique_ptr<std::ifstream> inFile_;
 
+	std::mutex mut_;
+
 };
 
 

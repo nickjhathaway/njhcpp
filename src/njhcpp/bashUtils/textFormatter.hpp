@@ -184,7 +184,7 @@ inline uint32_t getPrintLen(const std::string & str) {
  * @param str the string to trim
  * @return A string with no formating
  */
-inline std::string trimForNonTerminalOut(std::string str){
+inline std::string trimForNonTerminalOut(const std::string & str){
 	return std::regex_replace(str, formatPattern, "");
 }
 

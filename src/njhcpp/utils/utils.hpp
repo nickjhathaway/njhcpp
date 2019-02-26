@@ -524,4 +524,40 @@ typename MAP::mapped_type & mapAt(MAP & map, const typename MAP::key_type & key)
 }
 
 
+/**@brief Round input number up to the nearest place determined by nearest
+ *
+ * @param input the number to round
+ * @param nearest the place to round to
+ * @return the rounded number
+ */
+template<typename T>
+T roundUpToNearest(T input, uint32_t nearest){
+	return std::ceil(input/static_cast<double>(nearest)) * nearest;
+}
+
+/**@brief Round input number down to the nearest place determined by nearest
+ *
+ * @param input the number to round
+ * @param nearest the place to round to
+ * @return the rounded number
+ */
+template<typename T>
+T roundDownToNearest(T input, uint32_t nearest){
+	return std::floor(input/static_cast<double>(nearest)) * nearest;
+}
+
+/**@brief Round input number to the nearest place determined by nearest
+ *
+ * @param input the number to round
+ * @param nearest the place to round to
+ * @return the rounded number
+ */
+template<typename T>
+T roundToNearest(T input, uint32_t nearest){
+	return std::floor((input + static_cast<double>(nearest)/2)/static_cast<double>(nearest)) * nearest;
+}
+
+
+
+
 } // namespace njh
