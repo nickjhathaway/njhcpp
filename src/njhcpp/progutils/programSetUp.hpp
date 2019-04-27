@@ -159,6 +159,7 @@ public:
 				warnings_.emplace_back(
 						bashCT::bold + bashCT::red + "Unrecognized option, " + com.first
 								+ " not using" + bashCT::reset);
+				failed_ = true;
 			}
 		}
 	}
@@ -177,6 +178,7 @@ public:
 				warnings_.emplace_back(
 						bashCT::bold + bashCT::red + "Unrecognized option, " + com.first
 								+ " not using" + bashCT::reset);
+				failed_ = true;
 			}
 		}
 	}
