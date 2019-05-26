@@ -501,6 +501,153 @@ public:
 		return setOption(option, flagStr, shortDescription, false, "Misc", testFunc);
 	}
 
+	enum class CheckCase{
+		NONZERO,
+		GREATERZERO,
+		NONE
+	};
+
+	template<typename T>
+	bool setOption(T &option,
+			std::string flagStr,
+			const std::string &shortDescription,
+			const CheckCase &  testFuncCase) {
+		return setOption(option, flagStr, shortDescription, false, testFuncCase);
+	}
+
+	template<typename T>
+	bool setOption(T &option,
+			std::string flagStr,
+			const std::string &shortDescription,
+			bool required,
+			const CheckCase &  testFuncCase) {
+		return setOption(option, flagStr, shortDescription, required, "Misc", testFuncCase);
+	}
+
+	template<typename T>
+	bool setOption(T &option,
+			std::string flagStr,
+			const std::string &shortDescription,
+			bool required,
+			const std::string &flagGrouping,
+			const CheckCase &  testFuncCase) {
+		if(testFuncCase == CheckCase::NONZERO){
+			return setOption(option, flagStr, shortDescription, required, flagGrouping, flagCheckNonZero<T>(flagStr));
+		}else if(testFuncCase == CheckCase::GREATERZERO){
+			return setOption(option, flagStr, shortDescription, required, flagGrouping, flagCheckGreaterThanZero<T>(flagStr));
+		}else{
+			return setOption(option, flagStr, shortDescription, required, flagGrouping);
+		}
+	}
+
+	enum class ConCheckCase{
+		NONZERO,
+		GREATERZERO,
+		NONE
+	};
+
+	template<typename T>
+	bool setOption(T &option,
+			std::string flagStr,
+			const std::string &shortDescription,
+			const ConCheckCase &  testFuncCase) {
+		return setOption(option, flagStr, shortDescription, false, testFuncCase);
+	}
+
+	template<typename T>
+	bool setOption(T &option,
+			std::string flagStr,
+			const std::string &shortDescription,
+			bool required,
+			const ConCheckCase &  testFuncCase) {
+		return setOption(option, flagStr, shortDescription, required, "Misc", testFuncCase);
+	}
+
+	template<typename T>
+	bool setOption(T &option,
+			std::string flagStr,
+			const std::string &shortDescription,
+			bool required,
+			const std::string &flagGrouping,
+			const ConCheckCase &  testFuncCase) {
+		if(testFuncCase == ConCheckCase::NONZERO){
+			return setOption(option, flagStr, shortDescription, required, flagGrouping, flagCheckNonZeroContainers<T>(flagStr));
+		}else if(testFuncCase == ConCheckCase::GREATERZERO){
+			return setOption(option, flagStr, shortDescription, required, flagGrouping, flagCheckGreaterThanZeroContainers<T>(flagStr));
+		}else{
+			return setOption(option, flagStr, shortDescription, required, flagGrouping);
+		}
+	}
+
+
+	/**@brief Generator for a flag check for a value that cannot be zero
+	 *
+	 * @param flagName
+	 * @return a function that tests a value for being less than or equal to zero
+	 */
+	template<typename T>
+	static std::function<FlagCheckResult(const T&)> flagCheckNonZero(
+			const std::string & flagName) {
+		std::function<FlagCheckResult(const T&)> ret =
+				[&flagName](const T & val) {
+					if(0 == val) {
+						return njh::progutils::ProgramSetUp::FlagCheckResult(false, flagName + " can't be zero");
+					}
+					return njh::progutils::ProgramSetUp::FlagCheckResult(true, "");
+				};
+		return ret;
+	}
+
+	/**@brief Generator for a flag check that must be greater than zero
+	 *
+	 * @param flagName
+	 * @return a function that tests a value for being less than or equal to zero
+	 */
+	template<typename T>
+	static std::function<FlagCheckResult(const T&)> flagCheckGreaterThanZero(
+			const std::string & flagName) {
+		std::function<FlagCheckResult(const T&)> ret =
+				[&flagName](const T & val) {
+					if(val <= 0 ) {
+						return njh::progutils::ProgramSetUp::FlagCheckResult(false, flagName + " can't be zero or less: " + estd::to_string(val));
+					}
+					return njh::progutils::ProgramSetUp::FlagCheckResult(true, "");
+				};
+		return ret;
+	}
+
+
+	template<typename T>
+	static std::function<FlagCheckResult(const T&)> flagCheckNonZeroContainers(
+			const std::string & flagName) {
+		std::function<FlagCheckResult(const T&)> ret =
+				[&flagName](const T & con) {
+					if(std::any_of(con.begin(), con.end(), [](const typename T::value_type & val){
+						return 0 == val;
+					})) {
+						return njh::progutils::ProgramSetUp::FlagCheckResult(false, flagName + " can't contain any zero values: " + njh::conToStr(con, ","));
+					}
+					return njh::progutils::ProgramSetUp::FlagCheckResult(true, "");
+				};
+		return ret;
+	}
+
+	template<typename T>
+	static std::function<FlagCheckResult(const T&)> flagCheckGreaterThanZeroContainers(
+			const std::string & flagName) {
+		std::function<FlagCheckResult(const T&)> ret =
+				[&flagName](const T & con) {
+					if(std::any_of(con.begin(), con.end(), [](const typename T::value_type & val){
+						return val <= 0;
+					})) {
+						return njh::progutils::ProgramSetUp::FlagCheckResult(false, flagName + " can't contain any zero values: " + njh::conToStr(con, ","));
+					}
+					return njh::progutils::ProgramSetUp::FlagCheckResult(true, "");
+				};
+		return ret;
+	}
+
+
 	/**@brief Get the current run time since time point start_ in seconds
 	 * @return A double with the run time converted into seconds
 	 *

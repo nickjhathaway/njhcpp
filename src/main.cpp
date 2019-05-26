@@ -116,16 +116,23 @@ int main(int argc, char* argv[]){
 
 	  setUp.setOption(path_vec, "--path_vec", "path_vec");
 	  setUp.setOption(path_set, "--path_set", "path_set");
+		uint32_t ui32tCantBeZero = 1;
+		setUp.setOption(ui32tCantBeZero, "--ui32tCantBeZero", "ui32tCantBeZero", njh::progutils::ProgramSetUp::CheckCase::NONZERO);
+
+		double rate = 0.5;
+		setUp.setOption(rate, "--rate", "rate", njh::progutils::ProgramSetUp::CheckCase::GREATERZERO);
 
 
-	  uint32_t ui32tCantBeZero = 1;
-	  std::function<njh::progutils::ProgramSetUp::FlagCheckResult(const uint32_t &)> testFunc= [](const uint32_t & val){
-	  	if(0 == val){
-	  		return njh::progutils::ProgramSetUp::FlagCheckResult(false, "--ui32tCantBeZero can't be zero");
-	  	}
-	  	return njh::progutils::ProgramSetUp::FlagCheckResult(true, "");
-	  };
-	  setUp.setOption(ui32tCantBeZero, "--ui32tCantBeZero", "ui32tCantBeZero", testFunc);
+		std::vector<double> dt_vec_graterZero{};
+		std::set<double> dt_set_graterZero{};
+	  setUp.setOption(dt_vec_graterZero, "--dt_vec_graterZero", "dt_vec_graterZero", njh::progutils::ProgramSetUp::ConCheckCase::GREATERZERO);
+	  setUp.setOption(dt_set_graterZero, "--dt_set_graterZero", "dt_set_graterZero", njh::progutils::ProgramSetUp::ConCheckCase::GREATERZERO);
+
+
+		std::vector<uint32_t> ui32t_vec_nonZero{};
+		std::set<uint32_t> ui32t_set_nonZero{};
+	  setUp.setOption(ui32t_vec_nonZero, "--ui32t_vec_nonZero", "ui32t_vec_nonZero", njh::progutils::ProgramSetUp::ConCheckCase::NONZERO);
+	  setUp.setOption(ui32t_set_nonZero, "--ui32t_set_nonZero", "ui32t_set_nonZero", njh::progutils::ProgramSetUp::ConCheckCase::NONZERO);
 
 
 	  setUp.finishSetUp(std::cout);
