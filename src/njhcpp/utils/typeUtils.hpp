@@ -19,9 +19,37 @@ template<typename T>
 std::string typeStr(){
 	std::string pf(__PRETTY_FUNCTION__);
 	std::cout << pf << std::endl;
+	std::regex namespacePat{"std::__1::"};
+	std::regex namespace2Pat{"std::__cxx11::"};
+	std::regex stringPat{"std::basic_string<char>"};
+	std::regex lessPat{", std::less<.*?>"};
+	std::regex allocPat{", std::allocator<.*?>"};
+	std::regex spaceArrowPat{" >"};
+
+	pf = std::regex_replace(pf, namespacePat, "std::");
+	std::cout << pf << std::endl;
+
+	pf = std::regex_replace(pf, namespace2Pat, "std::");
+	std::cout << pf << std::endl;
+
+	pf = std::regex_replace(pf, stringPat, "std::string");
+	std::cout << pf << std::endl;
+
+	pf = std::regex_replace(pf, lessPat, "");
+	std::cout << pf << std::endl;
+
+	pf = std::regex_replace(pf, allocPat, "");
+	std::cout << pf << std::endl;
+
+	pf = std::regex_replace(pf, spaceArrowPat, ">");
+	std::cout << pf << std::endl;
+
+	std::cout << std::endl;
 	auto tEqualPos = pf.rfind("T = ");
 	auto semiColPos = pf.find(";", tEqualPos);
 	auto closeBracPos = pf.rfind("]");
+
+
 	if(tEqualPos != std::string::npos &&
 			closeBracPos != std::string::npos &&
 			closeBracPos > tEqualPos){
