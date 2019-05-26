@@ -117,6 +117,17 @@ int main(int argc, char* argv[]){
 	  setUp.setOption(path_vec, "--path_vec", "path_vec");
 	  setUp.setOption(path_set, "--path_set", "path_set");
 
+
+	  uint32_t ui32tCantBeZero = 1;
+	  std::function<njh::progutils::ProgramSetUp::FlagCheckResult(const uint32_t &)> testFunc= [](const uint32_t & val){
+	  	if(0 == val){
+	  		return njh::progutils::ProgramSetUp::FlagCheckResult(false, "--ui32tCantBeZero can't be zero");
+	  	}
+	  	return njh::progutils::ProgramSetUp::FlagCheckResult(true, "");
+	  };
+	  setUp.setOption(ui32tCantBeZero, "--ui32tCantBeZero", "ui32tCantBeZero", testFunc);
+
+
 	  setUp.finishSetUp(std::cout);
 	  setUp.writeParametersFile("", false, false);
 

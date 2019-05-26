@@ -18,6 +18,7 @@ namespace njh {
 template<typename T>
 std::string typeStr(){
 	std::string pf(__PRETTY_FUNCTION__);
+	std::cout << pf << std::endl;
 	auto tEqualPos = pf.rfind("T = ");
 	auto semiColPos = pf.find(";", tEqualPos);
 	auto closeBracPos = pf.rfind("]");

@@ -350,12 +350,20 @@ public:
 		}
 	}
 
+	struct FlagCheckResult {
+		FlagCheckResult(bool succes, const std::string & mes) :
+				succes_(succes), message_(mes) {
+		}
+		bool succes_;
+		std::string message_;
+	};
+
 	/**@brief A templated function to look for options and implementation for
 	 *setting the option is handled by commandLineArguments so look there for more
 	 *details
 	 * @param option The option to set
 	 * @param flag The flag to be searched for
-	 * @param parName The name under which to store the option being searched for
+	 * @param shortDescription The name under which to store the option being searched for
 	 * @param required A bool indicating if the option is required and set up
 	 *should be stopped if not found, default is false
 	 *
@@ -370,12 +378,14 @@ public:
 		return setOption(option, flagStr, shortDescription, required, "Misc");
 	}
 
+
+
 	/**@brief A templated function to look for options and implementation for
 	 *setting the option is handled by commandLineArguments so look there for more
 	 *details
 	 * @param option The option to set
-	 * @param flag The flag to be searched for
-	 * @param parName The name under which to store the option being searched for
+	 * @param flagStr The flag to be searched for
+	 * @param shortDescription The name under which to store the option being searched for
 	 * @param required A bool indicating if the option is required and set up should be stopped if not found, default is false
 	 * @param flagGrouping A grouping for the flag
 	 *
@@ -397,7 +407,6 @@ public:
 					flagsFound.emplace_back(fTok);
 				}
 			}
-
 			if (required && !found) {
 				std::stringstream tempStream;
 				tempStream << bashCT::bold + bashCT::black << "Need to have "
@@ -423,6 +432,73 @@ public:
 			throw std::runtime_error{ss.str()};
 		}
 		return found;
+	}
+
+	/**@brief A templated function to look for options and implementation for
+	 *setting the option is handled by commandLineArguments so look there for more
+	 *details
+	 * @param option The option to set
+	 * @param flagStr The flag to be searched for
+	 * @param shortDescription The name under which to store the option being searched for
+	 * @param required A bool indicating if the option is required and set up should be stopped if not found, default is false
+	 * @param flagGrouping A grouping for the flag
+	 *
+	 * @return Returns true if option is found or false if option is not found
+	 *
+	 */
+	template<typename T>
+	bool setOption(T &option, std::string flagStr,
+			const std::string & shortDescription, bool required,
+			const std::string & flagGrouping,
+			const std::function<FlagCheckResult(const T&)> &  testFunc) {
+		bool ret = setOption(option, flagStr, shortDescription, required, flagGrouping);
+		auto testResult =  testFunc(option);
+		if(!testResult.succes_){
+			failed_ = true;
+			addWarning(testResult.message_);
+		}
+		return ret;
+	}
+
+	/**@brief A templated function to look for options and implementation for
+	 *setting the option is handled by commandLineArguments so look there for more
+	 *details
+	 * @param option The option to set
+	 * @param flagStr The flag to be searched for
+	 * @param shortDescription The name under which to store the option being searched for
+	 * @param required A bool indicating if the option is required and set up
+	 *should be stopped if not found, default is false
+	 * @param testFunc A function to test the set option
+	 *
+	 * @return Returns true if option is found or false if option is not found
+	 *
+	 */
+	template<typename T>
+	bool setOption(T &option,
+			std::string flagStr,
+			const std::string &shortDescription,
+			bool required,
+			const std::function<FlagCheckResult(const T&)> &  testFunc) {
+		return setOption(option, flagStr, shortDescription, required, "Misc", testFunc);
+	}
+
+	/**@brief A templated function to look for options and implementation for
+	 *setting the option is handled by commandLineArguments so look there for more
+	 *details
+	 * @param option The option to set
+	 * @param flagStr The flag to be searched for
+	 * @param shortDescription The name under which to store the option being searched for
+	 * @param testFunc A function to test the set option
+	 *
+	 * @return Returns true if option is found or false if option is not found
+	 *
+	 */
+	template<typename T>
+	bool setOption(T &option,
+			std::string flagStr,
+			const std::string &shortDescription,
+			const std::function<FlagCheckResult(const T&)> &  testFunc) {
+		return setOption(option, flagStr, shortDescription, false, "Misc", testFunc);
 	}
 
 	/**@brief Get the current run time since time point start_ in seconds
