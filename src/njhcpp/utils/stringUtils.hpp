@@ -15,7 +15,7 @@
 #include <iomanip> //std::setFill(), std::setw()
 #include <regex>
 #include "njhcpp/common.h" //estd::to_string
-#include "njhcpp/jsonUtils/jsonUtils.hpp" //included here so that most files will have json
+//#include "njhcpp/jsonUtils/jsonUtils.hpp" //included here so that most files will have json
 
 
 namespace njh {

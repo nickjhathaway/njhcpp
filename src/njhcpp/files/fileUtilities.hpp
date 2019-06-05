@@ -3,6 +3,7 @@
 #include <boost/filesystem.hpp>
 #include <chrono>
 #include "njhcpp/debug/exception.hpp"
+#include <cppitertools/range.hpp>
 
 namespace njh {
 /**@brief Namespace to hold operations dealing with files and dealing with the filesystem

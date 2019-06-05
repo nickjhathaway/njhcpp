@@ -8,6 +8,7 @@
 
 #include "njhcpp/common.h"
 #include <boost/filesystem/path.hpp>
+#include <regex>
 
 namespace njh {
 
