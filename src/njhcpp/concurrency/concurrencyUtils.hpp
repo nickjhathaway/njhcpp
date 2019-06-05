@@ -9,7 +9,9 @@
 
 
 #include "njhcpp/common.h"
+
 #include <thread>
+#include <functional>
 
 namespace njh {
 namespace concurrent {
