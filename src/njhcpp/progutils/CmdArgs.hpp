@@ -505,19 +505,22 @@ public:
 			uint32_t equCount = std::count(nextParamRaw.begin(), nextParamRaw.end(),
 					'=');
 			if (equCount > 0) {
-				if (equCount > 1) {
-					std::stringstream ss;
-					ss << bashCT::addColor(196) << std::endl;
-					ss << "Error in: " << __PRETTY_FUNCTION__ << std::endl;
-					ss << "Error can only have one equal sign when setting flag"
-							<< std::endl;
-					ss << "eg. -flag=this , can't have -flag=this=that" << std::endl;
-					ss << "not " << nextParamRaw << bashCT::reset << std::endl;
-					throw std::runtime_error { ss.str() };
-				} else {
-					std::vector<std::string> toks = tokenizeString(nextParamRaw, "=");
-					storage.insert(std::make_pair(strToLowerRet(toks[0]), toks[1]));
-				}
+				std::string flag = nextParamRaw.substr(0, nextParamRaw.find("="));
+				std::string value = nextParamRaw.substr(nextParamRaw.find("=") + 1);
+				storage.insert(std::make_pair(strToLowerRet(flag), value));
+//				if (equCount > 1) {
+//					std::stringstream ss;
+//					ss << bashCT::addColor(196) << std::endl;
+//					ss << "Error in: " << __PRETTY_FUNCTION__ << std::endl;
+//					ss << "Error can only have one equal sign when setting flag"
+//							<< std::endl;
+//					ss << "eg. -flag=this , can't have -flag=this=that" << std::endl;
+//					ss << "not " << nextParamRaw << bashCT::reset << std::endl;
+//					throw std::runtime_error { ss.str() };
+//				} else {
+//					std::vector<std::string> toks = tokenizeString(nextParamRaw, "=");
+//					storage.insert(std::make_pair(strToLowerRet(toks[0]), toks[1]));
+//				}
 			} else {
 				std::string nextParam = strToLowerRet(argv[i]);
 				if (storage.find(nextParam) != storage.end()) {
@@ -591,19 +594,22 @@ public:
 			uint32_t equCount = std::count(nextParamRaw.begin(), nextParamRaw.end(),
 					'=');
 			if (equCount > 0) {
-				if (equCount > 1) {
-					std::stringstream ss;
-					ss << bashCT::addColor(196) << std::endl;
-					ss << "Error in: " << __PRETTY_FUNCTION__ << std::endl;
-					ss << "Error can only have one equal sign when setting flag"
-							<< std::endl;
-					ss << "eg. -flag=this , can't have -flag=this=that" << std::endl;
-					ss << "not " << nextParamRaw << bashCT::reset << std::endl;
-					throw std::runtime_error { ss.str() };
-				} else {
-					std::vector<std::string> toks = tokenizeString(nextParamRaw, "=");
-					storage.insert(std::make_pair(toks[0], toks[1]));
-				}
+				std::string flag = nextParamRaw.substr(0, nextParamRaw.find("="));
+				std::string value = nextParamRaw.substr(nextParamRaw.find("=") + 1);
+				storage.insert(std::make_pair(strToLowerRet(flag), value));
+//				if (equCount > 1) {
+//					std::stringstream ss;
+//					ss << bashCT::addColor(196) << std::endl;
+//					ss << "Error in: " << __PRETTY_FUNCTION__ << std::endl;
+//					ss << "Error can only have one equal sign when setting flag"
+//							<< std::endl;
+//					ss << "eg. -flag=this , can't have -flag=this=that" << std::endl;
+//					ss << "not " << nextParamRaw << bashCT::reset << std::endl;
+//					throw std::runtime_error { ss.str() };
+//				} else {
+//					std::vector<std::string> toks = tokenizeString(nextParamRaw, "=");
+//					storage.insert(std::make_pair(strToLowerRet(toks[0]), toks[1]));
+//				}
 			} else {
 				std::string nextParam = argv[i];
 				if (storage.find(nextParam) != storage.end()) {
