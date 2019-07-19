@@ -111,7 +111,7 @@ public:
 		//if you couldn't set the buffer, throw
 		if (gzbuffer(file_, 128 * 1024)) {
 			throw std::runtime_error { std::string(__PRETTY_FUNCTION__)
-					+ ":couldn't set gz buffer" };
+					+ ":couldn't set gz buffer, for " + std::string(name) + " in mode " + std::string(fmode) };
 		}
 #endif
 		if (file_ == 0) {
