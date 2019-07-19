@@ -106,7 +106,14 @@ public:
 		}
 		*fmodeptr++ = 'b';
 		*fmodeptr = '\0';
+		bool alreadyExists = boost::filesystem::exists(name);
 		file_ = gzopen(name, fmode);
+		if(nullptr == file_){
+			std::stringstream ss;
+
+			ss << __PRETTY_FUNCTION__ << ", error " << " in opening " << name << " in mode: " << std::string(fmode) << ", exists: " << (alreadyExists? "true" : "false")<< "\n";
+			throw std::runtime_error{ss.str()};
+		}
 #if ZLIB_VERNUM >= 0x1280
 		//if you couldn't set the buffer, throw
 		if (gzbuffer(file_, 128 * 1024)) {
