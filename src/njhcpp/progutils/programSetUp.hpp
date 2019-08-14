@@ -158,7 +158,7 @@ public:
 			if (!contains(flagStrs, com.first)) {
 				warnings_.emplace_back(
 						bashCT::bold + bashCT::red + "Unrecognized option, " + com.first
-								+ " not using" + bashCT::reset);
+								+ "" + bashCT::reset);
 				failed_ = true;
 			}
 		}
@@ -177,7 +177,7 @@ public:
 			if (!contains(flagStrs, lstripRet(com.first, '-'))) {
 				warnings_.emplace_back(
 						bashCT::bold + bashCT::red + "Unrecognized option, " + com.first
-								+ " not using" + bashCT::reset);
+								+ "" + bashCT::reset);
 				failed_ = true;
 			}
 		}
