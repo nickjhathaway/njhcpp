@@ -116,12 +116,32 @@ int main(int argc, char* argv[]){
 
 	  setUp.setOption(path_vec, "--path_vec", "path_vec");
 	  setUp.setOption(path_set, "--path_set", "path_set");
+		uint32_t ui32tCantBeZero = 1;
+		setUp.setOption(ui32tCantBeZero, "--ui32tCantBeZero", "ui32tCantBeZero", njh::progutils::ProgramSetUp::CheckCase::NONZERO);
+
+		double rate = 0.5;
+		setUp.setOption(rate, "--rate", "rate", njh::progutils::ProgramSetUp::CheckCase::GREATERZERO);
+
+
+		std::vector<double> dt_vec_graterZero{};
+		std::set<double> dt_set_graterZero{};
+	  setUp.setOption(dt_vec_graterZero, "--dt_vec_graterZero", "dt_vec_graterZero", njh::progutils::ProgramSetUp::ConCheckCase::GREATERZERO);
+	  setUp.setOption(dt_set_graterZero, "--dt_set_graterZero", "dt_set_graterZero", njh::progutils::ProgramSetUp::ConCheckCase::GREATERZERO);
+
+
+		std::vector<uint32_t> ui32t_vec_nonZero{};
+		std::set<uint32_t> ui32t_set_nonZero{};
+	  setUp.setOption(ui32t_vec_nonZero, "--ui32t_vec_nonZero", "ui32t_vec_nonZero", njh::progutils::ProgramSetUp::ConCheckCase::NONZERO);
+	  setUp.setOption(ui32t_set_nonZero, "--ui32t_set_nonZero", "ui32t_set_nonZero", njh::progutils::ProgramSetUp::ConCheckCase::NONZERO);
+
 
 	  setUp.finishSetUp(std::cout);
 	  setUp.writeParametersFile("", false, false);
 
-
-
+	  auto files = njh::files::filesInFolder("./");
+	  for(const auto & f : files){
+	  	std::cout << f << std::endl;
+	  }
 	} catch (std::exception & e) {
 		std::cerr << e.what() << std::endl;
 		exit(1);

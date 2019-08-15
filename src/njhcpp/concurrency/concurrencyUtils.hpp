@@ -9,7 +9,9 @@
 
 
 #include "njhcpp/common.h"
+
 #include <thread>
+#include <functional>
 
 namespace njh {
 namespace concurrent {
@@ -53,6 +55,22 @@ inline void detachAllJoinableThreads(std::vector<std::thread> & threads){
 		}
 	});
 }
+
+
+/**@brief Run a function that takes no arguments and returns nothing over a number of threads
+ *
+ * @param func the fuction object to run, pass by reference in case it has object references that need to be updated
+ * @param numThreads the number of threads to use
+ */
+inline void runVoidFunctionThreaded(std::function<void()> & func, uint32_t numThreads){
+	std::vector<std::thread> threads;
+	for(uint32_t t = 0; t < numThreads; ++t){
+		threads.emplace_back(std::thread(func));
+	}
+	joinAllThreads(threads);
+}
+
+
 
 
 } // namespace concurrent

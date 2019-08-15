@@ -15,7 +15,7 @@
 #include <iomanip> //std::setFill(), std::setw()
 #include <regex>
 #include "njhcpp/common.h" //estd::to_string
-#include "njhcpp/jsonUtils/jsonUtils.hpp" //included here so that most files will have json
+//#include "njhcpp/jsonUtils/jsonUtils.hpp" //included here so that most files will have json
 
 
 namespace njh {
@@ -389,7 +389,7 @@ inline uint32_t hexToInt(const std::string& hString) {
 inline std::string &ltrim(std::string &s) {
     // from http://stackoverflow.com/a/217605
     s.erase(s.begin(), std::find_if(s.begin(), s.end(),
-                                    std::not1(std::ptr_fun<int, int>(std::isspace))));
+    		[](int c) {return !std::isspace(c);}));
     return s;
 }
 
@@ -401,7 +401,7 @@ inline std::string &ltrim(std::string &s) {
 inline std::string &rtrim(std::string &s) {
     // from http://stackoverflow.com/a/217605
     s.erase(std::find_if(s.rbegin(), s.rend(),
-                         std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+    		[](int c) {return !std::isspace(c);} ).base(), s.end());
     return s;
 }
 

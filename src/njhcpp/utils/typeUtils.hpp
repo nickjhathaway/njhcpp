@@ -8,6 +8,7 @@
 
 #include "njhcpp/common.h"
 #include <boost/filesystem/path.hpp>
+#include <regex>
 
 namespace njh {
 
@@ -18,6 +19,18 @@ namespace njh {
 template<typename T>
 std::string typeStr(){
 	std::string pf(__PRETTY_FUNCTION__);
+	std::regex namespacePat{"std::__1::"};
+	std::regex namespace2Pat{"std::__cxx11::"};
+	std::regex stringPat{"std::basic_string<char>"};
+	std::regex lessPat{", std::less<.*?>"};
+	std::regex allocPat{", std::allocator<.*?>"};
+	std::regex spaceArrowPat{" >"};
+	pf = std::regex_replace(pf, namespacePat, "std::");
+	pf = std::regex_replace(pf, namespace2Pat, "std::");
+	pf = std::regex_replace(pf, stringPat, "std::string");
+	pf = std::regex_replace(pf, lessPat, "");
+	pf = std::regex_replace(pf, allocPat, "");
+	pf = std::regex_replace(pf, spaceArrowPat, ">");
 	auto tEqualPos = pf.rfind("T = ");
 	auto semiColPos = pf.find(";", tEqualPos);
 	auto closeBracPos = pf.rfind("]");
@@ -34,6 +47,7 @@ std::string typeStr(){
 		return "indeterminate";
 	}
 }
+
 
 /**@brief Getting type of a given object by taking advantage of info available in __PRETTY_FUNCTION__
  *

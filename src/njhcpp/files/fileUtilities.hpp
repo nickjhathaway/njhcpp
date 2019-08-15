@@ -3,6 +3,7 @@
 #include <boost/filesystem.hpp>
 #include <chrono>
 #include "njhcpp/debug/exception.hpp"
+#include <cppitertools/range.hpp>
 
 namespace njh {
 /**@brief Namespace to hold operations dealing with files and dealing with the filesystem
@@ -135,6 +136,16 @@ inline bool isFileEmpty(const bfs::path & fnp){
 	}
 	return false;
 }
+
+
+#if defined( __APPLE__ ) || defined( __APPLE_CC__ ) || defined( macintosh ) || defined( __MACH__ )
+	static const uint32_t NormalDefaultOpenFileLimit = 254; /**< The maximum number of files that normally allowed to be open by default for current Operating System */
+#else
+	static const uint32_t NormalDefaultOpenFileLimit = 1024; /**< The maximum number of files that normally allowed to be open by default for current Operating System */
+#endif
+
+
+
 
 } // namespace files
 } // namespace njh
