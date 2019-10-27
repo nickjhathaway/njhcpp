@@ -24,6 +24,8 @@
 // along with njhcpp.  If not, see <http://www.gnu.org/licenses/>.
 //
 #include "njhcpp/IO/IOOptions/OutOptions.hpp"
+#include <mutex>
+
 //#include "njhcpp/files.h"
 
 namespace njh {
