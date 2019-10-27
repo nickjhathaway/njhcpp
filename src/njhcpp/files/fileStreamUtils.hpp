@@ -12,6 +12,7 @@
 #include <boost/filesystem.hpp>
 #include "njhcpp/utils/stringUtils.hpp" //appendAsNeededRet()
 #include "njhcpp/files/fileSystemUtils.hpp"
+#include "njhcpp/IO.h"
 
 
 namespace njh {
@@ -130,10 +131,7 @@ crossPlatGetline(std::istream& __is, std::string& __str) {
  */
 inline std::string getFirstLine(const bfs::path &filename) {
   std::string currentLine;
-  std::ifstream textFile(filename.c_str());
-  if (!textFile) {
-  	throw std::runtime_error{"Error in opening " + filename.string()};
-  }
+  InputStream textFile(filename);
   crossPlatGetline(textFile, currentLine);
   return currentLine;
 }
@@ -147,24 +145,34 @@ inline std::string getFirstLine(const bfs::path &filename) {
 inline std::string getLastLine(const bfs::path & filename) {
 	/*
 	 Last line from the file, from http://www.programmersbook.com/page/7/Get-last-line-from-a-file-in-C/
+	 will only work on text files, not gz files
 	 */
-	std::ifstream inputFile(filename.string(), std::ios_base::ate); //open file
-	if(!inputFile){
-		throw std::runtime_error{njh::bashCT::boldRed("Error in opening " + filename.string())};
-	}
 	std::string ret;
-	int length = 0;
-	char c = '\0';
-	if (inputFile) {
-		length = inputFile.tellg(); //Get file size
-		// loop backward over the file
-		for (int i = length - 2; i > 0; --i) {
-			inputFile.seekg(i);
-			c = inputFile.get();
-			if (c == '\r' || c == '\n') //new line?
-				break;
+	if(njh::endsWith(filename.string(), ".gz")){
+		//with zipped files have to read through the whole thing to uncompress to get last line
+	  InputStream textFile(filename);
+	  std::string currentLine = "";
+	  while(crossPlatGetline(textFile, currentLine)){
+	  	ret = currentLine;
+	  }
+	}else{
+		std::ifstream inputFile(filename.string(), std::ios_base::ate); //open file
+		if(!inputFile){
+			throw std::runtime_error{njh::bashCT::boldRed("Error in opening " + filename.string())};
 		}
-		std::getline(inputFile, ret); //read last line
+		char c = '\0';
+		if (inputFile) {
+			int length = inputFile.tellg(); //Get file size
+			// loop backward over the file
+			for (int i = length - 2; i > 0; --i) {
+				inputFile.seekg(i);
+				c = inputFile.get();
+				if (c == '\r' || c == '\n'){ //new line?
+					break;
+				}
+			}
+			crossPlatGetline(inputFile, ret); //read last line
+		}
 	}
 	return ret;
 }
@@ -177,13 +185,7 @@ inline std::string getLastLine(const bfs::path & filename) {
 inline std::vector<std::string> getAllLines(const bfs::path & fnp){
 	std::vector<std::string> ret;
   std::string currentLine;
-  std::ifstream textFile(fnp.c_str());
-  if (!bfs::exists(fnp)){
-  	throw std::runtime_error{"Error " + fnp.string() + " doesn't exist"};
-  }
-  if (!textFile) {
-  	throw std::runtime_error{"Error in opening " + fnp.string()};
-  }
+  InputStream textFile(fnp);
   while(crossPlatGetline(textFile, currentLine)){
   	ret.emplace_back(currentLine);
   }
@@ -305,12 +307,7 @@ inline uint32_t countLines(const bfs::path & filename) {
  */
 inline bool hasPossibleRowNames(const bfs::path & fnp, const std::string & delim =
 		"whitespace", uint32_t maxCheck = 100) {
-	std::ifstream inFile(fnp.string());
-	if (!inFile) {
-		std::stringstream ss;
-		ss << __PRETTY_FUNCTION__ << ": error in opening " << fnp << "\n";
-		throw std::runtime_error { ss.str() };
-	}
+	InputStream inFile(fnp);
 	auto firstLine = tokenizeString(njh::files::getFirstLine(fnp), delim);
 	std::vector<std::string> fistLine;
 	std::string line = "";
@@ -358,12 +355,7 @@ inline bool hasPossibleRowNames(const bfs::path & fnp, const std::string & delim
 inline uint32_t getExpectedNumCol(const bfs::path & fnp,
 		const std::string & delim = "whitespace",
 		uint32_t maxCheck = 100){
-	std::ifstream inFile(fnp.string());
-	if(!inFile){
-		std::stringstream ss;
-		ss << __PRETTY_FUNCTION__ << ": error in opening " << fnp << "\n";
-		throw std::runtime_error{ss.str()};
-	}
+	InputStream inFile(fnp);
 	auto firstLine = tokenizeString(njh::files::getFirstLine(fnp), delim);
 	std::vector<std::string> fistLine;
 	std::string line = "";
@@ -387,6 +379,29 @@ inline uint32_t getExpectedNumCol(const bfs::path & fnp,
 
 
 }  //namespace files
+
+inline std::vector<std::string> getInputValues(const std::string & valuesStr,
+		const std::string & delim) {
+	std::vector<std::string> ret;
+	if ("" == valuesStr) {
+		return ret;
+	}
+	if (bfs::path(valuesStr).filename().string().length() <= 255
+			&& bfs::exists(valuesStr)) {
+		InputStream infile { bfs::path(valuesStr) };
+		std::string line = "";
+		while (njh::files::crossPlatGetline(infile, line)) {
+			//skip empty or blank lines
+			if(line.empty() || allWhiteSpaceStr(line)){
+				continue;
+			}
+			ret.emplace_back(line);
+		}
+	} else {
+		ret = tokenizeString(valuesStr, delim);
+	}
+	return ret;
+}
 }  //namespace njh
 
 

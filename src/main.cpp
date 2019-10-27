@@ -138,10 +138,14 @@ int main(int argc, char* argv[]){
 	  setUp.finishSetUp(std::cout);
 	  setUp.writeParametersFile("", false, false);
 
-	  auto files = njh::files::filesInFolder("./");
-	  for(const auto & f : files){
-	  	std::cout << f << std::endl;
-	  }
+//	  auto files = njh::files::filesInFolder("./");
+//	  for(const auto & f : files){
+//	  	std::cout << f << std::endl;
+//	  }
+	  auto lastLine = njh::files::getLastLine(testPath);
+	  std::cout << "last line of " << testPath << std::endl;
+	  std::cout << lastLine << std::endl;
+
 	} catch (std::exception & e) {
 		std::cerr << e.what() << std::endl;
 		exit(1);
