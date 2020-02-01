@@ -25,34 +25,13 @@
 //
 
 #include "njhcpp/utils.h"
-#include "njhcpp/files.h"
+//#include "njhcpp/files.h"
 #include "njhcpp/IO/IOOptions.h"
 #include "njhcpp/IO/OutputStream.hpp"
 #include "njhcpp/IO/InputStream.hpp"
 namespace njh {
 
-inline std::vector<std::string> getInputValues(const std::string & valuesStr,
-		const std::string & delim) {
-	std::vector<std::string> ret;
-	if ("" == valuesStr) {
-		return ret;
-	}
-	if (bfs::path(valuesStr).filename().string().length() <= 255
-			&& bfs::exists(valuesStr)) {
-		InputStream infile { bfs::path(valuesStr) };
-		std::string line = "";
-		while (njh::files::crossPlatGetline(infile, line)) {
-			//skip empty or blank lines
-			if(line.empty() || allWhiteSpaceStr(line)){
-				continue;
-			}
-			ret.emplace_back(line);
-		}
-	} else {
-		ret = tokenizeString(valuesStr, delim);
-	}
-	return ret;
-}
+
 
 
 inline void gzZipFile(const IoOptions & opts){

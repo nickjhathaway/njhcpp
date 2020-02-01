@@ -26,7 +26,9 @@
 
 
 #include "njhcpp/utils.h"
-#include "njhcpp/files.h"
+#include "njhcpp/files/fileObjects/gzstream.hpp" //njh::GZSTREAM
+
+//#include "njhcpp/files.h"
 
 namespace njh {
 
@@ -39,7 +41,7 @@ public:
 	}
 
 	OutOptions(const bfs::path & filename) :
-			outFilename_(filename), outExtention_(njh::files::bfs::extension(filename)) {
+			outFilename_(filename), outExtention_(bfs::extension(filename)) {
 
 	}
 
@@ -236,7 +238,7 @@ public:
 	 * @return the stream buffer of either outFile or std::cout
 	 */
 	std::streambuf* determineOutBuf(std::ofstream & outFile) const {
-		if ("" != outFilename_) {
+		if ("" != outFilename_&& "STDOUT" != outFilename_) {
 			if (binary_) {
 				openBinaryFile(outFile);
 			} else {
@@ -255,7 +257,7 @@ public:
 	 */
 	std::streambuf* determineOutBuf(
 			njh::GZSTREAM::ogzstream & outFileGz) const {
-		if ("" != outFilename_) {
+		if ("" != outFilename_&& "STDOUT" != outFilename_) {
 			if (binary_) {
 				openBinaryGzFile(outFileGz);
 			} else {
@@ -277,7 +279,7 @@ public:
 	std::streambuf* determineOutBuf(std::ofstream & outFile,
 			njh::GZSTREAM::ogzstream & outFileGz) const {
 		/**@todo perhaps having a bool member for gz output rather than determine by file name ending */
-		if ("" != outFilename_) {
+		if ("" != outFilename_ && "STDOUT" != outFilename_) {
 			if (("" != outExtention_ && njh::endsWith(outExtention_, ".gz")) || ("" == outExtention_ && njh::endsWith(outFilename_.string(), ".gz"))) {
 				if (binary_) {
 					openBinaryGzFile(outFileGz);

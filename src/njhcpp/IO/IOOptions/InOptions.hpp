@@ -25,7 +25,9 @@
 //
 
 #include "njhcpp/utils.h"
-#include "njhcpp/files.h"
+#include "njhcpp/files/fileObjects/gzstream.hpp" //njh::GZSTREAM
+
+//#include "njhcpp/files.h"
 
 namespace njh {
 
@@ -39,7 +41,7 @@ public:
 	}
 
 	InOptions(const bfs::path & filename) :
-			inFilename_(filename), inExtention_(njh::files::bfs::extension(filename)) {
+			inFilename_(filename), inExtention_(bfs::extension(filename)) {
 	}
 
 	InOptions(const bfs::path & filename,

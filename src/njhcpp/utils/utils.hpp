@@ -14,11 +14,14 @@
 #include <algorithm>
 #include <cppitertools/range.hpp> //range
 #include <cmath>
+#include <boost/filesystem.hpp>
 
 #include "njhcpp/jsonUtils/jsonUtils.hpp" //included here so that most files will have json
 #include "njhcpp/utils/stringUtils.hpp" //for conToStr
 
 namespace njh{
+
+namespace bfs = boost::filesystem;
 
 template <typename Container, typename T>
 auto find(Container& c, const T& t) -> decltype(c.begin()) {
