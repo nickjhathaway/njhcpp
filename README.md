@@ -1,5 +1,5 @@
 njhcpp
 ======
-Version 2.6.4-dev
+Version 3.0.0
 
 C++ code by Nicholas John Hathaway (njh)
