@@ -75,6 +75,26 @@ inline void runVoidFunctionThreaded(std::function<void()> & func,
 	}
 }
 
+/**@brief run a function that takes arguments
+ *
+ * @param func the function object
+ * @param numThreads the number of threads to use
+ * @param args the arguments to the function
+ */
+template<typename ... T>
+void runFunctionWtihConstRefArgsThreaded(std::function<void(const T&...)> & func,
+		uint32_t numThreads, const T&... args) {
+	if (numThreads <= 1) {
+		func(args...);
+	} else {
+		std::vector<std::thread> threads;
+		for (uint32_t t = 0; t < numThreads; ++t) {
+			threads.emplace_back(std::thread(func, std::cref(args...)));
+		}
+		joinAllThreads(threads);
+	}
+}
+
 
 
 
