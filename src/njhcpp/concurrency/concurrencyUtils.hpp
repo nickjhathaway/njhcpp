@@ -62,12 +62,17 @@ inline void detachAllJoinableThreads(std::vector<std::thread> & threads){
  * @param func the fuction object to run, pass by reference in case it has object references that need to be updated
  * @param numThreads the number of threads to use
  */
-inline void runVoidFunctionThreaded(std::function<void()> & func, uint32_t numThreads){
-	std::vector<std::thread> threads;
-	for(uint32_t t = 0; t < numThreads; ++t){
-		threads.emplace_back(std::thread(func));
+inline void runVoidFunctionThreaded(std::function<void()> & func,
+		uint32_t numThreads) {
+	if (numThreads <= 1) {
+		func();
+	} else {
+		std::vector<std::thread> threads;
+		for (uint32_t t = 0; t < numThreads; ++t) {
+			threads.emplace_back(std::thread(func));
+		}
+		joinAllThreads(threads);
 	}
-	joinAllThreads(threads);
 }
 
 
