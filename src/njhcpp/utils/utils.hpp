@@ -74,6 +74,16 @@ bool in(const T& t, const std::vector<T>& c) {
   return contains(c, t);
 }
 
+template <typename C, typename T>
+bool notIn(const T& t, const C& c) {
+  return !contains(c, t);
+}
+
+template <typename T>
+bool notIn(const T& t, const std::vector<T>& c) {
+  return !contains(c, t);
+}
+
 
 /**@brief Convert a vector into another vector of same length via converter function
  *
