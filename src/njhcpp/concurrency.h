@@ -14,4 +14,5 @@
 #include "njhcpp/concurrency/LockableQueue.hpp"
 #include "njhcpp/concurrency/LockableVec.hpp"
 #include "njhcpp/concurrency/concurrencyUtils.hpp"
+#include "njhcpp/concurrency/LockableJsonLog.hpp"
 
