@@ -504,6 +504,7 @@ public:
 	enum class CheckCase{
 		NONZERO,
 		GREATERZERO,
+		GTEQ1,
 		NONE
 	};
 
@@ -535,6 +536,8 @@ public:
 			return setOption(option, flagStr, shortDescription, required, flagGrouping, flagCheckNonZero<T>(flagStr));
 		}else if(testFuncCase == CheckCase::GREATERZERO){
 			return setOption(option, flagStr, shortDescription, required, flagGrouping, flagCheckGreaterThanZero<T>(flagStr));
+		}else if(testFuncCase == CheckCase::GTEQ1){
+			return setOption(option, flagStr, shortDescription, required, flagGrouping, flagCheckGTEQ1<T>(flagStr));
 		}else{
 			return setOption(option, flagStr, shortDescription, required, flagGrouping);
 		}
@@ -616,6 +619,19 @@ public:
 		return ret;
 	}
 
+	template<typename T>
+	static std::function<njh::progutils::ProgramSetUp::FlagCheckResult(const T&)> flagCheckGTEQ1(
+			const std::string & flagName) {
+		std::function<njh::progutils::ProgramSetUp::FlagCheckResult(const T&)> ret =
+				[&flagName](const T & val) {
+					if(val < 1 ) {
+						return njh::progutils::ProgramSetUp::FlagCheckResult(false, flagName + " can't be zero or less: " + estd::to_string(val));
+					}
+					return njh::progutils::ProgramSetUp::FlagCheckResult(true, "");
+				};
+		return ret;
+	}
+
 
 	template<typename T>
 	static std::function<FlagCheckResult(const T&)> flagCheckNonZeroContainers(
@@ -646,6 +662,8 @@ public:
 				};
 		return ret;
 	}
+
+
 
 
 	/**@brief Get the current run time since time point start_ in seconds
