@@ -61,6 +61,11 @@ public:
 		return option.empty() ? "None" : conToStr(option, ",");
 	}
 
+	template<typename T>
+	static std::string optionToStr_impl(const std::unordered_set<T> & option){
+		return option.empty() ? "None" : conToStr(option, ",");
+	}
+
 };
 
 

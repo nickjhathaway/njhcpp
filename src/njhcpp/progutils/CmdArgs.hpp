@@ -72,6 +72,21 @@ public:
 	|| std::is_same<std::set<long double>, typename std::decay<T>::type>::value
 	|| std::is_same<std::set<float>, typename std::decay<T>::type>::value
 	|| std::is_same<std::set<char>, typename std::decay<T>::type>::value
+	//unordred_set
+	|| std::is_same<std::unordered_set<std::string>, typename std::decay<T>::type>::value
+	//|| std::is_same<std::unordered_set<boost::filesystem::path>, typename std::decay<T>::type>::value //no hasing function for unordered_set
+	|| std::is_same<std::unordered_set<int>, typename std::decay<T>::type>::value
+	|| std::is_same<std::unordered_set<short>, typename std::decay<T>::type>::value
+	|| std::is_same<std::unordered_set<int>, typename std::decay<T>::type>::value
+	|| std::is_same<std::unordered_set<long>, typename std::decay<T>::type>::value
+	|| std::is_same<std::unordered_set<long long>, typename std::decay<T>::type>::value
+	|| std::is_same<std::unordered_set<unsigned short>, typename std::decay<T>::type>::value
+	|| std::is_same<std::unordered_set<unsigned int>, typename std::decay<T>::type>::value
+	|| std::is_same<std::unordered_set<unsigned long>, typename std::decay<T>::type>::value
+	|| std::is_same<std::unordered_set<double>, typename std::decay<T>::type>::value
+	|| std::is_same<std::unordered_set<long double>, typename std::decay<T>::type>::value
+	|| std::is_same<std::unordered_set<float>, typename std::decay<T>::type>::value
+	|| std::is_same<std::unordered_set<char>, typename std::decay<T>::type>::value
 	> {};
 
 	/**@brief simply aesthetic, to make call to is_cmdArg_supported_type look nicer
@@ -916,27 +931,23 @@ inline void CmdArgs::convertArg(const std::string& option, std::set<long long> &
 }
 // unsigned short (uint16_t)
 template<>
-inline void CmdArgs::convertArg(const std::string& option,
-		std::set<unsigned short> & outVal) {
+inline void CmdArgs::convertArg(const std::string& option, std::set<unsigned short> & outVal) {
 	convertArgSet(option, outVal);
 }
 // unsigned int (uint32_t)
 template<>
-inline void CmdArgs::convertArg(const std::string& option,
-		std::set<unsigned int> & outVal) {
+inline void CmdArgs::convertArg(const std::string& option, std::set<unsigned int> & outVal) {
 	convertArgSet(option, outVal);
 }
 // unsigned long (size_t and on some systems/libs uint64_t)
 template<>
-inline void CmdArgs::convertArg(const std::string& option,
-		std::set<unsigned long> & outVal) {
+inline void CmdArgs::convertArg(const std::string& option, std::set<unsigned long> & outVal) {
 	convertArgSet(option, outVal);
 }
 
 // unsigned long long (uint64_t depending on the system/lib)
 template<>
-inline void CmdArgs::convertArg(const std::string& option,
-		std::set<unsigned long long> & outVal) {
+inline void CmdArgs::convertArg(const std::string& option, std::set<unsigned long long> & outVal) {
 	convertArgSet(option, outVal);
 }
 // double
@@ -956,6 +967,98 @@ inline void CmdArgs::convertArg(const std::string& option, std::set<float> & out
 }
 
 
+// unordered_set
+template<typename T>
+void convertArgUnoSet(const std::string & option, std::unordered_set<T> & outValSet){
+	outValSet.clear();
+	auto opts = getInputValues(option, ",");
+	for(const auto & valPos : iter::range(opts.size())){
+		T val;
+		CmdArgs::convertArg(opts[valPos], val);
+		if(in(val, outValSet)){
+			std::stringstream ss;
+			ss << "Error in processing option: " << option << " found " << val << " more than once" << "\n";
+			throw std::runtime_error{ss.str()};
+		}
+		outValSet.emplace(val);
+	}
+}
+
+// boost::filesystem::path no hashing function for bfs::path
+//template<>
+//inline void CmdArgs::convertArg(const std::string& option, std::unordered_set<boost::filesystem::path> & outVal) {
+//	convertArgUnoSet(option, outVal);
+//}
+
+// std::string
+template<>
+inline void CmdArgs::convertArg(const std::string& option, std::unordered_set<std::string> & outVal) {
+	convertArgUnoSet(option, outVal);
+}
+
+// char
+template<>
+inline void CmdArgs::convertArg(const std::string& option, std::unordered_set<char> & outVal) {
+	convertArgUnoSet(option, outVal);
+}
+
+// short (int16_t)
+template<>
+inline void CmdArgs::convertArg(const std::string& option, std::unordered_set<short > & outVal) {
+	convertArgUnoSet(option, outVal);
+}
+// int (int32_t)
+template<>
+inline void CmdArgs::convertArg(const std::string& option, std::unordered_set<int> & outVal) {
+	convertArgUnoSet(option, outVal);
+}
+// long (int64_t depending on system/lib)
+template<>
+inline void CmdArgs::convertArg(const std::string& option, std::unordered_set<long > & outVal) {
+	convertArgUnoSet(option, outVal);
+}
+
+// long long (int64_t depending on system/lib)
+template<>
+inline void CmdArgs::convertArg(const std::string& option, std::unordered_set<long long> & outVal) {
+	convertArgUnoSet(option, outVal);
+}
+// unsigned short (uint16_t)
+template<>
+inline void CmdArgs::convertArg(const std::string& option, std::unordered_set<unsigned short> & outVal) {
+	convertArgUnoSet(option, outVal);
+}
+// unsigned int (uint32_t)
+template<>
+inline void CmdArgs::convertArg(const std::string& option, std::unordered_set<unsigned int> & outVal) {
+	convertArgUnoSet(option, outVal);
+}
+// unsigned long (size_t and on some systems/libs uint64_t)
+template<>
+inline void CmdArgs::convertArg(const std::string& option, std::unordered_set<unsigned long> & outVal) {
+	convertArgUnoSet(option, outVal);
+}
+
+// unsigned long long (uint64_t depending on the system/lib)
+template<>
+inline void CmdArgs::convertArg(const std::string& option, std::unordered_set<unsigned long long> & outVal) {
+	convertArgUnoSet(option, outVal);
+}
+// double
+template<>
+inline void CmdArgs::convertArg(const std::string& option, std::unordered_set<double> & outVal) {
+	convertArgUnoSet(option, outVal);
+}
+// long double
+template<>
+inline void CmdArgs::convertArg(const std::string& option,std::unordered_set<long double> & outVal) {
+	convertArgUnoSet(option, outVal);
+}
+// float
+template<>
+inline void CmdArgs::convertArg(const std::string& option, std::unordered_set<float> & outVal) {
+	convertArgUnoSet(option, outVal);
+}
 
 }  // namespace progutils
 }  // namespace njh
