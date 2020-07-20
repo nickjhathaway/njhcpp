@@ -12,7 +12,7 @@
 #include <iostream>
 #include <iomanip> //set::setw
 #include <algorithm>
-#include <cppitertools/range.hpp> //range
+#include <cppitertools/itertools.hpp> //range
 #include <cmath>
 #include <boost/filesystem.hpp>
 

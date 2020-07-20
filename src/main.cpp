@@ -7,6 +7,7 @@ using namespace njh;
 
 int main(int argc, char* argv[]){
 	try {
+		uint8_t ui8t = 8;
 		uint16_t ui16t = 16;
 		uint32_t ui32t = 32;
 		uint64_t ui64t = 64;
@@ -21,6 +22,12 @@ int main(int argc, char* argv[]){
 		float ft = 1.01;
 		char cVal = 'A';
 		njh::files::bfs::path testPath = "~";
+
+
+		std::vector<uint8_t> ui8t_vec{};
+		std::set<uint8_t> ui8t_set{};
+		std::unordered_set<uint8_t> ui8t_unoset{};
+
 
 		std::vector<uint16_t> ui16t_vec{};
 		std::set<uint16_t> ui16t_set{};
@@ -77,6 +84,7 @@ int main(int argc, char* argv[]){
 	  njh::progutils::ProgramSetUp setUp(argc, argv);
 	  setUp.setOption(cVal, "--cVal", "cVal");
 	  setUp.setOption(testPath, "--testPath", "testPath");
+	  setUp.setOption(ui8t, "--ui8t", "ui8t");
 	  setUp.setOption(ui16t, "--ui16t", "ui16t");
 	  setUp.setOption(ui32t, "--ui32t", "ui32t");
 	  setUp.setOption(ui64t, "--ui64t", "ui64t");
@@ -89,6 +97,10 @@ int main(int argc, char* argv[]){
 	  setUp.setOption(dt, "--dt,-d", "dt");
 	  setUp.setOption(ldt, "--ldt", "ldt");
 	  setUp.setOption(ft, "--ft,-f", "ft");
+
+	  setUp.setOption(ui8t_vec, "--ui8t_vec", "ui8t_vec");
+	  setUp.setOption(ui8t_set, "--ui8t_set", "ui8t_set");
+	  setUp.setOption(ui8t_unoset, "--ui8t_unoset", "ui8t_unoset");
 
 	  setUp.setOption(ui16t_vec, "--ui16t_vec", "ui16t_vec");
 	  setUp.setOption(ui16t_set, "--ui16t_set", "ui16t_set");

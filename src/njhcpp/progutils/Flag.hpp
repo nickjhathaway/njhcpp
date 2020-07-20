@@ -24,6 +24,7 @@ public:
 	|| std::is_same<int, typename std::decay<T>::type>::value
 	|| std::is_same<long, typename std::decay<T>::type>::value
 	|| std::is_same<long long, typename std::decay<T>::type>::value
+	|| std::is_same<unsigned char, typename std::decay<T>::type>::value
 	|| std::is_same<unsigned short, typename std::decay<T>::type>::value
 	|| std::is_same<unsigned int, typename std::decay<T>::type>::value
 	|| std::is_same<unsigned long, typename std::decay<T>::type>::value

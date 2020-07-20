@@ -42,6 +42,7 @@ public:
 	|| std::is_same<long double, typename std::decay<T>::type>::value
 	|| std::is_same<float, typename std::decay<T>::type>::value
 	|| std::is_same<char, typename std::decay<T>::type>::value
+	|| std::is_same<unsigned char, typename std::decay<T>::type>::value
 	//vectors
 	|| std::is_same<std::vector<std::string>, typename std::decay<T>::type>::value
 	|| std::is_same<std::vector<boost::filesystem::path>, typename std::decay<T>::type>::value
@@ -57,6 +58,7 @@ public:
 	|| std::is_same<std::vector<long double>, typename std::decay<T>::type>::value
 	|| std::is_same<std::vector<float>, typename std::decay<T>::type>::value
 	|| std::is_same<std::vector<char>, typename std::decay<T>::type>::value
+	|| std::is_same<std::vector<unsigned char>, typename std::decay<T>::type>::value
 	//set
 	|| std::is_same<std::set<std::string>, typename std::decay<T>::type>::value
 	|| std::is_same<std::set<boost::filesystem::path>, typename std::decay<T>::type>::value
@@ -72,6 +74,7 @@ public:
 	|| std::is_same<std::set<long double>, typename std::decay<T>::type>::value
 	|| std::is_same<std::set<float>, typename std::decay<T>::type>::value
 	|| std::is_same<std::set<char>, typename std::decay<T>::type>::value
+	|| std::is_same<std::set<unsigned char>, typename std::decay<T>::type>::value
 	//unordred_set
 	|| std::is_same<std::unordered_set<std::string>, typename std::decay<T>::type>::value
 	//|| std::is_same<std::unordered_set<boost::filesystem::path>, typename std::decay<T>::type>::value //no hasing function for unordered_set
@@ -87,6 +90,7 @@ public:
 	|| std::is_same<std::unordered_set<long double>, typename std::decay<T>::type>::value
 	|| std::is_same<std::unordered_set<float>, typename std::decay<T>::type>::value
 	|| std::is_same<std::unordered_set<char>, typename std::decay<T>::type>::value
+	|| std::is_same<std::unordered_set<unsigned char>, typename std::decay<T>::type>::value
 	> {};
 
 	/**@brief simply aesthetic, to make call to is_cmdArg_supported_type look nicer
@@ -738,6 +742,12 @@ template<>
 inline void CmdArgs::convertArg(const std::string& option, long long& outVal) {
 	outVal = std::stoll(option);
 }
+// unsigned char (uint8_t)
+template<>
+inline void CmdArgs::convertArg(const std::string& option,
+		unsigned char& outVal) {
+	outVal = estd::stouc(option);
+}
 // unsigned short (uint16_t)
 template<>
 inline void CmdArgs::convertArg(const std::string& option,
@@ -831,6 +841,12 @@ template<>
 inline void CmdArgs::convertArg(const std::string& option, std::vector<long long> & outVal) {
 	convertArgVec(option, outVal);
 }
+// unsigned char (uint8_t)
+template<>
+inline void CmdArgs::convertArg(const std::string& option,
+		std::vector<unsigned char> & outVal) {
+	convertArgVec(option, outVal);
+}
 // unsigned short (uint16_t)
 template<>
 inline void CmdArgs::convertArg(const std::string& option,
@@ -883,7 +899,7 @@ void convertArgSet(const std::string & option, std::set<T> & outValSet){
 		CmdArgs::convertArg(opts[valPos], val);
 		if(in(val, outValSet)){
 			std::stringstream ss;
-			ss << "Error in processing option: " << option << " found " << val << " more than once" << "\n";
+			ss << "Error in processing option: " << option << " found " << estd::to_string(val) << " more than once" << "\n";
 			throw std::runtime_error{ss.str()};
 		}
 		outValSet.emplace(val);
@@ -927,6 +943,11 @@ inline void CmdArgs::convertArg(const std::string& option, std::set<long > & out
 // long long (int64_t depending on system/lib)
 template<>
 inline void CmdArgs::convertArg(const std::string& option, std::set<long long> & outVal) {
+	convertArgSet(option, outVal);
+}
+// unsigned char (uint8_t)
+template<>
+inline void CmdArgs::convertArg(const std::string& option, std::set<unsigned char> & outVal) {
 	convertArgSet(option, outVal);
 }
 // unsigned short (uint16_t)
@@ -977,7 +998,7 @@ void convertArgUnoSet(const std::string & option, std::unordered_set<T> & outVal
 		CmdArgs::convertArg(opts[valPos], val);
 		if(in(val, outValSet)){
 			std::stringstream ss;
-			ss << "Error in processing option: " << option << " found " << val << " more than once" << "\n";
+			ss << "Error in processing option: " << option << " found " << estd::to_string(val) << " more than once" << "\n";
 			throw std::runtime_error{ss.str()};
 		}
 		outValSet.emplace(val);
@@ -1021,6 +1042,11 @@ inline void CmdArgs::convertArg(const std::string& option, std::unordered_set<lo
 // long long (int64_t depending on system/lib)
 template<>
 inline void CmdArgs::convertArg(const std::string& option, std::unordered_set<long long> & outVal) {
+	convertArgUnoSet(option, outVal);
+}
+// unsigned char (uint8_t)
+template<>
+inline void CmdArgs::convertArg(const std::string& option, std::unordered_set<unsigned char> & outVal) {
 	convertArgUnoSet(option, outVal);
 }
 // unsigned short (uint16_t)

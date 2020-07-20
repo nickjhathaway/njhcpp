@@ -8,6 +8,9 @@
 
 
 #include <string>
+#include <unordered_set>
+#include <cppitertools/range.hpp> //range
+#include <set>
 #include <sstream> //std::stringstream
 #include <iostream>
 #include <iterator> //std::ostream_iterator
@@ -95,6 +98,54 @@ std::string conToStr(const Container& con,
   ret.erase(ret.size() - delim.size());
   return ret;
 }
+
+template <>
+inline std::string conToStr(const std::vector<uint8_t>& con,
+                     const std::string& delim) {
+  if (con.empty()) {
+    return "";
+  }
+  std::string ret = estd::to_string(con[0]);
+  for(const auto pos : iter::range<uint64_t>(1, con.size())){
+  	ret += delim;
+  	ret += estd::to_string(con[pos]);
+  }
+  return ret;
+}
+
+template <>
+inline std::string conToStr(const std::set<uint8_t>& con,
+                     const std::string& delim) {
+  if (con.empty()) {
+    return "";
+  }
+  std::string ret = "";
+  for(const auto val : con){
+  	if("" != ret){
+  		ret += delim;
+  	}
+  	ret += estd::to_string(val);
+  }
+  return ret;
+}
+
+template <>
+inline std::string conToStr(const std::unordered_set<uint8_t>& con,
+                     const std::string& delim) {
+  if (con.empty()) {
+    return "";
+  }
+  std::string ret = "";
+  for(const auto val : con){
+  	if("" != ret){
+  		ret += delim;
+  	}
+  	ret += estd::to_string(val);
+  }
+  return ret;
+}
+
+
 
 /**@brief Turn a container into a delimited string with the last delimiter being something different
  *
