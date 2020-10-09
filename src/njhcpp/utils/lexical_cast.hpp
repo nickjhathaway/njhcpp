@@ -41,15 +41,15 @@ class bad_lexical_cast: public std::bad_cast {
 private:
 	std::string targetType_;
 	std::string sourceType_;
+	std::string message_;
 public:
 	bad_lexical_cast(const std::string & targetType, const std::string & sourceType) :
-			targetType_(targetType), sourceType_(sourceType) {
+			targetType_(targetType), sourceType_(sourceType), message_("bad lexical cast: source type value, " + sourceType_ +  ", could not be interpreted as target, " + targetType_){
 
 	}
 
 	virtual const char *what() const throw () {
-		return std::string("bad lexical cast: "
-				"source type value, " + sourceType_ +  ", could not be interpreted as target, " + targetType_).c_str();
+		return message_.c_str();
 	}
 
 	virtual ~bad_lexical_cast() throw () {
@@ -58,7 +58,7 @@ public:
 };
 
 
-/**@brief Most likely won't be called, just so compilier doesn't complain about std::stod for non-string types
+/**@brief Most likely won't be called, just so compiler doesn't complain about std::stod for non-string types
  *
  */
 template< class Source>

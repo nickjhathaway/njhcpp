@@ -797,7 +797,7 @@ void convertArgVec(const std::string & option, std::vector<T> & outValVec){
 	outValVec.clear();
 	auto opts = getInputValues(option, ",");
 	outValVec = std::vector<T>(opts.size());
-	for(const auto & valPos : iter::range(outValVec.size())){
+	for(const auto valPos : iter::range(outValVec.size())){
 		CmdArgs::convertArg(opts[valPos], outValVec[valPos]);
 	}
 }
@@ -894,7 +894,7 @@ template<typename T>
 void convertArgSet(const std::string & option, std::set<T> & outValSet){
 	outValSet.clear();
 	auto opts = getInputValues(option, ",");
-	for(const auto & valPos : iter::range(opts.size())){
+	for(const auto valPos : iter::range(opts.size())){
 		T val;
 		CmdArgs::convertArg(opts[valPos], val);
 		if(in(val, outValSet)){
@@ -993,7 +993,7 @@ template<typename T>
 void convertArgUnoSet(const std::string & option, std::unordered_set<T> & outValSet){
 	outValSet.clear();
 	auto opts = getInputValues(option, ",");
-	for(const auto & valPos : iter::range(opts.size())){
+	for(const auto valPos : iter::range(opts.size())){
 		T val;
 		CmdArgs::convertArg(opts[valPos], val);
 		if(in(val, outValSet)){

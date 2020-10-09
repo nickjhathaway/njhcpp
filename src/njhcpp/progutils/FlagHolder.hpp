@@ -99,7 +99,7 @@ public:
 		for (const auto & f : flags_) {
 			auto otherNoDashOtps = f.second.flagsNoDash();
 			strVecToLower(otherNoDashOtps);
-			for (const auto & ndoPos : iter::range(noDashOpts.size())) {
+			for (const auto ndoPos : iter::range(noDashOpts.size())) {
 				if (in(noDashOpts[ndoPos], otherNoDashOtps)) {
 					return {true, noDashOpts[ndoPos]};
 				}
@@ -119,7 +119,7 @@ public:
 		for (const auto & f : flags_) {
 			auto otherNoDashOtps = f.second.flagsNoDash();
 			strVecToLower(otherNoDashOtps);
-			for (const auto & ndoPos : iter::range(noDashOpts.size())) {
+			for (const auto ndoPos : iter::range(noDashOpts.size())) {
 				if (in(noDashOpts[ndoPos], otherNoDashOtps)) {
 					std::stringstream ss;
 					ss << "Error in : " << __PRETTY_FUNCTION__ << ", adding new flag: "
