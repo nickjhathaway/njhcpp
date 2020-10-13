@@ -504,6 +504,8 @@ public:
 	enum class CheckCase{
 		NONZERO,
 		GREATERZERO,
+		FROM0TO1,
+		BETWEEN0AND1,
 		GTEQ1,
 		NONE
 	};
@@ -538,6 +540,10 @@ public:
 			return setOption(option, flagStr, shortDescription, required, flagGrouping, flagCheckGreaterThanZero<T>(flagStr));
 		}else if(testFuncCase == CheckCase::GTEQ1){
 			return setOption(option, flagStr, shortDescription, required, flagGrouping, flagCheckGTEQ1<T>(flagStr));
+		}else if(testFuncCase == CheckCase::FROM0TO1){
+			return setOption(option, flagStr, shortDescription, required, flagGrouping, flagCheckFrom0To1<T>(flagStr));
+		}else if(testFuncCase == CheckCase::BETWEEN0AND1){
+			return setOption(option, flagStr, shortDescription, required, flagGrouping, flagCheckBetween0And1<T>(flagStr));
 		}else{
 			return setOption(option, flagStr, shortDescription, required, flagGrouping);
 		}
@@ -631,6 +637,37 @@ public:
 				};
 		return ret;
 	}
+
+	template<typename T>
+	static std::function<njh::progutils::ProgramSetUp::FlagCheckResult(const T&)> flagCheckFrom0To1(
+			const std::string & flagName) {
+		std::function<njh::progutils::ProgramSetUp::FlagCheckResult(const T&)> ret =
+				[&flagName](const T & val) {
+					if(val >=0 && val <= 1) { //
+						return njh::progutils::ProgramSetUp::FlagCheckResult(true, "");
+					}
+					return njh::progutils::ProgramSetUp::FlagCheckResult(false, flagName + " has to be between 0 and 1 inclusive: " + estd::to_string(val));
+				};
+		return ret;
+	}
+
+	template<typename T>
+	static std::function<njh::progutils::ProgramSetUp::FlagCheckResult(const T&)> flagCheckBetween0And1(
+			const std::string & flagName) {
+		std::function<njh::progutils::ProgramSetUp::FlagCheckResult(const T&)> ret =
+				[&flagName](const T & val) {
+					if(val >0 && val < 1) {
+						return njh::progutils::ProgramSetUp::FlagCheckResult(true, "");
+					}
+					return njh::progutils::ProgramSetUp::FlagCheckResult(false, flagName + " has to be between 0 and 1 non-inclusive: " + estd::to_string(val));
+
+				};
+		return ret;
+	}
+
+
+
+
 
 
 	template<typename T>
