@@ -505,7 +505,6 @@ public:
 		NONZERO,
 		GREATERZERO,
 		FROM0TO1,
-		BETWEEN0AND1,
 		GTEQ1,
 		NONE
 	};
@@ -542,8 +541,6 @@ public:
 			return setOption(option, flagStr, shortDescription, required, flagGrouping, flagCheckGTEQ1<T>(flagStr));
 		}else if(testFuncCase == CheckCase::FROM0TO1){
 			return setOption(option, flagStr, shortDescription, required, flagGrouping, flagCheckFrom0To1<T>(flagStr));
-		}else if(testFuncCase == CheckCase::BETWEEN0AND1){
-			return setOption(option, flagStr, shortDescription, required, flagGrouping, flagCheckBetween0And1<T>(flagStr));
 		}else{
 			return setOption(option, flagStr, shortDescription, required, flagGrouping);
 		}
