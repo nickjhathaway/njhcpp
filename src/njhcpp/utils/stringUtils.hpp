@@ -748,7 +748,7 @@ public:
 
 	std::regex pat_; /**< the pattern to search with */
 
-	/**@brief Get the positions of pat_ in input string, an empty vectory means there was no matching pattern
+	/**@brief Get the positions of pat_ in input string, an empty vector means there was no matching pattern
 	 *
 	 * @param str the string to search in
 	 * @return the results of the search, a vector of objects that contain the matching pattern and the position at which it can be found
@@ -764,6 +764,45 @@ public:
 		return pats;
 	}
 };
+
+
+/**@brief Tokenize a string with substrings matching pattern
+ *
+ * @param str The string to tokenize
+ * @param regExp the expression to tokenize on
+ * @return a vector of all sub strings matching the given regex pattern
+ */
+inline std::vector<std::string> tokStrOnMatchRegex(std::string & str, const std::regex & regExp){
+  std::regex_token_iterator<std::string::iterator> rend;
+
+  std::vector<std::string> toks;
+  std::regex_token_iterator<std::string::iterator> it ( str.begin(), str.end(), regExp );
+  while (it!=rend) {
+  	toks.emplace_back(*it++);
+  }
+  return toks;
+}
+
+/**@brief Tokenize a string with substrings between matching pattern
+ *
+ * @param str The string to tokenize
+ * @param regExp the expression to tokenize on
+ * @return a vector of all substring inbetween the given regex pattern
+ */
+inline std::vector<std::string> tokStrOnSplitRegex(std::string & str, const std::regex & regExp){
+  std::regex_token_iterator<std::string::iterator> rend;
+
+  std::vector<std::string> toks;
+  std::regex_token_iterator<std::string::iterator> it ( str.begin(), str.end(), regExp, -1);
+  while (it!=rend) {
+  	if(it->matched){
+  		toks.emplace_back(*it++);
+  	}else{
+  		++it;
+  	}
+  }
+  return toks;
+}
 
 
 
