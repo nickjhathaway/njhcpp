@@ -380,19 +380,19 @@ inline uint32_t getExpectedNumCol(const bfs::path & fnp,
 
 }  //namespace files
 
-inline std::vector<std::string> getInputValues(const std::string & valuesStr,
-		const std::string & delim) {
+inline std::vector<std::string> getInputValues(const std::string &valuesStr,
+		const std::string &delim) {
 	std::vector<std::string> ret;
 	if ("" == valuesStr) {
 		return ret;
 	}
-	if (bfs::path(valuesStr).filename().string().length() <= 255
-			&& bfs::exists(valuesStr)) {
+	if ((bfs::path(valuesStr).filename().string().length() <= 255
+			&& bfs::exists(valuesStr)) || "STDIN" == valuesStr) {
 		InputStream infile { bfs::path(valuesStr) };
 		std::string line = "";
 		while (njh::files::crossPlatGetline(infile, line)) {
 			//skip empty or blank lines
-			if(line.empty() || allWhiteSpaceStr(line)){
+			if (line.empty() || allWhiteSpaceStr(line)) {
 				continue;
 			}
 			ret.emplace_back(line);
