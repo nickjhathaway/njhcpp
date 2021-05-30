@@ -386,8 +386,7 @@ inline std::vector<std::string> getInputValues(const std::string &valuesStr,
 	if ("" == valuesStr) {
 		return ret;
 	}
-	if ((bfs::path(valuesStr).filename().string().length() <= 255
-			&& bfs::exists(valuesStr)) || "STDIN" == valuesStr) {
+	if ((bfs::path(valuesStr).filename().string().length() <= 255 && (bfs::exists(valuesStr) && !bfs::is_directory(valuesStr))) || "STDIN" == valuesStr) {
 		InputStream infile { bfs::path(valuesStr) };
 		std::string line = "";
 		while (njh::files::crossPlatGetline(infile, line)) {
