@@ -690,6 +690,29 @@ public:
 	uint32_t numberOfCommands() {
 		return arguments_.size();
 	}
+
+	/** @brief Separate a vector of arguments into sub arguments
+	 *
+	 * @tparam KEYTYPE The type of the key for the return map
+	 * @tparam VALUETYPE The type of the value for the return map
+	 * @param input The vector of arguments
+	 * @param sep The separator
+	 * @return A unordered_map of the arguments split into two each
+	 */
+	template<typename KEYTYPE, typename VALUETYPE, typename CONTYPE>
+	static std::unordered_map<KEYTYPE, VALUETYPE> sepSubArgs(const CONTYPE & input, const std::string & sep = ":"){
+		std::unordered_map<KEYTYPE, VALUETYPE> ret;
+		for(const auto & fieldValue : input){
+			auto toks = tokenizeString(fieldValue, sep);
+			if(2 != toks.size()){
+				std::stringstream ss;
+				ss << __PRETTY_FUNCTION__ << ", error " << "meta field values to ignore need to be in format of METAFIELD:VALUE not " << fieldValue<< "\n";
+				throw std::runtime_error{ss.str()};
+			}
+			ret[njh::lexical_cast<KEYTYPE>(toks[0])] = njh::lexical_cast<VALUETYPE>(toks[1]);
+		}
+		return ret;
+	}
 };
 
 
