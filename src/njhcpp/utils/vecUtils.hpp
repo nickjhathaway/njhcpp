@@ -69,6 +69,17 @@ void addVecToSet(const std::vector<T> & vec, std::set<T> & s) {
 	std::copy(vec.begin(), vec.end(), std::inserter(s, s.end()));
 }
 
+/**@brief Convert vector to set
+ *
+ * @tparam T the template type
+ * @param vec the vector to convert
+ * @return a set of the vector contents
+ */
+template<typename T>
+std::set<T> vecToSet(const std::vector<T> & vec){
+	return std::set<T>(vec.begin(), vec.end());
+}
+
 /**@brief Add values of a vector to a unordered_set;
  *
  * @param vec the vector to add
@@ -77,6 +88,17 @@ void addVecToSet(const std::vector<T> & vec, std::set<T> & s) {
 template<typename T>
 void addVecToUOSet(const std::vector<T> & vec, std::unordered_set<T> & s) {
 	std::copy(vec.begin(), vec.end(), std::inserter(s, s.end()));
+}
+
+/**@brief Convert vector to unordered_set
+ *
+ * @tparam T the template type
+ * @param vec the vector to convert
+ * @return an unordered_set of the vector contents
+ */
+template<typename T>
+std::unordered_set<T> vecToUOSet(const std::vector<T> & vec){
+	return std::set<T>(vec.begin(), vec.end());
 }
 
 } //namespace njh
