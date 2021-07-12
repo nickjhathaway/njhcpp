@@ -80,6 +80,28 @@ std::set<T> vecToSet(const std::vector<T> & vec){
 	return std::set<T>(vec.begin(), vec.end());
 }
 
+/**@brief Convert unordered_set to set
+ *
+ * @tparam T the template type
+ * @param uos the unordered_set to convert
+ * @return a set of the unordered_set contents
+ */
+template<typename T>
+std::set<T> uosetToSet(const std::unordered_set<T> & uos){
+	return std::set<T>(uos.begin(), uos.end());
+}
+
+/**@brief Convert set to unordered_set
+ *
+ * @tparam T the template type
+ * @param uos the set to convert
+ * @return a unordered_set of the set contents
+ */
+template<typename T>
+std::unordered_set<T> setToUOSet(const std::set<T> & s){
+	return std::unordered_set<T>(s.begin(), s.end());
+}
+
 /**@brief Add values of a vector to a unordered_set;
  *
  * @param vec the vector to add
