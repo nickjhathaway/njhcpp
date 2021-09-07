@@ -59,6 +59,19 @@ const std::vector<T> catVecs(const std::vector<T>& vec1,
 }
 
 
+/**@brief Add container contents to a vector
+ *
+ * @tparam T the type of the vector
+ * @tparam CON the other container type, e.g. set, unordered_set, etc
+ * @param vec the vector to add to
+ * @param container the contain to add content from
+ */
+template<typename T, typename CON>
+void addConToVec(std::vector<T> & vec, const CON & container){
+	std::copy(container.begin(), container.end(), std::back_inserter(vec));
+}
+
+
 /**@brief Add values of a vector to a set
  *
  * @param vec the vector to add
