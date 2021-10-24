@@ -41,15 +41,15 @@ class bad_lexical_cast: public std::bad_cast {
 private:
 	std::string targetType_;
 	std::string sourceType_;
+	std::string message_;
 public:
 	bad_lexical_cast(const std::string & targetType, const std::string & sourceType) :
-			targetType_(targetType), sourceType_(sourceType) {
+			targetType_(targetType), sourceType_(sourceType), message_("bad lexical cast: source type value, " + sourceType_ +  ", could not be interpreted as target, " + targetType_){
 
 	}
 
 	virtual const char *what() const throw () {
-		return std::string("bad lexical cast: "
-				"source type value, " + sourceType_ +  ", could not be interpreted as target, " + targetType_).c_str();
+		return message_.c_str();
 	}
 
 	virtual ~bad_lexical_cast() throw () {
@@ -58,7 +58,7 @@ public:
 };
 
 
-/**@brief Most likely won't be called, just so compilier doesn't complain about std::stod for non-string types
+/**@brief Most likely won't be called, just so compiler doesn't complain about std::stod for non-string types
  *
  */
 template< class Source>
@@ -71,7 +71,7 @@ inline std::string toSreamHelper(const Source & source){
  */
 inline std::string toSreamHelper(const std::string & source){
   std::stringstream ss;
-  ss << std::setprecision(20) << std::stod(source);
+  ss << std::setprecision(20) << std::stold(source);
 	return ss.str();
 }
 
@@ -149,55 +149,70 @@ namespace StrToNumConverter {
  * @param str the string to convert
  * @return the string convert to a number
  */
-	template<typename T>
-	T stoToNum(const std::string & str){
-		return njh::lexical_cast<T>(str);
-	}
+template<typename T>
+T stoToNum(const std::string &str) {
+	return njh::lexical_cast<T>(str);
+}
 
-	template<unsigned short>
-	unsigned short stoToNum(const std::string & str){
-		return estd::stous(str);
-	}
+template<>
+inline unsigned short stoToNum(const std::string &str) {
+	return estd::stous(str);
+}
 
-	template<unsigned>
-	unsigned stoToNum(const std::string & str){
-		return estd::stou(str);
-	}
+template<>
+inline unsigned stoToNum(const std::string &str) {
+	return estd::stou(str);
+}
 
-	template<unsigned long>
-	unsigned long stoToNum(const std::string & str){
-		return std::stoul(str);
-	}
+template<>
+inline unsigned long stoToNum(const std::string &str) {
+	return std::stoul(str);
+}
 
-	template<unsigned long long>
-	unsigned long stoToNum(const std::string & str){
-		return std::stoull(str);
-	}
+template<>
+inline unsigned long long stoToNum(const std::string &str) {
+	return std::stoull(str);
+}
 
-	template<short>
-	short stoToNum(const std::string & str){
-		return estd::stos(str);
-	}
+template<>
+inline short stoToNum(const std::string &str) {
+	return estd::stos(str);
+}
 
-	template<int>
-	int stoToNum(const std::string & str){
-		return std::stoi(str);
-	}
+template<>
+inline int stoToNum(const std::string &str) {
+	return std::stoi(str);
+}
 
-	template<long int>
-	long int stoToNum(const std::string & str){
-		return std::stol(str);
-	}
+template<>
+inline long int stoToNum(const std::string &str) {
+	return std::stol(str);
+}
 
-	template<long long int>
-	long long int stoToNum(const std::string & str){
-		return std::stoll(str);
-	}
+template<>
+inline long long int stoToNum(const std::string &str) {
+	return std::stoll(str);
+}
+
+template<>
+inline float stoToNum(const std::string &str) {
+	return std::stof(str);
+}
+
+template<>
+inline double stoToNum(const std::string &str) {
+	return std::stod(str);
+}
+
+template<>
+inline long double stoToNum(const std::string &str) {
+	return std::stold(str);
+}
 
 }  // namespace StrToNumConverter
 
 
-/**@brief convert a delimted string into a std::set
+/**@brief convert a delimited string into a std::set
  *
  * @param str the string to convert
  * @param delim the delimiter

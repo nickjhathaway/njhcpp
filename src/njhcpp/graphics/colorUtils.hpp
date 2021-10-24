@@ -21,7 +21,7 @@ namespace njh {
  */
 inline std::vector<color> multipleHexToColor(const std::vector<std::string> & inColors){
 	std::vector<color> outColors(inColors.size());
-	for(const auto & pos : iter::range(inColors.size())){
+	for(const auto  pos : iter::range(inColors.size())){
 		outColors[pos] = color(inColors[pos]);
 	}
 	return outColors;
@@ -34,7 +34,7 @@ inline std::vector<color> multipleHexToColor(const std::vector<std::string> & in
  */
 inline void printColorsForR(const std::vector<color>& cols, std::ostream & out) {
   out << "c(";
-  for (const auto& c : iter::range<uint64_t>(0, cols.size() - 1)) {
+  for (const auto c : iter::range<uint64_t>(0, cols.size() - 1)) {
     out << "\"#" << cols[c].hexStr_ << "\", ";
   }
   out << "\"#" << cols.back().hexStr_ << "\")" << std::endl;
@@ -70,9 +70,9 @@ inline std::vector<color> evenHuesAll(double sat, double lum, uint32_t number) {
 
 /**@brief   Get colors around the color wheel between two hues for a given hue and lum
  *
- * @param sat the saturatin
+ * @param sat the saturation
  * @param lum the lum
- * @param number the humber of the colors to give back
+ * @param number the number of the colors to give back
  * @param hueStart From where on the color wheel to start
  * @param hueStop Where to stop on the color wheel
  * @return A vector of colors
@@ -128,7 +128,7 @@ inline std::vector<color> evenHuesInbetweenTwo(const color& col1, const color& c
     colCopy.hue_ = colCopy.hue_ + 180;
     return std::vector<color>(colorNum, colCopy);
   }
-  for (const auto& i : iter::range(start, stop, step)) {
+  for (const auto i : iter::range(start, stop, step)) {
     // std::cout << "currentI : " << std::endl;
     color tempCol;
     tempCol.setColorByHueSatLum(i, col1.lSat_, col1.lum_);

@@ -332,7 +332,7 @@ public:
 	 *
 	 * @param dirName The directory to construct
 	 */
-	explicit MkdirPar(const bfs::path & dirName) :
+	MkdirPar(const bfs::path & dirName) :
 			dirName_(dirName) {
 	}
 	/**@brief Constructor with directory to make and whether to overwrite it if it exists
@@ -340,7 +340,7 @@ public:
 	 * @param dirName The directory to construct
 	 * @param overWriteDir To overwrite the directory
 	 */
-	explicit MkdirPar(const bfs::path & dirName, bool overWriteDir) :
+	MkdirPar(const bfs::path & dirName, bool overWriteDir) :
 			dirName_(dirName), overWriteDir_(overWriteDir) {
 	}
 
@@ -350,7 +350,7 @@ public:
 	 * @param overWriteDir To overwrite the directory
 	 * @param perms The permissions to give to the directory
 	 */
-	explicit MkdirPar(const bfs::path & dirName, bool overWriteDir, mode_t perms) :
+	MkdirPar(const bfs::path & dirName, bool overWriteDir, mode_t perms) :
 			dirName_(dirName), overWriteDir_(overWriteDir), perms_(perms) {
 	}
 

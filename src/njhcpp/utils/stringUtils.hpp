@@ -8,6 +8,9 @@
 
 
 #include <string>
+#include <unordered_set>
+#include <cppitertools/range.hpp> //range
+#include <set>
 #include <sstream> //std::stringstream
 #include <iostream>
 #include <iterator> //std::ostream_iterator
@@ -95,6 +98,54 @@ std::string conToStr(const Container& con,
   ret.erase(ret.size() - delim.size());
   return ret;
 }
+
+template <>
+inline std::string conToStr(const std::vector<uint8_t>& con,
+                     const std::string& delim) {
+  if (con.empty()) {
+    return "";
+  }
+  std::string ret = estd::to_string(con[0]);
+  for(const auto pos : iter::range<uint64_t>(1, con.size())){
+  	ret += delim;
+  	ret += estd::to_string(con[pos]);
+  }
+  return ret;
+}
+
+template <>
+inline std::string conToStr(const std::set<uint8_t>& con,
+                     const std::string& delim) {
+  if (con.empty()) {
+    return "";
+  }
+  std::string ret = "";
+  for(const auto val : con){
+  	if("" != ret){
+  		ret += delim;
+  	}
+  	ret += estd::to_string(val);
+  }
+  return ret;
+}
+
+template <>
+inline std::string conToStr(const std::unordered_set<uint8_t>& con,
+                     const std::string& delim) {
+  if (con.empty()) {
+    return "";
+  }
+  std::string ret = "";
+  for(const auto val : con){
+  	if("" != ret){
+  		ret += delim;
+  	}
+  	ret += estd::to_string(val);
+  }
+  return ret;
+}
+
+
 
 /**@brief Turn a container into a delimited string with the last delimiter being something different
  *
@@ -697,7 +748,7 @@ public:
 
 	std::regex pat_; /**< the pattern to search with */
 
-	/**@brief Get the positions of pat_ in input string, an empty vectory means there was no matching pattern
+	/**@brief Get the positions of pat_ in input string, an empty vector means there was no matching pattern
 	 *
 	 * @param str the string to search in
 	 * @return the results of the search, a vector of objects that contain the matching pattern and the position at which it can be found
@@ -713,6 +764,99 @@ public:
 		return pats;
 	}
 };
+
+
+/**@brief Tokenize a string with substrings matching pattern
+ *
+ * @param str The string to tokenize
+ * @param regExp the expression to tokenize on
+ * @return a vector of all sub strings matching the given regex pattern
+ */
+inline std::vector<std::string> tokStrOnMatchRegex(std::string & str, const std::regex & regExp){
+  std::regex_token_iterator<std::string::iterator> rend;
+
+  std::vector<std::string> toks;
+  std::regex_token_iterator<std::string::iterator> it ( str.begin(), str.end(), regExp );
+  while (it!=rend) {
+  	toks.emplace_back(*it++);
+  }
+  return toks;
+}
+
+/**@brief Tokenize a string with substrings between matching pattern
+ *
+ * @param str The string to tokenize
+ * @param regExp the expression to tokenize on
+ * @return a vector of all substring inbetween the given regex pattern
+ */
+inline std::vector<std::string> tokStrOnSplitRegex(std::string & str, const std::regex & regExp){
+  std::regex_token_iterator<std::string::iterator> rend;
+
+  std::vector<std::string> toks;
+  std::regex_token_iterator<std::string::iterator> it ( str.begin(), str.end(), regExp, -1);
+  while (it!=rend) {
+  	if(it->matched){
+  		toks.emplace_back(*it++);
+  	}else{
+  		++it;
+  	}
+  }
+  return toks;
+}
+
+/**@brief Natural sort a vector of names (e.g. putting Example9 before Example10
+ *
+ * @param names The vector of names
+ * @return a sorted vector of names
+ */
+inline std::vector<std::string> naturalSortName(const std::vector<std::string> & names){
+	struct NameWithNameSplit {
+		NameWithNameSplit(const std::string & name):
+			name_(name){
+			const std::regex regPat_{"([A-Za-z0-9\\.]+)" };
+			const std::regex subPat_ {"([A-Za-z]*)([0-9\\.]*)"};
+
+			nameToks_ = njh::tokStrOnMatchRegex(name_, regPat_);
+			for(const auto & name : nameToks_) {
+				std::smatch nameMatch;
+				if(!std::regex_match(name.begin(), name.end(), nameMatch, subPat_)) {
+	//					std::stringstream ss;
+	//					ss << __PRETTY_FUNCTION__ << ", error " << name << "name didn't match pattern"<< "\n";
+	//					throw std::runtime_error{ss.str()};
+					subNameToks_.emplace_back(std::make_pair(name, std::numeric_limits<double>::min()) );
+				} else {
+					subNameToks_.emplace_back(std::make_pair(nameMatch[1], ("" == nameMatch[2] ? std::numeric_limits<double>::min() :std::stod(nameMatch[2]) ) ) );
+				}
+			}
+		}
+	std::string name_;
+
+	std::vector<std::string> nameToks_;
+	std::vector<std::pair<std::string, double>> subNameToks_;
+	};
+	std::vector<NameWithNameSplit> namesWithSplit;
+	for(const auto & name : names) {
+		namesWithSplit.emplace_back(name);
+	}
+	njh::sort(namesWithSplit, []( const NameWithNameSplit & seq1, const NameWithNameSplit & seq2) {
+				auto smallest = std::min(seq1.nameToks_.size(), seq2.nameToks_.size());
+				for(uint32_t pos = 0; pos < smallest; ++pos) {
+					if(seq1.subNameToks_[pos].first == seq2.subNameToks_[pos].first) {
+						if(seq1.subNameToks_[pos].second != seq2.subNameToks_[pos].second) {
+							return seq1.subNameToks_[pos].second < seq2.subNameToks_[pos].second;
+						}
+					} else {
+						return seq1.subNameToks_[pos].first < seq2.subNameToks_[pos].first;
+					}
+				}
+				return seq1.subNameToks_.size() < seq2.subNameToks_.size();
+			});
+	std::vector<std::string> ret;
+	for(const auto & nameSplit : namesWithSplit) {
+		ret.emplace_back(nameSplit.name_);
+	}
+	return ret;
+}
 
 
 

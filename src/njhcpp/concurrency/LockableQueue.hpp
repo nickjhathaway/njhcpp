@@ -29,11 +29,13 @@ public:
 	LockableQueue(const std::deque<T> & vals) :
 			vals_ { vals } {
 	}
-	/**@brief construct with a vector
+
+	/**@brief construct any container with a begin and end
 	 *
-	 * @param vals a vector with values to be able to pop while locking
+	 * @param vals a container with values to be able to pop while locking
 	 */
-	LockableQueue(const std::vector<T> & vals) :
+	template<typename C>
+	LockableQueue(const C & vals) :
 			LockableQueue(std::deque<T> { vals.begin(), vals.end() }) {
 	}
 

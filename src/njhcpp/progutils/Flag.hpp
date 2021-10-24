@@ -24,6 +24,7 @@ public:
 	|| std::is_same<int, typename std::decay<T>::type>::value
 	|| std::is_same<long, typename std::decay<T>::type>::value
 	|| std::is_same<long long, typename std::decay<T>::type>::value
+	|| std::is_same<unsigned char, typename std::decay<T>::type>::value
 	|| std::is_same<unsigned short, typename std::decay<T>::type>::value
 	|| std::is_same<unsigned int, typename std::decay<T>::type>::value
 	|| std::is_same<unsigned long, typename std::decay<T>::type>::value
@@ -58,6 +59,11 @@ public:
 
 	template<typename T>
 	static std::string optionToStr_impl(const std::set<T> & option){
+		return option.empty() ? "None" : conToStr(option, ",");
+	}
+
+	template<typename T>
+	static std::string optionToStr_impl(const std::unordered_set<T> & option){
 		return option.empty() ? "None" : conToStr(option, ",");
 	}
 

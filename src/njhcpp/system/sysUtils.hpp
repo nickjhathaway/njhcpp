@@ -13,6 +13,7 @@
 #include "njhcpp/utils/time.h"
 #include "njhcpp/system/CmdPool.hpp"
 #include "njhcpp/system/RunOutput.hpp"
+#include "njhcpp/concurrency/concurrencyUtils.hpp"
 #include <pstreams/pstream.h>
 #include <thread>
 
@@ -123,9 +124,10 @@ inline std::vector<njh::sys::RunOutput> runCmdsThreaded(
 	std::mutex allOutputsMut;
 	std::mutex coutMut;
 	std::vector<njh::sys::RunOutput> ret;
+	auto pool = std::make_shared<CmdPool<std::string>>(cmds);
 
-	auto runCmds =
-			[&coutMut, &allOutputsMut, &ret, &verbose](const std::shared_ptr<CmdPool<std::string>> & pool) {
+	std::function<void()> runCmds =
+			[&coutMut, &allOutputsMut, &ret, &verbose,&pool]() {
 				bool running = true;
 				while(running) {
 					auto currentCmd = pool->getCmd();
@@ -162,14 +164,8 @@ inline std::vector<njh::sys::RunOutput> runCmdsThreaded(
 		}
 		exit(1);
 	}
-	auto pool = std::make_shared<CmdPool<std::string>>(cmds);
-	std::vector<std::thread> threads;
-	for (uint32_t t = 0; t < numThreads; ++t) {
-		threads.emplace_back(std::thread(runCmds, std::cref(pool)));
-	}
-	for (auto &t : threads) {
-		t.join();
-	}
+
+	njh::concurrent::runVoidFunctionThreaded(runCmds, numThreads);
 	return ret;
 }
 

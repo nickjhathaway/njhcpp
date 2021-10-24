@@ -62,12 +62,37 @@ inline void detachAllJoinableThreads(std::vector<std::thread> & threads){
  * @param func the fuction object to run, pass by reference in case it has object references that need to be updated
  * @param numThreads the number of threads to use
  */
-inline void runVoidFunctionThreaded(std::function<void()> & func, uint32_t numThreads){
-	std::vector<std::thread> threads;
-	for(uint32_t t = 0; t < numThreads; ++t){
-		threads.emplace_back(std::thread(func));
+inline void runVoidFunctionThreaded(std::function<void()> & func,
+		uint32_t numThreads) {
+	if (numThreads <= 1) {
+		func();
+	} else {
+		std::vector<std::thread> threads;
+		for (uint32_t t = 0; t < numThreads; ++t) {
+			threads.emplace_back(std::thread(func));
+		}
+		joinAllThreads(threads);
 	}
-	joinAllThreads(threads);
+}
+
+/**@brief run a function that takes arguments
+ *
+ * @param func the function object
+ * @param numThreads the number of threads to use
+ * @param args the arguments to the function
+ */
+template<typename ... T>
+void runFunctionWtihConstRefArgsThreaded(std::function<void(const T&...)> & func,
+		uint32_t numThreads, const T&... args) {
+	if (numThreads <= 1) {
+		func(args...);
+	} else {
+		std::vector<std::thread> threads;
+		for (uint32_t t = 0; t < numThreads; ++t) {
+			threads.emplace_back(std::thread(func, std::cref(args...)));
+		}
+		joinAllThreads(threads);
+	}
 }
 
 

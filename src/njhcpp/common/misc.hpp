@@ -64,6 +64,11 @@ std::string to_string(const T & e) {
   return ss.str();
 }
 
+template <>
+inline std::string to_string(const uint8_t & ui8t) {
+  return to_string(static_cast<uint16_t>(ui8t));
+}
+
 /**@brief change for bool objects to be translated to true or false, could cover up if true is a different number
  *
  * @param obj The bool to translate to a string
@@ -96,6 +101,14 @@ inline uint16_t stous(const std::string& str, size_t* idx = 0, int base = 10) {
     throw std::out_of_range{"stous out of range for : " + str};
   }
   return static_cast<uint16_t>(firstConverion);
+}
+inline uint8_t stouc(const std::string& str, size_t* idx = 0, int base = 10) {
+  auto firstConverion = std::stol(str, idx, base);
+  if (firstConverion < 0 ||
+      firstConverion > std::numeric_limits<uint8_t>::max()) {
+    throw std::out_of_range{"stouc out of range for : " + str};
+  }
+  return static_cast<uint8_t>(firstConverion);
 }
 inline int16_t stos(const std::string& str, size_t* idx = 0, int base = 10) {
   auto firstConverion = std::stoi(str, idx, base);

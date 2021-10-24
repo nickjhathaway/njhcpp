@@ -12,7 +12,7 @@
 #include <iostream>
 #include <iomanip> //set::setw
 #include <algorithm>
-#include <cppitertools/range.hpp> //range
+#include <cppitertools/itertools.hpp> //range
 #include <cmath>
 #include <boost/filesystem.hpp>
 
@@ -74,6 +74,16 @@ bool in(const T& t, const std::vector<T>& c) {
   return contains(c, t);
 }
 
+template <typename C, typename T>
+bool notIn(const T& t, const C& c) {
+  return !contains(c, t);
+}
+
+template <typename T>
+bool notIn(const T& t, const std::vector<T>& c) {
+  return !contains(c, t);
+}
+
 
 /**@brief Convert a vector into another vector of same length via converter function
  *
@@ -106,7 +116,7 @@ inline std::vector<double> getRange(double start, double stop, uint32_t num) {
   double difference = stop - start;
   double step = difference / (num - 1);
   std::vector<double> ans;
-  for (const auto &i : iter::range<uint32_t>(0, num)) {
+  for (const auto i : iter::range<uint32_t>(0, num)) {
     ans.emplace_back((i * step) + start);
   }
   return ans;
@@ -184,6 +194,34 @@ static std::vector<typename MAP::mapped_type> getVecOfMapValues(const MAP& theMa
   return ret;
 }
 
+/**@brief Get a set of all the values stored in theMap
+ *
+ * @param theMap The map to get the values from
+ * @return A set of the mapped values
+ */
+template <typename MAP>
+static std::set<typename MAP::mapped_type> getSetOfMapValues(const MAP& theMap) {
+  std::set<typename MAP::mapped_type> ret;
+  for (const auto & mValue : theMap) {
+    ret.emplace(mValue.second);
+  }
+  return ret;
+}
+
+/**@brief Get an unordered_set of all the values stored in theMap
+ *
+ * @param theMap The map to get the values from
+ * @return An unordered_set of the mapped values
+ */
+template <typename MAP>
+static std::unordered_set<typename MAP::mapped_type> getUOSetOfMapValues(const MAP& theMap) {
+  std::unordered_set<typename MAP::mapped_type> ret;
+  for (const auto & mValue : theMap) {
+    ret.emplace(mValue.second);
+  }
+  return ret;
+}
+
 /**@brief Get a vector of all the keys stored in theMap
  *
  * @param theMap The map to get the keys from
@@ -194,6 +232,34 @@ static std::vector<typename MAP::key_type> getVecOfMapKeys(const MAP& theMap) {
   std::vector<typename MAP::key_type> ret;
   for (const auto & mValue : theMap) {
     ret.push_back(mValue.first);
+  }
+  return ret;
+}
+
+/**@brief Get a set of all the keys stored in theMap
+ *
+ * @param theMap The map to get the keys from
+ * @return A set of the key values
+ */
+template <typename MAP>
+static std::set<typename MAP::key_type> getSetOfMapKeys(const MAP& theMap) {
+  std::set<typename MAP::key_type> ret;
+  for (const auto & mValue : theMap) {
+    ret.emplace(mValue.first);
+  }
+  return ret;
+}
+
+/**@brief Get an unordered_set of all the keys stored in theMap
+ *
+ * @param theMap The map to get the keys from
+ * @return An unordered_set of the key values
+ */
+template <typename MAP>
+static std::unordered_set<typename MAP::key_type> getUOSetOfMapKeys(const MAP& theMap) {
+  std::unordered_set<typename MAP::key_type> ret;
+  for (const auto & mValue : theMap) {
+    ret.emplace(mValue.first);
   }
   return ret;
 }
