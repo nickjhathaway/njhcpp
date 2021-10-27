@@ -660,7 +660,7 @@ T && removeAllWhitespace(T && s) {
  */
 inline void escapeSpecialChars(std::string & input) {
 	std::regex specialCharsPat {
-			R"(([\ /:*?"<>|;\[\]]))"};
+		R"(([\+\^\$\ /:*?"<>|;\[\]]))"};
 	std::string format{"\\$1"};
 	input = std::regex_replace(input, specialCharsPat, format);
 }
@@ -672,21 +672,35 @@ inline void escapeSpecialChars(std::string & input) {
  */
 inline std::string escapeSpecialCharsRet(const std::string & input) {
 	std::regex specialCharsPat {
-		R"(([\ /:*?"<>|;\[\]]))"};
+		R"(([\+\^\$\ /:*?"<>|;\[\]]))"};
 	std::string format{"\\$1"};
 	return std::regex_replace(input, specialCharsPat, format);
 }
 
 /**@brief test if a string contains special characters \ /:*?"<>|;[]
  *
- * @param input
- * @return
+ * @param input string
+ * @return true if input contains at least 1 special character
  */
 inline bool containsSpecialChars(const std::string & input){
 	std::regex specialCharsPat {
-		R"(([\ /:*?"<>|;\[\]]))"};
+		R"(([\+\^\$\ /:*?"<>|;\[\]]))"};
 	std::smatch match;
 	return std::regex_search(input, match, specialCharsPat);
+}
+
+/**
+ * @fn std::string replaceSpecialCharacters(const std::string&, const std::string&="-")
+ * @brief replace special character within a string with another string
+ *
+ * @param input the input string
+ * @param replacement the replacement string for the special characters
+ * @return the input string with the special characters replaced
+ */
+inline std::string replaceSpecialCharacters(const std::string & input, const std::string & replacement = "-"){
+	std::regex specialCharsPat {
+		R"(([\+\^\$\ /:*?"<>|;\[\]]))"};
+	return std::regex_replace(input, specialCharsPat, replacement);
 }
 
 
