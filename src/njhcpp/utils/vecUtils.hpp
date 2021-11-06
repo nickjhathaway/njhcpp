@@ -133,7 +133,7 @@ void addVecToUOSet(const std::vector<T> & vec, std::unordered_set<T> & s) {
  */
 template<typename T>
 std::unordered_set<T> vecToUOSet(const std::vector<T> & vec){
-	return std::set<T>(vec.begin(), vec.end());
+	return std::unordered_set<T>(vec.begin(), vec.end());
 }
 
 } //namespace njh
