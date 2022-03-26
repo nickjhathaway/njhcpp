@@ -25,7 +25,6 @@
 //
 
 #include "njhcpp/utils.h"
-//#include "njhcpp/files.h"
 #include "njhcpp/IO/IOOptions.h"
 #include "njhcpp/IO/OutputStream.hpp"
 #include "njhcpp/IO/InputStream.hpp"
@@ -33,7 +32,10 @@ namespace njh {
 
 
 
-
+/**
+ * @brief gzip a file
+ * @param opts the in and out options
+ */
 inline void gzZipFile(const IoOptions & opts){
 	if (opts.out_.outExists() && !opts.out_.overWriteFile_) {
 		std::stringstream ss;
@@ -60,8 +62,28 @@ inline void gzZipFile(const IoOptions & opts){
 	}
 }
 
+namespace files{
+
+/**
+ * @brief take a file and copy it's contents into another file, can be used to convert between zip and unzip etc rather than a simple copy
+ * @param inOpts the in options of the file to copy from
+ * @param outOpts the out options of the file to copy into
+ */
+inline void reWriteFile(const InOptions & inOpts, const OutOptions & outOpts){
+	InputStream inModel(inOpts);
+	OutputStream outModel(outOpts);
+	outModel << inModel.rdbuf();
+	outModel.flush();
+}
+
+/**
+ * @brief take a file and copy it's contents into another file, can be used to convert between zip and unzip etc rather than a simple copy
+ * @param opts the in and out options for the files to copy to and from
+ */
+inline void reWriteFile(const IoOptions & opts){
+	reWriteFile(opts.in_, opts.out_);
+}
 
 
-
-
-}  // namespace njh
+} // namespace files
+} // namespace njh
