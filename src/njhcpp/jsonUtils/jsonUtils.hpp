@@ -213,6 +213,12 @@ namespace JsonConversion {
 		return ret;
 	}
 
+//template<>
+//inline Json::Value toJson(const long double & val) {
+//	Json::Value ret(val);
+//	return ret;
+//}
+
 	template<>
 	inline Json::Value toJson(const bool & val) {
 		Json::Value ret(val);
@@ -230,6 +236,11 @@ namespace JsonBackConversion {
 	inline double jsonToValue(const Json::Value & val) {
 		return val.asDouble();
 	}
+
+//	template<>
+//	inline long double jsonToValue(const Json::Value & val) {
+//		return val.asLongDouble();
+//	}
 
 	template<>
 	inline bool jsonToValue(const Json::Value & val) {
