@@ -282,7 +282,7 @@ inline double roundDecPlaces(double num, int decPlaces) {
  */
 template <class T>
 void addOtherVec(std::vector<T>& vec, const std::vector<T>& otherVec) {
-  vec.reserve(vec.size() + otherVec.size());
+  vec.reserve(std::max(vec.size() + otherVec.size(), vec.size() * 2));
   vec.insert(vec.end(), otherVec.begin(), otherVec.end());
 }
 
