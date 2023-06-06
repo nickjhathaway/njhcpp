@@ -137,6 +137,21 @@ inline bool isFileEmpty(const bfs::path & fnp){
 	return false;
 }
 
+/**
+ * @brief get the position of the end of the file if it exists, if it doesn't exist return 0
+ * @param fnp the file get the position in
+ * @return 0 if the file doesn't exist, or the end of file if it does exits;
+ */
+inline std::ios::pos_type getFilePositionsEndOfFile(const bfs::path & fnp){
+	std::ios::pos_type ret = 0;
+	if(exists(fnp)){
+		std::ifstream singleFnpStream(fnp.string());
+		singleFnpStream.seekg(0, std::ios_base::end);
+		ret = singleFnpStream.tellg();
+	}
+	return ret;
+}
+
 
 #if defined( __APPLE__ ) || defined( __APPLE_CC__ ) || defined( macintosh ) || defined( __MACH__ )
 	static const uint32_t NormalDefaultOpenFileLimit = 254; /**< The maximum number of files that normally allowed to be open by default for current Operating System */
