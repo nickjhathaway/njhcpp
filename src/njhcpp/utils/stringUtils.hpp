@@ -872,6 +872,23 @@ inline std::vector<std::string> naturalSortName(const std::vector<std::string> &
 	return ret;
 }
 
+/**
+ * @brief Generate a vector of the ansi "printable" characters 33-127
+ * @return char vector of "printable" characters
+ */
+inline std::vector<char> genVecOfAnsiPrintable(){
+	std::vector<char> ret(127-33);
+	njh::iota(ret, static_cast<char>(33));
+	return ret;
+}
 
+/**
+ * @brief Generate a set of the ansi "printable" characters 33-127
+ * @return char set of "printable" characters
+ */
+inline std::set<char> genSetOfAnsiPrintable(){
+	auto chars = genVecOfAnsiPrintable();
+	return std::set<char>{chars.begin(), chars.end()};
+}
 
 } // namesapce njh
