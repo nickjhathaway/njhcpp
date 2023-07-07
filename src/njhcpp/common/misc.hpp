@@ -3,7 +3,7 @@
  * misc.hpp
  *
  *  Created on: Sep 12, 2014
- *      Author: nickhathaway
+ *      Author: nick hathaway
  */
 
 

@@ -3,7 +3,7 @@
  * stdIncludes.hpp
  *
  *  Created on: Dec 30, 2015
- *      Author: nick
+ *      Author: nick hathaway
  */
 
 
