@@ -17,6 +17,7 @@
 #include <cmath> //round()
 #include <iomanip> //std::setFill(), std::setw()
 #include <regex>
+#include <utility>
 #include "njhcpp/common.h" //estd::to_string
 //#include "njhcpp/jsonUtils/jsonUtils.hpp" //included here so that most files will have json
 
@@ -729,7 +730,7 @@ public:
 		 * @param pat the pattern itself found, not the regex pattern searched with e.g. AAAAA for regex A+ in TTAAAAATG
 		 * @param pos the position at which the pattern can be found
 		 */
-		PatPosSize(const std::string & pat, size_t pos): pat_(pat), pos_(pos){
+		PatPosSize(std::string  pat, size_t pos): pat_(std::move(pat)), pos_(pos){
 
 		}
 		std::string pat_; /**< the pattern found*/
@@ -739,7 +740,7 @@ public:
 		 *
 		 * @return the end position, not inclusive
 		 */
-		size_t end(){
+		[[nodiscard]] size_t end() const{
 			return pos_ + pat_.size();
 		}
 	};
@@ -756,7 +757,7 @@ public:
 	 *
 	 * @param pat the regex object
 	 */
-	PatPosFinder(const std::regex & pat): pat_(pat){
+	PatPosFinder(std::regex  pat): pat_(std::move(pat)){
 
 	}
 
@@ -767,7 +768,7 @@ public:
 	 * @param str the string to search in
 	 * @return the results of the search, a vector of objects that contain the matching pattern and the position at which it can be found
 	 */
-	std::vector<PatPosSize> getPatPositions(const std::string & str) const{
+	[[nodiscard]] std::vector<PatPosSize> getPatPositions(const std::string & str) const{
     std::sregex_iterator iter(str.begin(), str.end(), pat_);
     std::sregex_iterator end;
   	std::vector<PatPosSize> pats;
@@ -818,58 +819,70 @@ inline std::vector<std::string> tokStrOnSplitRegex(std::string & str, const std:
   return toks;
 }
 
-/**@brief Natural sort a vector of names (e.g. putting Example9 before Example10
+/**@brief Natural sort a vector of names (e.g. putting Example9 before Example10)
  *
  * @param names The vector of names
  * @return a sorted vector of names
  */
-inline std::vector<std::string> naturalSortName(const std::vector<std::string> & names){
+inline std::vector<std::string> naturalSortNameRet(const std::vector<std::string> & names){
 	struct NameWithNameSplit {
-		NameWithNameSplit(const std::string & name):
-			name_(name){
+		explicit NameWithNameSplit(std::string  name):
+						name_(std::move(name)){
 			const std::regex regPat_{"([A-Za-z0-9\\.]+)" };
 			const std::regex subPat_ {"([A-Za-z]*)([0-9\\.]*)"};
 
 			nameToks_ = njh::tokStrOnMatchRegex(name_, regPat_);
-			for(const auto & name : nameToks_) {
+			for(const auto & nameTok : nameToks_) {
 				std::smatch nameMatch;
-				if(!std::regex_match(name.begin(), name.end(), nameMatch, subPat_)) {
-	//					std::stringstream ss;
-	//					ss << __PRETTY_FUNCTION__ << ", error " << name << "name didn't match pattern"<< "\n";
-	//					throw std::runtime_error{ss.str()};
-					subNameToks_.emplace_back(std::make_pair(name, std::numeric_limits<double>::min()) );
+				if(!std::regex_match(nameTok.begin(), nameTok.end(), nameMatch, subPat_)) {
+					//					std::stringstream ss;
+					//					ss << __PRETTY_FUNCTION__ << ", error " << nameTok << "nameTok didn't match pattern"<< "\n";
+					//					throw std::runtime_error{ss.str()};
+					subNameToks_.emplace_back(nameTok, std::numeric_limits<double>::min() );
 				} else {
-					subNameToks_.emplace_back(std::make_pair(nameMatch[1], ("" == nameMatch[2] ? std::numeric_limits<double>::min() :std::stod(nameMatch[2]) ) ) );
+					subNameToks_.emplace_back(nameMatch[1], ("" == nameMatch[2] ? std::numeric_limits<double>::min() :std::stod(nameMatch[2]) ) );
 				}
 			}
 		}
-	std::string name_;
+		std::string name_;
 
-	std::vector<std::string> nameToks_;
-	std::vector<std::pair<std::string, double>> subNameToks_;
+		std::vector<std::string> nameToks_;
+		std::vector<std::pair<std::string, double>> subNameToks_;
 	};
 	std::vector<NameWithNameSplit> namesWithSplit;
-	for(const auto & name : names) {
+	namesWithSplit.reserve(names.size());
+	for (const auto &name: names) {
 		namesWithSplit.emplace_back(name);
 	}
 	njh::sort(namesWithSplit, []( const NameWithNameSplit & seq1, const NameWithNameSplit & seq2) {
-				auto smallest = std::min(seq1.nameToks_.size(), seq2.nameToks_.size());
-				for(uint32_t pos = 0; pos < smallest; ++pos) {
-					if(seq1.subNameToks_[pos].first == seq2.subNameToks_[pos].first) {
-						if(seq1.subNameToks_[pos].second != seq2.subNameToks_[pos].second) {
-							return seq1.subNameToks_[pos].second < seq2.subNameToks_[pos].second;
-						}
-					} else {
-						return seq1.subNameToks_[pos].first < seq2.subNameToks_[pos].first;
-					}
+		auto smallest = std::min(seq1.nameToks_.size(), seq2.nameToks_.size());
+		for(uint32_t pos = 0; pos < smallest; ++pos) {
+			if(seq1.subNameToks_[pos].first == seq2.subNameToks_[pos].first) {
+				if(seq1.subNameToks_[pos].second != seq2.subNameToks_[pos].second) {
+					return seq1.subNameToks_[pos].second < seq2.subNameToks_[pos].second;
 				}
-				return seq1.subNameToks_.size() < seq2.subNameToks_.size();
-			});
+			} else {
+				return seq1.subNameToks_[pos].first < seq2.subNameToks_[pos].first;
+			}
+		}
+		return seq1.subNameToks_.size() < seq2.subNameToks_.size();
+	});
 	std::vector<std::string> ret;
-	for(const auto & nameSplit : namesWithSplit) {
+	ret.reserve(namesWithSplit.size());
+	for (const auto &nameSplit: namesWithSplit) {
 		ret.emplace_back(nameSplit.name_);
 	}
 	return ret;
+}
+
+/**
+ * @brief Sort the names in input vector and set the input vector to that sorted vector
+ * @param names the input to be sorted
+ * @return a reference to the input vector
+ */
+inline std::vector<std::string>& naturalSortNameSet(std::vector<std::string> & names){
+	names = naturalSortNameRet(names);
+	return names;
 }
 
 /**
