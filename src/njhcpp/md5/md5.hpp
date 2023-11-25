@@ -146,18 +146,18 @@ public:
 	  return *this;
 	}
 	// return hex representation of digest as string
-	std::string hexdigest() const
-	{
-	  if (!finalized)
-	    return "";
-
+  [[nodiscard]] std::string hexdigest() const {
+	  if (!finalized) {
+		  return "";
+	  }
 	  char buf[33];
-	  for (int i=0; i<16; i++)
-	    sprintf(buf+i*2, "%02x", digest[i]);
-	  buf[32]=0;
+	  for (int i = 0; i < 16; ++i) {
+		  snprintf(buf + i * 2, 33, "%02x", digest[i]);
+	  }
+	  buf[32] = 0;
 
 	  return std::string(buf);
-	}
+  }
   friend std::ostream& operator<<(std::ostream&, MD5 md5);
 
 private:
