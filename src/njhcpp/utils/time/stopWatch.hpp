@@ -171,25 +171,60 @@ public:
 	 * @param decPlaces The number of decimal places to print if formatted
 	 *
 	 */
-	void logLapTimes(std::ostream & out,
-			bool formatted, int32_t decPlaces,
-			bool endLastLap){
-		if(endLastLap){
+	void logLapTimes(std::ostream& out,
+	                 bool formatted, int32_t decPlaces,
+	                 bool endLastLap) {
+		if (endLastLap) {
 			startNewLap();
 		}
-		if(formatted){
+		if (formatted) {
 			std::vector<std::vector<std::string>> content;
-			std::vector<std::string> header {"lap", "time"};
-			for(const auto & lt : lapTimes_){
-				content.emplace_back(std::vector<std::string>{lt.first,
-					getTimeFormat(lt.second, true, decPlaces)});
+			std::vector<std::string> header{"lap", "timeFormated", "seconds"};
+			content.reserve(lapTimes_.size());
+			for (const auto& lt: lapTimes_) {
+				content.emplace_back(std::vector<std::string>{
+					lt.first,
+					getTimeFormat(lt.second, true, decPlaces),
+					estd::to_string(lt.second)
+				});
 			}
-			printTableOrganized(content, header, out);
-		}else{
-			for(const auto & lt : lapTimes_){
+
+			// printTableOrganized(content, header, out);
+			out << conToStr(header, "\t") << "\n";
+			for(const auto & row : content) {
+				out << conToStr(row, "\t") << "\n";
+			}
+		} else {
+			for (const auto& lt: lapTimes_) {
 				out << lt.first << "\t" << lt.second << "\n";
 			}
 		}
+	}
+
+	/**
+	 * \brief output in a column content adjusted table
+	 * \param out output stream to print to
+	 * \param decPlaces number of decimeal places for time
+	 * \param endLastLap end the last lap
+	 */
+	void logLapTimesOrganized(std::ostream& out,
+	                          int32_t decPlaces = 6,
+	                          bool endLastLap = true) {
+		if (endLastLap) {
+			startNewLap();
+		}
+		std::vector<std::vector<std::string>> content;
+		std::vector<std::string> header{"lap", "timeFormated", "seconds"};
+		content.reserve(lapTimes_.size());
+		for (const auto& lt: lapTimes_) {
+			content.emplace_back(std::vector<std::string>{
+				lt.first,
+				getTimeFormat(lt.second, true, decPlaces),
+				estd::to_string(lt.second)
+			});
+		}
+
+		printTableOrganized(content, header, out);
 	}
 
 	/**@brief Get the average lap time in seconds
@@ -216,7 +251,8 @@ public:
 		Json::Value ret;
 		auto & laps = ret["laps"];
 		for (const auto & lt : lapTimes_) {
-			laps[lt.first] = getTimeFormat(lt.second, true, 6);
+			laps[lt.first]["time_formated"] = getTimeFormat(lt.second, true, 6);
+			laps[lt.first]["time_seconds"] = lt.second;
 		}
 		std::time_t start_c = std::chrono::system_clock::to_time_t(
 					std::chrono::system_clock::now());
