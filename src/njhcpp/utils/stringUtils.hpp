@@ -829,7 +829,8 @@ inline std::vector<std::string> naturalSortNameRet(const std::vector<std::string
 		explicit NameWithNameSplit(std::string  name):
 						name_(std::move(name)){
 			const std::regex regPat_{"([A-Za-z0-9\\.]+)" };
-			const std::regex subPat_ {"([A-Za-z]*)([0-9\\.]*)"};
+			// const std::regex subPat_ {"([A-Za-z]*)([0-9]+\\.)"};
+			const std::regex subPat_ {R"(([A-Za-z]*)(\d+(\.\d*)?|\.\d+))"};
 
 			nameToks_ = njh::tokStrOnMatchRegex(name_, regPat_);
 			for(const auto & nameTok : nameToks_) {
@@ -840,7 +841,9 @@ inline std::vector<std::string> naturalSortNameRet(const std::vector<std::string
 					//					throw std::runtime_error{ss.str()};
 					subNameToks_.emplace_back(nameTok, std::numeric_limits<double>::min() );
 				} else {
-					subNameToks_.emplace_back(nameMatch[1], ("" == nameMatch[2] ? std::numeric_limits<double>::min() :std::stod(nameMatch[2]) ) );
+					// std::cout << nameMatch[1] << std::endl;
+					// std::cout << nameMatch[2] << std::endl;
+					subNameToks_.emplace_back(nameMatch[1], "" == nameMatch[2] ? std::numeric_limits<double>::min() :std::stod(nameMatch[2]) );
 				}
 			}
 		}
