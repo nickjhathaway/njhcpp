@@ -17,6 +17,7 @@
 #include <cstdint>
 #include <iostream>
 #include <boost/filesystem.hpp>
+
 #include "njhcpp/common.h" //Enable_if
 #include "njhcpp/utils/has_member.hpp" //has_member
 #include "njhcpp/debug/exception.hpp" //Exception
@@ -28,7 +29,7 @@ namespace njh {
  */
 namespace json {
 
-/**@brief Namepsace to hold all conversion of objects/primitive to json
+/**@brief Namespace to hold all conversion of objects/primitive to json
  *
  */
 namespace JsonConversion {
@@ -358,68 +359,7 @@ inline Json::Value parse(const std::string & jsonStr) {
 	return root;
 }
 
-/**@brief Parse json file and create Json::Value object
- *
- * @param filename the file to  read in
- * @return a Json::Value object with the contents of filename
- */
-inline Json::Value parseFile(const std::string & filename) {
-	Json::CharReaderBuilder readerBuilder;
-	Json::Value root;
-	std::string errs;
-	std::ifstream inFile{filename};
-	auto stats = Json::parseFromStream(readerBuilder, inFile, &root, &errs);
-	if (!stats) {
-		std::stringstream ss;
-		ss << "Error in parsing from file: " << filename << " in " << __PRETTY_FUNCTION__ << "\n";
-		ss << errs << "\n";
-		throw std::runtime_error{ss.str()};
-	}
-	return root;
-}
 
-/**@brief Parse a stream for json and return a Json::Value, throw on faiure
- *
- * @param is the stream to read from
- * @return the Json in the input stream
- */
-inline Json::Value parseStream(std::istream & is){
-	Json::CharReaderBuilder readerBuilder;
-	Json::Value root;
-	std::string errs;
-	auto stats = Json::parseFromStream(readerBuilder, is, &root, &errs);
-	if (!stats) {
-		std::stringstream ss;
-		ss << "Error in parsing from stream in " << __PRETTY_FUNCTION__ << "\n";
-		ss << errs << "\n";
-		throw std::runtime_error{ss.str()};
-	}
-	return root;
-}
-
-/**@brief Write a json formated string with little white space, one line
- *
- * @param val The json object
- * @return A string with only one line with values in val written in json format
- */
-inline std::string writeAsOneLine(const Json::Value & val) {
-	Json::StreamWriterBuilder writerBuilder;
-	writerBuilder["indentation"] = "";
-	return Json::writeString(writerBuilder,val);
-}
-
-
-/**@brief Write as one line (no indentation) to stream
- *
- * @param val the value to write
- * @param out the stream to write to
- */
-inline void writeAsOneLine(const Json::Value & val, std::ostream & out) {
-	Json::StreamWriterBuilder writerBuilder;
-	writerBuilder.settings_["indentation"] = "";
-	std::unique_ptr<Json::StreamWriter> writer(writerBuilder.newStreamWriter());
-	writer->write(val, &out);
-}
 
 /**@brief convert a json array to a vector using a function to convert the json to cpp type
  *
