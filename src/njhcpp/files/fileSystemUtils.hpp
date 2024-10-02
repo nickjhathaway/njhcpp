@@ -81,7 +81,7 @@ inline std::vector<bfs::path> filesInFolder(bfs::path d) {
  * @param currentLevel The current level of the search if recursive
  * @param levels The max level to search to, level 1 be just the current directory, 2 being the contents of directories of the current dir, etc.
  */
-inline void listAllFilesHelperThrowOnDupSymplink(const bfs::path & dirName, bool recursive,
+inline void listAllFilesHelperThrowOnDupSymlink(const bfs::path & dirName, bool recursive,
 		std::map<bfs::path, bfs::path> & files, uint32_t currentLevel, uint32_t levels, std::vector<std::string> & warnings) {
 
 	bfs::directory_iterator end_iter;
@@ -111,7 +111,7 @@ inline void listAllFilesHelperThrowOnDupSymplink(const bfs::path & dirName, bool
 			if (bfs::is_directory(dir_iter.path())) {
 				files[normCurrent] = current;
 				if (recursive && currentLevel <= levels) {
-					listAllFilesHelperThrowOnDupSymplink(current, recursive, files, currentLevel + 1,
+					listAllFilesHelperThrowOnDupSymlink(current, recursive, files, currentLevel + 1,
 							levels, warnings);
 				}
 			} else {
@@ -218,7 +218,7 @@ inline std::map<bfs::path, bool> listAllFilesThrowOnDupSymlink(const bfs::path &
 				std::numeric_limits<uint32_t>::max()) {
 	std::map<bfs::path, bfs::path> filesGathering;
 	std::vector<std::string> warnings;
-	listAllFilesHelperThrowOnDupSymplink(dirName, recursive, filesGathering, 1, levels, warnings);
+	listAllFilesHelperThrowOnDupSymlink(dirName, recursive, filesGathering, 1, levels, warnings);
 	if(!warnings.empty()) {
 		std::stringstream ss;
 		ss << __PRETTY_FUNCTION__ << ", error: "  << "\n";
@@ -264,6 +264,41 @@ inline std::map<bfs::path, bool> listAllFiles(const bfs::path & dirName,
 	}
 	return files;
 }
+/**@brief List files in a directory with optional recursive search and checking for regex patterns
+ *
+ * @param dirName The directory to search
+ * @param recursive Whether the search should be recursive
+ * @param contains A series of regex patterns the file path name has to contain
+ * @param levels The maximum number of levels to search (1 being the first directory)
+ * @return A map of boost::filesystem paths with the value being a bool with true indicating it's a directory
+ */
+inline std::map<bfs::path, bool> listAllFilesThrowOnDupSymlink(const bfs::path & dirName,
+		bool recursive, const std::vector<std::regex>& contains, uint32_t levels =
+				std::numeric_limits<uint32_t>::max()) {
+	std::map<bfs::path, bfs::path> filesGathering;
+
+	std::vector<std::string> warnings;
+	listAllFilesHelperThrowOnDupSymlink(dirName, recursive, filesGathering, 1, levels, warnings);
+	if(!warnings.empty()) {
+		std::stringstream ss;
+		ss << __PRETTY_FUNCTION__ << ", error: "  << "\n";
+		ss << njh::conToStr(warnings, "\n") << "\n";
+		throw std::runtime_error{ss.str()};
+	}
+	std::map<bfs::path, bool> files = convertMapFnpFnpToFnpIsDir(filesGathering);
+
+	if (!contains.empty()) {
+		std::map<bfs::path, bool> specificFiles;
+		for (const auto & f : files) {
+			if (checkForPats(f.first.filename().string(), contains)) {
+				specificFiles.emplace(f);
+			}
+		}
+		return specificFiles;
+	}
+	return files;
+}
+
 
 /**@brief List files in a directory with optional recursive search and checking for regex patterns
  *
@@ -293,6 +328,16 @@ inline std::map<bfs::path, bool> listAllFiles(const bfs::path & dirName,
 	}
 	return files;
 }
+/**@brief List files in a directory with optional recursive search and checking for regex patterns
+ *
+ * @param dirName The directory to search
+ * @param recursive Whether the search should be recursive
+ * @param contains A series of regex patterns the file path name has to contain
+ * @param excludes A series of regex patterns the file path name has to not contain
+ * @param levels The maximum number of levels to search (1 being the first directory)
+ * @return A map of boost::filesystem paths with the value being a bool with true indicating it's a directory
+ */
+
 
 /**@brief Open a ofstream with filename and checking for file existence
  *
