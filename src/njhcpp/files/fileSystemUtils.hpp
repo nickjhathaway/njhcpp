@@ -81,10 +81,11 @@ inline std::vector<bfs::path> filesInFolder(bfs::path d) {
  * @param currentLevel The current level of the search if recursive
  * @param levels The max level to search to, level 1 be just the current directory, 2 being the contents of directories of the current dir, etc.
  */
-inline void listAllFilesHelper(const bfs::path & dirName, bool recursive,
-		std::map<bfs::path, bfs::path> & files, uint32_t currentLevel, uint32_t levels) {
+inline void listAllFilesHelperThrowOnDupSymplink(const bfs::path & dirName, bool recursive,
+		std::map<bfs::path, bfs::path> & files, uint32_t currentLevel, uint32_t levels, std::vector<std::string> & warnings) {
 
 	bfs::directory_iterator end_iter;
+
 	if (bfs::exists(dirName) && bfs::is_directory(dirName)) {
 		for (const auto & dir_iter : dir(dirName)) {
 			bfs::path current = dir_iter.path();
@@ -102,14 +103,64 @@ inline void listAllFilesHelper(const bfs::path & dirName, bool recursive,
 //			if(alreadyHave){
 //				continue;
 //			}
+//
+			auto normCurrent = normalize(current);
+			if(njh::in(normCurrent, files)) {
+				warnings.emplace_back("already have file " + normCurrent.string() + ", which was symlinked to by " + files[normCurrent].string());
+			}
 			if (bfs::is_directory(dir_iter.path())) {
-				files[normalize(current)] = current;
+				files[normCurrent] = current;
+				if (recursive && currentLevel <= levels) {
+					listAllFilesHelperThrowOnDupSymplink(current, recursive, files, currentLevel + 1,
+							levels, warnings);
+				}
+			} else {
+				files[normCurrent] = current;
+			}
+		}
+	}
+
+}
+
+/**@brief Helper function for listing files recursively
+ *
+ * @param dirName The name of directory to search
+ * @param recursive Whether the search should be recursive
+ * @param files The map container in which to store results, key is full abs path, val is found path
+ * @param currentLevel The current level of the search if recursive
+ * @param levels The max level to search to, level 1 be just the current directory, 2 being the contents of directories of the current dir, etc.
+ */
+inline void listAllFilesHelper(const bfs::path & dirName, bool recursive,
+		std::map<bfs::path, bfs::path> & files, uint32_t currentLevel, uint32_t levels) {
+
+	bfs::directory_iterator end_iter;
+	if (bfs::exists(dirName) && bfs::is_directory(dirName)) {
+		for (const auto & dir_iter : dir(dirName)) {
+			bfs::path current = dir_iter.path();
+			//first check to see if this might be a symlink
+			//to another file that's the same to avoid adding the same exact file twice
+			//might want to warn or something here about this
+			//			bool alreadyHave = false;
+			//			for(const auto & f : files){
+			//				//if(bfs::canonical(f.first) == bfs::canonical(current)){
+			//				if(normalize(f.first) == normalize(current)){
+			//					alreadyHave = true;
+			//					break;
+			//				}
+			//			}
+			//			if(alreadyHave){
+			//				continue;
+			//			}
+			//
+			auto nromCurrent = normalize(current);
+			if (bfs::is_directory(dir_iter.path())) {
+				files[nromCurrent] = current;
 				if (recursive && currentLevel <= levels) {
 					listAllFilesHelper(current, recursive, files, currentLevel + 1,
 							levels);
 				}
 			} else {
-				files[normalize(current)] = current;
+				files[nromCurrent] = current;
 			}
 		}
 	}
@@ -141,6 +192,39 @@ inline std::map<bfs::path, bool> listAllFiles(const bfs::path & dirName,
 				std::numeric_limits<uint32_t>::max()) {
 	std::map<bfs::path, bfs::path> filesGathering;
 	listAllFilesHelper(dirName, recursive, filesGathering, 1, levels);
+	std::map<bfs::path, bool> files = convertMapFnpFnpToFnpIsDir(filesGathering);
+	if (!contains.empty()) {
+		std::map<bfs::path, bool> specificFiles;
+		for (const auto & f : files) {
+			if (checkForSubStrs(f.first.filename().string(), contains)) {
+				specificFiles.emplace(f);
+			}
+		}
+		return specificFiles;
+	}
+	return files;
+}
+
+/**@brief Function to list all the files of a directory with the option to search recursively and name filtering
+ *
+ * @param dirName the name of the directory to search
+ * @param recursive Whether the search should be recursive
+ * @param contains A vector of strings that the path names must contains to be returned
+ * @param levels The maximum number of levels to search
+ * @return A map of the directory paths with key being the file path and the value being a bool indicating if it is a directory or not
+ */
+inline std::map<bfs::path, bool> listAllFilesThrowOnDupSymplink(const bfs::path & dirName,
+		bool recursive, const std::vector<std::string>& contains, uint32_t levels =
+				std::numeric_limits<uint32_t>::max()) {
+	std::map<bfs::path, bfs::path> filesGathering;
+	std::vector<std::string> warnings;
+	listAllFilesHelperThrowOnDupSymplink(dirName, recursive, filesGathering, 1, levels, warnings);
+	if(!warnings.empty()) {
+		std::stringstream ss;
+		ss << __PRETTY_FUNCTION__ << ", error: "  << "\n";
+		ss << njh::conToStr(warnings, "\n") << "\n";
+		throw std::runtime_error{ss.str()};
+	}
 	std::map<bfs::path, bool> files = convertMapFnpFnpToFnpIsDir(filesGathering);
 	if (!contains.empty()) {
 		std::map<bfs::path, bool> specificFiles;
