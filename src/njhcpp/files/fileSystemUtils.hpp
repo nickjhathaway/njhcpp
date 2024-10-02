@@ -213,7 +213,7 @@ inline std::map<bfs::path, bool> listAllFiles(const bfs::path & dirName,
  * @param levels The maximum number of levels to search
  * @return A map of the directory paths with key being the file path and the value being a bool indicating if it is a directory or not
  */
-inline std::map<bfs::path, bool> listAllFilesThrowOnDupSymplink(const bfs::path & dirName,
+inline std::map<bfs::path, bool> listAllFilesThrowOnDupSymlink(const bfs::path & dirName,
 		bool recursive, const std::vector<std::string>& contains, uint32_t levels =
 				std::numeric_limits<uint32_t>::max()) {
 	std::map<bfs::path, bfs::path> filesGathering;
