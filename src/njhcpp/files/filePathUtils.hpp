@@ -181,7 +181,7 @@ inline std::string getHomeStr(){
  * @return The filename with the extension removed
  */
 inline std::string removeExtension(const bfs::path& filename) {
-	return bfs::path(filename).replace_extension("").string();
+	return endsWith(filename.string(), ".gz") ? bfs::path(bfs::path(filename).replace_extension("")).replace_extension("").string(): bfs::path(filename).replace_extension("").string();
 }
 
 /**@brief Wrapper boost filesystem to get the a string of the extension for a given filename without the .
