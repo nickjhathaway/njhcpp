@@ -4,6 +4,7 @@
 #include <chrono>
 #include "njhcpp/debug/exception.hpp"
 #include <cppitertools/range.hpp>
+#include "njhcpp/common/stdIncludes.hpp"
 
 namespace njh {
 /**@brief Namespace to hold operations dealing with files and dealing with the filesystem
