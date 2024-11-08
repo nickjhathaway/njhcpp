@@ -606,6 +606,29 @@ inline bfs::path makeDirP(const bfs::path &parentDirectory,
 }
 
 
+
+
+/**@brief Gather up files recursively with a certain extension
+ *
+ * @param dir the directory to search
+ * @param exts the extensions to check for
+ * @param recursive whether to search in sub directories as well
+ * @return a vector of paths to files in the directory with this extension
+ */
+inline std::vector<bfs::path> gatherFiles(const bfs::path & dir,
+		const std::set<std::string> & exts, bool recursive = false) {
+	auto files = njh::files::listAllFiles(dir.string(), recursive,
+			{ std::regex { ".*" + njh::pasteAsStr("(", njh::conToStr(exts, "|"), ")") + "$" } });
+	std::vector<bfs::path> ret;
+	for (const auto & f : files) {
+		//add only files
+		if (!f.second) {
+			ret.emplace_back(f.first);
+		}
+	}
+	return ret;
+}
+
 /**@brief Gather up files recursively with a certain extension
  *
  * @param dir the directory to search
@@ -615,16 +638,7 @@ inline bfs::path makeDirP(const bfs::path &parentDirectory,
  */
 inline std::vector<bfs::path> gatherFiles(const bfs::path & dir,
 		const std::string & ext, bool recursive = false) {
-	auto files = listAllFiles(dir.string(), recursive,
-			{ std::regex { ".*" + ext + "$" } });
-	std::vector<bfs::path> ret;
-	for (const auto & f : files) {
-		//add only files
-		if (!f.second) {
-			ret.emplace_back(f.first);
-		}
-	}
-	return ret;
+	return gatherFiles(dir, std::set<std::string>{ext}, recursive);
 }
 
 
