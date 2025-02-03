@@ -506,6 +506,7 @@ public:
 		GREATERZERO,
 		FROM0TO1,
 		GTEQ1,
+		GT1,
 		NONE
 	};
 
@@ -541,6 +542,8 @@ public:
 			return setOption(option, flagStr, shortDescription, required, flagGrouping, flagCheckGTEQ1<T>(flagStr));
 		}else if(testFuncCase == CheckCase::FROM0TO1){
 			return setOption(option, flagStr, shortDescription, required, flagGrouping, flagCheckFrom0To1<T>(flagStr));
+		}else if(testFuncCase == CheckCase::GT1){
+			return setOption(option, flagStr, shortDescription, required, flagGrouping, flagCheckGT1<T>(flagStr));
 		}else{
 			return setOption(option, flagStr, shortDescription, required, flagGrouping);
 		}
@@ -628,10 +631,23 @@ public:
 		std::function<njh::progutils::ProgramSetUp::FlagCheckResult(const T&)> ret =
 				[&flagName](const T & val) {
 					if(val < 1 ) {
-						return njh::progutils::ProgramSetUp::FlagCheckResult(false, flagName + " can't be zero or less: " + estd::to_string(val));
+						return njh::progutils::ProgramSetUp::FlagCheckResult(false, flagName + " can't be less than 1: " + estd::to_string(val));
 					}
 					return njh::progutils::ProgramSetUp::FlagCheckResult(true, "");
 				};
+		return ret;
+	}
+
+	template<typename T>
+static std::function<njh::progutils::ProgramSetUp::FlagCheckResult(const T&)> flagCheckGT1(
+		const std::string & flagName) {
+		std::function<njh::progutils::ProgramSetUp::FlagCheckResult(const T&)> ret =
+				[&flagName](const T & val) {
+					if(val <= 1 ) {
+						return njh::progutils::ProgramSetUp::FlagCheckResult(false, flagName + " has to be greater than 1: " + estd::to_string(val));
+					}
+					return njh::progutils::ProgramSetUp::FlagCheckResult(true, "");
+		};
 		return ret;
 	}
 
