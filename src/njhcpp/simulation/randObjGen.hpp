@@ -137,6 +137,14 @@ public:
 	  }
 	  return likelihoods;
 	}
+
+	/**@brief Set the seed for the random number generator
+	 *
+	 * @param seed the seed to set the random number generator to
+	 */
+	void set_seed(const uint64_t seed) {
+		mtGen_.seed(seed);
+	}
 };
 
 
