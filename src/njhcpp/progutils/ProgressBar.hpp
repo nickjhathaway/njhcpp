@@ -30,7 +30,7 @@ public:
 	 *
 	 * @param total The total that the progress should go to
 	 */
-	ProgressBar(uint32_t total) :
+	ProgressBar(uint64_t total) :
 			total_(total) {
 		step_ = width_ / 10;
 		progColors_ = RdYlGn_;
@@ -41,7 +41,7 @@ public:
 	 * @param add the amount to add to the current value
 	 * @param showTime whether to print the time with an eta as well
 	 */
-	void outputProgAdd(std::ostream & out, uint32_t add, bool showTime = false) {
+	void outputProgAdd(std::ostream & out, uint64_t add, bool showTime = false) {
 		current_ = atCur_.fetch_add(add) + add;
 		if ( std::round((current_ / static_cast<double>(total_)) * width_) > oldtProg_ || current_ == total_) {
 			std::lock_guard<std::mutex> lock(mut_);
@@ -55,14 +55,14 @@ public:
 		}
 	}
 
-	std::map<uint32_t, std::string> progColors_;
-	std::map<uint32_t, std::string> readToGreen_ = { { 0, njh::bashCT::addBGColor(
+	std::map<uint64_t, std::string> progColors_;
+	std::map<uint64_t, std::string> readToGreen_ = { { 0, njh::bashCT::addBGColor(
 			196) }, { 1, njh::bashCT::addBGColor(199) }, { 2, njh::bashCT::addBGColor(
 			201) }, { 3, njh::bashCT::addBGColor(129) }, { 4, njh::bashCT::addBGColor(
 			57) }, { 5, njh::bashCT::addBGColor(27) }, { 6, njh::bashCT::addBGColor(
 			39) }, { 7, njh::bashCT::addBGColor(45) }, { 8, njh::bashCT::addBGColor(
 			50) }, { 9, njh::bashCT::addBGColor(46) } };
-	std::map<uint32_t, std::string> RdYlGn_ = {
+	std::map<uint64_t, std::string> RdYlGn_ = {
 			{ 0, njh::bashCT::addBGColor(124) }, { 1, njh::bashCT::addBGColor(167) },
 			{ 2, njh::bashCT::addBGColor(209) }, { 3, njh::bashCT::addBGColor(215) },
 			{ 4, njh::bashCT::addBGColor(222) }, { 5, njh::bashCT::addBGColor(229) },
@@ -84,8 +84,8 @@ private:
 			watch_.reset();
 		}
 		//set current progress
-		currentProgress_ = current_ / static_cast<double>(total_);
-		tprog_ = std::round(currentProgress_ * width_);
+		currentProgress_ = current_ / static_cast<long double>(total_);
+		tprog_ = std::roundl(currentProgress_ * width_);
 		if (tprog_ == oldtProg_ && current_ < total_) {
 			return false;
 		}
@@ -126,21 +126,21 @@ private:
 	 */
 	std::string getPerStr() const {
 		std::stringstream progSs;
-		progSs << njh::bashCT::bold << static_cast<uint32_t>(currentProgress_ * 100)
+		progSs << njh::bashCT::bold << static_cast<uint64_t>(currentProgress_ * 100)
 				<< "% " << njh::bashCT::reset << current_;
 		return progSs.str();
 	}
 
 	stopWatch watch_;
 
-	std::atomic<uint32_t> atCur_{0};
-	uint32_t current_ = 0;
-	uint32_t total_;
-	uint32_t tprog_ = 0;
-	uint32_t width_ = 50;
-	uint32_t step_;
-	uint32_t oldtProg_ = 0;
-	double currentProgress_ = 0;
+	std::atomic<uint64_t> atCur_{0};
+	uint64_t current_ = 0;
+	uint64_t total_;
+	uint64_t tprog_ = 0;
+	uint64_t width_ = 50;
+	uint64_t step_;
+	uint64_t oldtProg_ = 0;
+	long double currentProgress_ = 0;
 
 	std::mutex mut_;
 
