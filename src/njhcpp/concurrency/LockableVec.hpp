@@ -48,6 +48,27 @@ public:
 		return false;
 	}
 
+	/**@brief Fill a vector with a set number of values
+ *
+ * @param vals the vector to fill with number of values
+ * @param number the number to attemtp to extract, will less than this is left in the vector, will only give what's left
+ * @return if any vals were extracted
+ */
+	bool getVals(std::vector<T> & vals, const uint32_t number) {
+		vals.clear();
+		vals.reserve(number);
+		auto pos = indx_.fetch_add(1, std::memory_order_relaxed);
+		if (pos < vals_.size()) {
+			vals.emplace_back(vals_[pos]);
+			while (pos < vals_.size() && vals.size() < number) {
+				pos = indx_.fetch_add(1, std::memory_order_relaxed);
+				vals.emplace_back(vals_[pos]);
+			}
+			return true;
+		}
+		return false;
+	}
+
 	/**@brief reset the index to zero
 	 *
 	 */
