@@ -115,6 +115,117 @@ Output3 decompose_sets(Input1 first1, Input1 last1,
 	return result3;
 }
 
+
+/**
+ * @brief Result structure returned by set decomposition.
+ *
+ * Contains the decomposition of two sorted containers into:
+ * - elements only in the first container
+ * - elements only in the second container
+ * - elements shared by both containers
+ * - the union of both containers
+ *
+ * @tparam T Element type stored in the containers.
+ */
+template <typename T>
+struct SetDecompositionResult {
+    std::vector<T> only_in_first;   ///< Elements present only in the first container
+    std::vector<T> only_in_second;  ///< Elements present only in the second container
+    std::vector<T> shared;          ///< Elements present in both containers
+    std::vector<T> all;             ///< Union of both containers
+};
+
+
+/**
+ * @brief Decompose two sorted containers into unique and shared elements.
+ *
+ * This is a convenience wrapper around `decompose_sets()` that accepts
+ * containers instead of iterator ranges. The inputs must already be sorted
+ * according to `operator<`.
+ *
+ * The function validates that both containers are sorted and throws
+ * `std::invalid_argument` if either container is not sorted.
+ *
+ * Internally, it calls `decompose_sets()` to compute:
+ *
+ * - Elements only in the first container
+ * - Elements only in the second container
+ * - Elements shared by both containers
+ *
+ * The union (`all`) is constructed from the three outputs.
+ *
+ * @tparam Container1 First container type
+ * @tparam Container2 Second container type
+ *
+ * @param c1 First sorted container
+ * @param c2 Second sorted container
+ *
+ * @return SetDecompositionResult containing decomposition results
+ *
+ * @throws std::invalid_argument if either container is not sorted
+ *
+ * @note Containers must contain comparable values using `operator<`.
+ * @note Works with any container supporting `begin()` and `end()`.
+ *
+ * @example
+ * std::vector<int> a{1,2,3,5};
+ * std::vector<int> b{2,3,4};
+ *
+ * auto res = decompose_sets_container(a, b);
+ *
+ * // res.only_in_first  -> {1,5}
+ * // res.only_in_second -> {4}
+ * // res.shared         -> {2,3}
+ * // res.all            -> {1,2,3,4,5}
+ */
+template <typename Container1, typename Container2>
+auto decompose_sets_container(const Container1& c1, const Container2& c2)
+{
+    using T = typename Container1::value_type;
+
+    static_assert(
+        std::is_same<T, typename Container2::value_type>::value,
+        "Containers must have the same value_type"
+    );
+
+    if (!std::is_sorted(c1.begin(), c1.end()))
+        throw std::invalid_argument("First container must be sorted");
+
+    if (!std::is_sorted(c2.begin(), c2.end()))
+        throw std::invalid_argument("Second container must be sorted");
+
+    SetDecompositionResult<T> result;
+
+    decompose_sets(
+        c1.begin(), c1.end(),
+        c2.begin(), c2.end(),
+        std::back_inserter(result.only_in_first),
+        std::back_inserter(result.only_in_second),
+        std::back_inserter(result.shared)
+    );
+
+    // Construct union (all)
+    result.all.reserve(
+        result.only_in_first.size() +
+        result.only_in_second.size() +
+        result.shared.size()
+    );
+
+    std::merge(
+        c1.begin(), c1.end(),
+        c2.begin(), c2.end(),
+        std::back_inserter(result.all)
+    );
+
+    result.all.erase(
+        std::unique(result.all.begin(), result.all.end()),
+        result.all.end()
+    );
+
+    return result;
+}
+
+
 }  //namepsace njh
 
 
