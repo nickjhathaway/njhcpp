@@ -32,6 +32,9 @@
 #include <fstream>
 #include <zlib.h>
 #include <string>
+#include <sstream>
+#include <cstring>
+#include <vector>
 #include <boost/filesystem.hpp>
 
 namespace njh {
@@ -39,19 +42,26 @@ namespace bfs = boost::filesystem;
 
 namespace GZSTREAM {
 
+/**@brief The zlib compression level gzip output is written with unless set otherwise,
+ * 3 writes ~3.5x faster than zlib's default of 6 for files ~25% bigger (see setCompressionLevel)
+ */
+constexpr int defaultCompressionLevel = 3;
+
 // ----------------------------------------------------------------------------
 // Internal classes to implement gzstream. See below for user classes.
 // ----------------------------------------------------------------------------
 
 class gzstreambuf: public std::streambuf {
 private:
-	static const int bufferSize = 47 + 256;    // size of data buff
-	// totals 512 bytes under g++ for igzstream at the end.
+	//zlib keeps its own 128kb buffer (see gzbuffer in open) so this only sets how often gzread/gzwrite are called, 64kb keeps that rare
+	static const int bufferSize = 64 * 1024;
 
 	gzFile file_ = nullptr;               // file handle for compressed file
-	char buffer_[bufferSize]; // data buffer
+	std::vector<char> buffer_ = std::vector<char>(bufferSize); // data buffer
 	char opened_;             // open/close state of stream
 	int mode_ = -1;               // I/O mode
+	int compressionLevel_ = defaultCompressionLevel; //zlib compression level 0-9 when writing, -1 for zlib's own default (6)
+	uint64_t uncompressedSinceMemberEnd_ = 0; //bytes given to zlib since open or the last endMember()
 
 	int flush_buffer() {
 		// Separate the writing of the buffer from overflow() and
@@ -60,17 +70,67 @@ private:
 		if (gzwrite(file_, pbase(), w) != w) {
 			return EOF;
 		}
+		uncompressedSinceMemberEnd_ += w;
 		pbump(-w);
 		return w;
 	}
 public:
 	gzstreambuf() :
 			opened_(0) {
-		setp(buffer_, buffer_ + (bufferSize - 1));
-		setg(buffer_ + 4,     // beginning of putback area
-		buffer_ + 4,     // read position
-		buffer_ + 4);    // end position
+		setp(buffer_.data(), buffer_.data() + (bufferSize - 1));
+		setg(buffer_.data() + 4,     // beginning of putback area
+		buffer_.data() + 4,     // read position
+		buffer_.data() + 4);    // end position
 		// ASSERT: both input & output capabilities will not be used together
+	}
+
+	/**@brief Set the compression level used when the stream is opened for writing, has to be set before open
+	 *
+	 * @param compressionLevel 0-9 (1 fastest, 9 smallest) or -1 for zlib's own default (6)
+	 */
+	void setCompressionLevel(int compressionLevel) {
+		if (compressionLevel < -1 || compressionLevel > 9) {
+			std::stringstream ss;
+			ss << __PRETTY_FUNCTION__ << ", error compression level should be between 0 and 9 or -1 for the default, not " << compressionLevel << "\n";
+			throw std::runtime_error { ss.str() };
+		}
+		compressionLevel_ = compressionLevel;
+	}
+
+	/**@brief Finish the current gzip member, anything written after starts a new member in the same file and the file still reads as one gzip stream
+	 *
+	 * @return whether anything was written to the member just finished, nothing is done if not
+	 */
+	bool endMember() {
+		if (!opened_ || !(mode_ & std::ios::out)) {
+			std::stringstream ss;
+			ss << __PRETTY_FUNCTION__ << ", error, stream isn't open for writing" << "\n";
+			throw std::runtime_error { ss.str() };
+		}
+		if (-1 == sync()) {
+			std::stringstream ss;
+			ss << __PRETTY_FUNCTION__ << ", error in writing buffer" << "\n";
+			throw std::runtime_error { ss.str() };
+		}
+		if (0 == uncompressedSinceMemberEnd_) {
+			return false;
+		}
+		auto status = gzflush(file_, Z_FINISH);
+		if (Z_OK != status) {
+			std::stringstream ss;
+			ss << __PRETTY_FUNCTION__ << ", error in gzflush, status " << status << "\n";
+			throw std::runtime_error { ss.str() };
+		}
+		uncompressedSinceMemberEnd_ = 0;
+		return true;
+	}
+
+	/**@brief The number of compressed bytes written to the file so far, only exact right after open or endMember() since zlib holds compressed data until then
+	 *
+	 * @return the compressed offset
+	 */
+	uint64_t compressedOffset() const {
+		return static_cast<uint64_t>(gzoffset(file_));
 	}
 	int is_open() {
 		return opened_;
@@ -105,6 +165,9 @@ public:
 			*fmodeptr++ = 'a';
 		}
 		*fmodeptr++ = 'b';
+		if ((mode_ & std::ios::out) && -1 != compressionLevel_) {
+			*fmodeptr++ = static_cast<char>('0' + compressionLevel_);
+		}
 		*fmodeptr = '\0';
 		bool alreadyExists = boost::filesystem::exists(name);
 		file_ = gzopen(name, fmode);
@@ -125,6 +188,7 @@ public:
 			return (gzstreambuf*) 0;
 		}
 		opened_ = 1;
+		uncompressedSinceMemberEnd_ = 0;
 		return this;
 	}
 
@@ -151,16 +215,16 @@ public:
 		if (n_putback > 4) {
 			n_putback = 4;
 		}
-		memcpy(buffer_ + (4 - n_putback), gptr() - n_putback, n_putback);
+		memmove(buffer_.data() + (4 - n_putback), gptr() - n_putback, n_putback);
 
-		int num = gzread(file_, buffer_ + 4, bufferSize - 4);
+		int num = gzread(file_, buffer_.data() + 4, bufferSize - 4);
 		if (num <= 0) { // ERROR or EOF
 			return EOF;
 		}
 		// reset buffer pointers
-		setg(buffer_ + (4 - n_putback),   // beginning of putback area
-		buffer_ + 4,                 // read position
-		buffer_ + 4 + num);          // end of buffer
+		setg(buffer_.data() + (4 - n_putback),   // beginning of putback area
+		buffer_.data() + 4,                 // read position
+		buffer_.data() + 4 + num);          // end of buffer
 
 		// return next character
 		return *reinterpret_cast<unsigned char *>(gptr());
@@ -260,6 +324,16 @@ public:
 		return gzstreambase::rdbuf();
 	}
 	void open(const bfs::path & name, int open_mode = std::ios::out) {
+		gzstreambase::open(name.string().c_str(), open_mode);
+	}
+	/**@brief Open for writing with a compression level
+	 *
+	 * @param name the file
+	 * @param compressionLevel 0-9 (1 fastest, 9 smallest) or -1 for zlib's own default (6)
+	 * @param open_mode the mode
+	 */
+	void open(const bfs::path & name, int compressionLevel, int open_mode) {
+		rdbuf()->setCompressionLevel(compressionLevel);
 		gzstreambase::open(name.string().c_str(), open_mode);
 	}
 };

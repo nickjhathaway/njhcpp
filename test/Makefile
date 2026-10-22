@@ -1,48 +1,34 @@
-ROOT = $(realpath ../)
+#unit tests, run with `make -C test` from the njhcpp root, njhcpp is header only so nothing needs to be built first
 
-
-include $(COMPFILE)
-
+ROOT = $(realpath ..)
+include $(ROOT)/compfile.mk
 include $(ROOT)/makefile-common.mk
 
-SRC += -I../src/
+COMLIBS += -I$(ROOT)/src -I$(ROOT)/test/catch2
 
-BIN = bin/tester
+TEST_SRC = $(wildcard unit/*.cpp)
+TEST_OBJ = $(patsubst unit/%.cpp, build/unit/%.o, $(TEST_SRC))
+CATCH_OBJ = build/catch_amalgamated.o
+TEST_BIN = bin/njhcppUnitTests
 
-OBJ_DIR = build
-TESTSRC = $(realpath ./src)
-SRCSRC = $(realpath ../src)
-OBJ = $(addprefix $(OBJ_DIR)/, $(patsubst %.cpp, %.o, $(call rwildcard, $(TESTSRC), *.cpp))) \
-	$(addprefix $(OBJ_DIR)/, $(patsubst %.cpp, %.o, $(call rwildcard, $(SRCSRC)/programs, *.cpp))) \
-	$(addprefix $(OBJ_DIR)/, $(patsubst %.cpp, %.o, $(call rwildcard, $(SRCSRC)/seqTools, *.cpp)))
-HEADERS = $(call rwildcard, src/, *.h) \
-	$(call rwildcard, src/, *.hpp)
+.PHONY: all run clean
 
-COMMON =  $(CXXFLAGS) $(CXXOPT) $(COMLIBS)
-#COMMON = $(COMMON_DEBUG)
+all: run
 
-############ main
-.PHONY: all
-all: $(OBJ_DIR) $(BIN)
-ifeq ($(UNAME_S), Darwin)
-	../setUpScripts/fixDyLinking_mac.sh bin $(EXT_PATH)
-endif
+run: $(TEST_BIN)
+	./$(TEST_BIN)
 
-$(OBJ_DIR):
-	mkdir -p $(OBJ_DIR)
-	mkdir -p bin
-
-$(OBJ_DIR)/%.o: %.cpp $(HEADERS)
-	@mkdir -p $(OBJ_DIR)/$(shell dirname $<)
-	$(CXX) $(COMMON) -fpic -c $< -o $@
-
-
-$(BIN): $(OBJ)
+$(TEST_BIN): $(TEST_OBJ) $(CATCH_OBJ)
+	@mkdir -p bin
 	$(CXX) $(CXXFLAGS) $(CXXOPT) -o $@ $^ $(LD_FLAGS)
 
+build/unit/%.o: unit/%.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $(CXXOPT) $(COMLIBS) -c $< -o $@
 
+$(CATCH_OBJ): catch2/catch_amalgamated.cpp catch2/catch_amalgamated.hpp
+	@mkdir -p build
+	$(CXX) $(CXXFLAGS) $(CXXOPT) -I$(ROOT)/test/catch2 -c $< -o $@
 
-.PHONY: clean
 clean:
-	@rm -f $(BIN)
-	@rm -rf $(OBJ_DIR)
+	rm -rf build bin

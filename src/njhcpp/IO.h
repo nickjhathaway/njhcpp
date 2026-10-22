@@ -9,4 +9,5 @@
 
 #include "njhcpp/IO/InputStream.hpp"
 #include "njhcpp/IO/OutputStream.hpp"
+#include "njhcpp/IO/BlockGzip.hpp"
 #include "njhcpp/IO/IOOptions.h"

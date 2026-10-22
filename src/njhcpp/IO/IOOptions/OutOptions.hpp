@@ -73,6 +73,7 @@ public:
 		overWriteFile_ = val.get("overWriteFile_", false).asBool();
 		exitOnFailureToWrite_ = val.get("exitOnFailureToWrite_", false).asBool();
 		append_ = val.get("append_", false).asBool();
+		gzCompressionLevel_ = val.get("gzCompressionLevel_", njh::GZSTREAM::defaultCompressionLevel).asInt();
 	}
 
 	bfs::path outFilename_;
@@ -83,6 +84,7 @@ public:
 	bool overWriteFile_ = false;
 	bool exitOnFailureToWrite_ = true;
 	bool binary_ = false;
+	int gzCompressionLevel_ = njh::GZSTREAM::defaultCompressionLevel; /**< zlib compression level 0-9 (1 fastest, 9 smallest) for gzipped output, -1 for zlib's own default (6)*/
 	bfs::perms permissions_{bfs::owner_read | bfs::owner_write | bfs::group_read | bfs::group_write | bfs::others_read};
 
 
@@ -102,6 +104,7 @@ public:
 	}
 
 	void openGzFile(njh::GZSTREAM::ogzstream & outFileGz) const{
+		outFileGz.rdbuf()->setCompressionLevel(gzCompressionLevel_);
 		if (bfs::exists(outName()) && !overWriteFile_) {
 			if (append_) {
 				outFileGz.open(outName(), std::ios::ate);
@@ -124,6 +127,7 @@ public:
 	}
 
 	void openBinaryGzFile(njh::GZSTREAM::ogzstream & outFileGz) const{
+		outFileGz.rdbuf()->setCompressionLevel(gzCompressionLevel_);
 		if (bfs::exists(outName()) && !overWriteFile_) {
 			std::stringstream ss;
 			ss << __PRETTY_FUNCTION__ << " error, "<< outName() << " already exists";
@@ -202,6 +206,7 @@ public:
 		ret["append_"] = njh::json::toJson(append_);
 		ret["overWriteFile_"] = njh::json::toJson(overWriteFile_);
 		ret["exitOnFailureToWrite_"] = njh::json::toJson(exitOnFailureToWrite_);
+		ret["gzCompressionLevel_"] = njh::json::toJson(gzCompressionLevel_);
 		ret["permissions_"] = njh::json::toJson(njh::octToDec(permissions_));
 		return ret;
 	}
