@@ -16,39 +16,119 @@
 #include "njhcpp/concurrency/concurrencyUtils.hpp"
 #include <pstreams/pstream.h>
 #include <thread>
+#include <mutex>
+#include <cerrno>
+#include <cstring>
+#include <fcntl.h>
+#include <poll.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 namespace njh{
 namespace sys{
 
-/**@brief run the command in cmds externally and return the status and outputs
+/**@brief guards creating the pipes and forking in run() so a command started on another thread can't inherit this command's pipes
+ *
+ */
+inline std::mutex & runForkMutex() {
+	static std::mutex mut;
+	return mut;
+}
+
+/**@brief run the command in cmds externally with /bin/sh -c and return the status and outputs
+ *
+ * stdout and stderr are read together as they're written, so a command writing a lot to either can't block on a full pipe
  *
  * @param cmds A vector of strings contains the command, content of cmds will be converted to a string with space delimited every string in cmds
- * @return A RunOutPut object holding status and outputs of the externally ran cmd
- * @todo add run time duration
+ * @return A RunOutPut object holding status and outputs of the externally ran cmd, returnCode_ is the exit code (128 + the signal number if the command was killed by a signal)
  */
 inline RunOutput run(std::vector<std::string> cmds) {
 	//cat cmds
 	std::string cmd = conToStr(cmds, " ");
 	//start a stopwatch to clock how long it took
 	njh::stopWatch watch;
-	redi::ipstream s(cmd, redi::ipstream::pstdout | redi::ipstream::pstderr);
-	//read stdout
-	std::stringstream outSS;
-	outSS << s.out().rdbuf();
-	auto out = bashCT::trimForNonTerminalOut(outSS.str());
-	trim(out);
-	//read stderr
-	std::stringstream errSS;
-	errSS << s.err().rdbuf();
-	auto err = bashCT::trimForNonTerminalOut(errSS.str());
-	trim(err);
-	s.close();
-	double rTime = watch.totalTime();
-	const int32_t errCode = s.rdbuf()->status();
-	if (s.rdbuf()->exited() && !errCode) {
-		return {true, 0, std::move(out), std::move(err), cmd, rTime};
+	int outPipe[2] = {-1, -1};
+	int errPipe[2] = {-1, -1};
+	pid_t pid = -1;
+	{
+		std::lock_guard<std::mutex> lock(runForkMutex());
+		if (0 != ::pipe(outPipe) || 0 != ::pipe(errPipe)) {
+			for (int fd : { outPipe[0], outPipe[1], errPipe[0], errPipe[1] }) {
+				if (fd >= 0) {
+					::close(fd);
+				}
+			}
+			return {false, -1, "", std::string("failed to create pipes: ") + std::strerror(errno), cmd, watch.totalTime()};
+		}
+		for (int fd : { outPipe[0], outPipe[1], errPipe[0], errPipe[1] }) {
+			::fcntl(fd, F_SETFD, FD_CLOEXEC);
+		}
+		pid = ::fork();
+		if (0 == pid) {
+			//child, only async-signal-safe calls until exec
+			::dup2(outPipe[1], STDOUT_FILENO);
+			::dup2(errPipe[1], STDERR_FILENO);
+			::execl("/bin/sh", "sh", "-c", cmd.c_str(), static_cast<char *>(nullptr));
+			::_exit(127);
+		}
+		::close(outPipe[1]);
+		::close(errPipe[1]);
 	}
-	return {false, errCode, std::move(out), std::move(err), cmd, rTime};
+	if (pid < 0) {
+		::close(outPipe[0]);
+		::close(errPipe[0]);
+		return {false, -1, "", std::string("failed to fork: ") + std::strerror(errno), cmd, watch.totalTime()};
+	}
+	std::string outRaw;
+	std::string errRaw;
+	{
+		struct pollfd fds[2] = { { outPipe[0], POLLIN, 0 }, { errPipe[0], POLLIN, 0 } };
+		std::string * dests[2] = { &outRaw, &errRaw };
+		uint32_t stillOpen = 2;
+		char buf[64 * 1024];
+		while (stillOpen > 0) {
+			if (::poll(fds, 2, -1) < 0) {
+				if (EINTR == errno) {
+					continue;
+				}
+				break;
+			}
+			for (uint32_t pos = 0; pos < 2; ++pos) {
+				if (fds[pos].fd < 0 || 0 == fds[pos].revents) {
+					continue;
+				}
+				auto n = ::read(fds[pos].fd, buf, sizeof(buf));
+				if (n > 0) {
+					dests[pos]->append(buf, n);
+				} else if (0 == n || EINTR != errno) {
+					::close(fds[pos].fd);
+					//poll ignores negative fds
+					fds[pos].fd = -1;
+					--stillOpen;
+				}
+			}
+		}
+		for (const auto & fd : fds) {
+			if (fd.fd >= 0) {
+				::close(fd.fd);
+			}
+		}
+	}
+	int status = 0;
+	while (::waitpid(pid, &status, 0) < 0 && EINTR == errno) {
+	}
+	auto out = bashCT::trimForNonTerminalOut(outRaw);
+	trim(out);
+	auto err = bashCT::trimForNonTerminalOut(errRaw);
+	trim(err);
+	double rTime = watch.totalTime();
+	int32_t exitCode = -1;
+	if (WIFEXITED(status)) {
+		exitCode = WEXITSTATUS(status);
+	} else if (WIFSIGNALED(status)) {
+		exitCode = 128 + WTERMSIG(status);
+	}
+	return {0 == exitCode && WIFEXITED(status), exitCode, std::move(out), std::move(err), cmd, rTime};
 }
 
 inline RunOutput runTest(std::vector<std::string> cmds) {
