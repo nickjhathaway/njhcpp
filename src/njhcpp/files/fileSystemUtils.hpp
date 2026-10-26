@@ -436,13 +436,13 @@ inline void openTextFile(std::ofstream& file, const bfs::path &filename,
 	openTextFile(file, appendAsNeededRet(filename.string(), extention), overWrite, append, exitOnFailure);
 }
 
-/**@brief remove a non empty directory forcibly
+/**@brief remove a non empty directory forcibly, symlinks inside it (or dirName itself if it is one) are removed as links and what they point to is left alone
  *
  * @param dirName name of directory to remove
  * @return whether or not the removal of the directry was successful
  */
 inline bool rmDirForce(const bfs::path & dirName) {
-	if (bfs::is_directory(dirName)) {
+	if (bfs::is_directory(bfs::symlink_status(dirName))) {
 		auto files = filesInFolder(dirName);
 		for (const auto & f : files) {
 			rmDirForce(f.string());
