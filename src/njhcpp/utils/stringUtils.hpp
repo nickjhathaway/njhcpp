@@ -828,9 +828,9 @@ inline std::vector<std::string> naturalSortNameRet(const std::vector<std::string
 	struct NameWithNameSplit {
 		explicit NameWithNameSplit(std::string  name):
 						name_(std::move(name)){
-			const std::regex regPat_{"([A-Za-z0-9\\.]+)" };
+			static const std::regex regPat_{"([A-Za-z0-9\\.]+)" };
 			// const std::regex subPat_ {"([A-Za-z]*)([0-9]+\\.)"};
-			const std::regex subPat_ {R"(([A-Za-z]*)(\d+(\.\d*)?|\.\d+))"};
+			static const std::regex subPat_ {R"(([A-Za-z]*)(\d+(\.\d*)?|\.\d+))"};
 
 			nameToks_ = njh::tokStrOnMatchRegex(name_, regPat_);
 			for(const auto & nameTok : nameToks_) {

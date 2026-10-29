@@ -12,19 +12,19 @@
 
 namespace njh {
 
-/**@brief Getting type by taking advantage of info available in __PRETTY_FUNCTION__
+namespace impl {
+/**@brief Getting the type out of the __PRETTY_FUNCTION__ of typeStr<T>()
  *
+ * @param pf the __PRETTY_FUNCTION__ of typeStr<T>()
  * @return The type
  */
-template<typename T>
-std::string typeStr(){
-	std::string pf(__PRETTY_FUNCTION__);
-	std::regex namespacePat{"std::__1::"};
-	std::regex namespace2Pat{"std::__cxx11::"};
-	std::regex stringPat{"std::basic_string<char>"};
-	std::regex lessPat{", std::less<.*?>"};
-	std::regex allocPat{", std::allocator<.*?>"};
-	std::regex spaceArrowPat{" >"};
+inline std::string typeStrFromPrettyFunction(std::string pf){
+	static const std::regex namespacePat{"std::__1::"};
+	static const std::regex namespace2Pat{"std::__cxx11::"};
+	static const std::regex stringPat{"std::basic_string<char>"};
+	static const std::regex lessPat{", std::less<.*?>"};
+	static const std::regex allocPat{", std::allocator<.*?>"};
+	static const std::regex spaceArrowPat{" >"};
 	pf = std::regex_replace(pf, namespacePat, "std::");
 	pf = std::regex_replace(pf, namespace2Pat, "std::");
 	pf = std::regex_replace(pf, stringPat, "std::string");
@@ -46,6 +46,17 @@ std::string typeStr(){
 	}else{
 		return "indeterminate";
 	}
+}
+}  // namespace impl
+
+/**@brief Getting type by taking advantage of info available in __PRETTY_FUNCTION__
+ *
+ * @return The type
+ */
+template<typename T>
+std::string typeStr(){
+	static const std::string ret = impl::typeStrFromPrettyFunction(__PRETTY_FUNCTION__);
+	return ret;
 }
 
 
