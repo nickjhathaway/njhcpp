@@ -72,6 +72,35 @@ TEST_CASE("rmDirForce on a symlink to a directory removes only the link", "[rmDi
 	requireDataIntact(data);
 }
 
+TEST_CASE("rmDirForce with a trailing slash on a symlink to a directory removes only the link", "[rmDirForce]") {
+	TempDir tmp;
+	auto data = makeData(tmp.dir_ / "data");
+	auto link = tmp.dir_ / "link";
+	bfs::create_directory_symlink(data, link);
+
+	REQUIRE(files::rmDirForce(link.string() + "/"));
+	REQUIRE_FALSE(bfs::exists(bfs::symlink_status(link)));
+	requireDataIntact(data);
+}
+
+TEST_CASE("rmDirForce with a trailing slash on a directory removes it", "[rmDirForce]") {
+	TempDir tmp;
+	auto toRemove = makeData(tmp.dir_ / "out");
+	REQUIRE(files::rmDirForce(toRemove.string() + "//"));
+	REQUIRE_FALSE(bfs::exists(toRemove));
+}
+
+TEST_CASE("makeDir with overWrite on a symlink to a directory leaves the target alone", "[rmDirForce]") {
+	TempDir tmp;
+	auto data = makeData(tmp.dir_ / "data");
+	auto link = tmp.dir_ / "out";
+	bfs::create_directory_symlink(data, link);
+
+	files::makeDir(files::MkdirPar(link, true));
+	REQUIRE(bfs::is_directory(bfs::symlink_status(link)));
+	requireDataIntact(data);
+}
+
 TEST_CASE("makeDir with overWrite leaves the targets of symlinks in the old directory alone", "[rmDirForce]") {
 	TempDir tmp;
 	auto data = makeData(tmp.dir_ / "data");

@@ -442,13 +442,19 @@ inline void openTextFile(std::ofstream& file, const bfs::path &filename,
  * @return whether or not the removal of the directry was successful
  */
 inline bool rmDirForce(const bfs::path & dirName) {
-	if (bfs::is_directory(bfs::symlink_status(dirName))) {
-		auto files = filesInFolder(dirName);
+	//a trailing slash makes the path resolve through a symlink, so it's removed first
+	auto dirStr = dirName.string();
+	while (dirStr.size() > 1 && '/' == dirStr.back()) {
+		dirStr.pop_back();
+	}
+	const bfs::path dirPath(dirStr);
+	if (bfs::is_directory(bfs::symlink_status(dirPath))) {
+		auto files = filesInFolder(dirPath);
 		for (const auto & f : files) {
 			rmDirForce(f.string());
 		}
 	}
-	return bfs::remove(dirName);
+	return bfs::remove(dirPath);
 }
 
 
