@@ -380,13 +380,30 @@ inline uint32_t getExpectedNumCol(const bfs::path & fnp,
 
 }  //namespace files
 
+/**
+ * @brief Whether a value ends with the extension of a data file that getInputValues() should take as a value rather than read as a list of values
+ * @param valuesStr the value
+ * @return true if it ends with .bam, .2bit, .fasta, .fastq, .fasta.gz or .fastq.gz
+ */
+inline bool isDataFileForInputValues(const std::string &valuesStr) {
+	static const std::vector<std::string> dataFileExtensions{".bam", ".2bit", ".fasta", ".fastq", ".fasta.gz", ".fastq.gz"};
+	for (const auto &ext : dataFileExtensions) {
+		if (endsWith(valuesStr, ext)) {
+			return true;
+		}
+	}
+	return false;
+}
+
 inline std::vector<std::string> getInputValues(const std::string &valuesStr,
 		const std::string &delim) {
 	std::vector<std::string> ret;
 	if ("" == valuesStr) {
 		return ret;
 	}
-	if ((bfs::path(valuesStr).filename().string().length() <= 255 && (bfs::exists(valuesStr) && !bfs::is_directory(valuesStr))) || "STDIN" == valuesStr) {
+	//non-throwing checks, a comma separated list can be longer than the allowed path length
+	boost::system::error_code ec;
+	if ((!isDataFileForInputValues(valuesStr) && bfs::exists(valuesStr, ec) && !bfs::is_directory(valuesStr, ec)) || "STDIN" == valuesStr) {
 		InputStream infile { bfs::path(valuesStr) };
 		std::string line = "";
 		while (njh::files::crossPlatGetline(infile, line)) {
