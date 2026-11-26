@@ -12,6 +12,7 @@
 #include <unordered_set>
 #include <string>
 #include <algorithm>
+#include <iterator> // std::inserter
 
 namespace njh {
 /**@brief Get a sub-selection of a vector similar to std::string's substr
