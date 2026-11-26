@@ -10,6 +10,8 @@
 #include <string>
 #include <map>
 #include <iterator>
+#include <thread> //this_thread::sleep_for
+#include <chrono>
 #include <fstream> //ofstream
 #include <sys/stat.h> //chmod
 #include <boost/filesystem.hpp>
@@ -455,6 +457,68 @@ inline bool rmDirForce(const bfs::path & dirName) {
 		}
 	}
 	return bfs::remove(dirPath);
+}
+
+/**@brief The outcome of rmDirForceRetry()
+ *
+ */
+struct RmDirForceRetryRes {
+	bool removed_{false}; /**< whether the directory is gone */
+	uint32_t attempts_{0}; /**< how many removal attempts were made */
+	std::vector<std::string> failures_; /**< one entry per failed attempt: the error and what was left in the directory */
+};
+
+/**@brief Remove a directory like rmDirForce() but retry when it fails, never throws
+ *
+ * On network file systems (e.g. NFS) removing a directory can briefly fail with "Directory not empty" after its contents were removed,
+ * for example when a hidden .nfsXXXX file is kept for a file something still has open, or when the directory listing is stale.
+ * Each attempt re-lists and removes the contents, and the wait between attempts doubles each time.
+ *
+ * @param dirName the directory to remove
+ * @param maxAttempts the maximum number of attempts
+ * @param firstWaitMilliseconds the wait before the second attempt, doubled before each further attempt (8 attempts starting at 100ms wait ~13s in total)
+ * @return whether it was removed, the number of attempts, and the error and left over entries of each failed attempt
+ */
+inline RmDirForceRetryRes rmDirForceRetry(const bfs::path & dirName,
+		uint32_t maxAttempts = 8, uint32_t firstWaitMilliseconds = 100) {
+	RmDirForceRetryRes ret;
+	uint32_t waitMilliseconds = firstWaitMilliseconds;
+	while (ret.attempts_ < std::max<uint32_t>(maxAttempts, 1)) {
+		if (ret.attempts_ > 0) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(waitMilliseconds));
+			waitMilliseconds *= 2;
+		}
+		++ret.attempts_;
+		std::string error;
+		try {
+			rmDirForce(dirName);
+		} catch (std::exception & e) {
+			error = e.what();
+		}
+		boost::system::error_code ec;
+		const auto status = bfs::symlink_status(dirName, ec);
+		if (bfs::file_not_found == status.type()) {
+			ret.removed_ = true;
+			break;
+		}
+		std::stringstream failure;
+		failure << "attempt " << ret.attempts_ << ": "
+				<< (error.empty() ? std::string("still exists") : error);
+		if (bfs::is_directory(status)) {
+			std::vector<std::string> leftOver;
+			try {
+				for (const auto & f : filesInFolder(dirName)) {
+					leftOver.emplace_back(f.filename().string());
+				}
+			} catch (std::exception & e) {
+				leftOver.emplace_back(std::string("couldn't list contents: ") + e.what());
+			}
+			failure << "; left over: "
+					<< (leftOver.empty() ? std::string("nothing") : njh::conToStr(leftOver, ","));
+		}
+		ret.failures_.emplace_back(failure.str());
+	}
+	return ret;
 }
 
 
