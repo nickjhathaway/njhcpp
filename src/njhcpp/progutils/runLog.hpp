@@ -123,6 +123,9 @@ class RunLog {
     if (runLogFile_.is_open()) {
       runLogFile_ << "Ran on: " << getCurrentDate() << std::endl;
       runLogFile_ << "Ran from: " << inputCommands.workingDir_ << std::endl;
+      if (!inputCommands.runnerVersion_.empty()) {
+        runLogFile_ << "Version: " << inputCommands.runnerName_ << " " << inputCommands.runnerVersion_ << std::endl;
+      }
       runLogFile_ << inputCommands.commandLine_ << std::endl;
     } else {
       std::cerr << "\033[1;31m";
