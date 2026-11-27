@@ -71,19 +71,23 @@ class OneRing : public ProgramRunner {
    *
    */
   virtual int runProgram(const CmdArgs & args) const {
+  	//subprograms of this ring and of its sub-runners get this ring's name and version, unless a nested OneRing sets its own
+  	CmdArgs ringArgs = args;
+  	ringArgs.runnerName_ = nameOfProgram_;
+  	ringArgs.runnerVersion_ = dumpversion();
   	//if the program is one of the programs in the oneRing then run that
-    if (cmdToFunc_.find(args.subProgramLowerCase()) != cmdToFunc_.end()) {
-      const auto &fi = cmdToFunc_.at(args.subProgramLowerCase());
-      return fi.func_(args);
+    if (cmdToFunc_.find(ringArgs.subProgramLowerCase()) != cmdToFunc_.end()) {
+      const auto &fi = cmdToFunc_.at(ringArgs.subProgramLowerCase());
+      return fi.func_(ringArgs);
     }
     // now try to find program in one of the rings
     for (auto &ring : rings_) {
-      if (ring.second->containsProgram(args.subProgramLowerCase())) {
-        return ring.second->runProgram(args);
+      if (ring.second->containsProgram(ringArgs.subProgramLowerCase())) {
+        return ring.second->runProgram(ringArgs);
       }
     }
     //if we made it here, the one ring didn't contain the program and none of the sub rings either
-    listPrograms(std::cout, args.subProgram_, nameOfProgram_);
+    listPrograms(std::cout, ringArgs.subProgram_, nameOfProgram_);
     return 1;
   }
 

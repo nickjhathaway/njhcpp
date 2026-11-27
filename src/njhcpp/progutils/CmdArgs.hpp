@@ -171,6 +171,16 @@ public:
 	 */
 	std::string workingDir_;
 
+	/**@brief Name of the runner the subprogram runs under, the nearest OneRing above it, set by ProgramRunner::run and OneRing::runProgram
+	 *
+	 */
+	std::string runnerName_;
+
+	/**@brief Version of runnerName_, from its dumpversion()
+	 *
+	 */
+	std::string runnerVersion_;
+
 	/**@brief return bool to indicated whether a help statement was requested
 	 *
 	 */

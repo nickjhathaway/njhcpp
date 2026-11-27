@@ -99,6 +99,8 @@ class ProgramRunner {
       return 0;
     }
     auto cmds = CmdArgs(argc, argv);
+    cmds.runnerName_ = nameOfProgram_;
+    cmds.runnerVersion_ = dumpversion();
   	if(cmds.gettingVersion()){
       listPrograms(std::cout,"", nameOfProgram_);
       return 0;
